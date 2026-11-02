@@ -158,17 +158,17 @@ function LossSummary({ loss }: { loss: TwinStateT['loss'] }) {
     <div className="grid grid-cols-3 gap-4">
       <div>
         <p className="text-sm text-muted-foreground">단전 없을 때 손실률</p>
-        <p className="num text-2xl font-semibold">{formatPercent(loss.no_outage_loss_rate)}</p>
+        <p className="text-2xl font-semibold num">{formatPercent(loss.no_outage_loss_rate)}</p>
       </div>
       <div>
         <p className="text-sm text-muted-foreground">센서 기준 예상 손실률</p>
-        <p className="num text-2xl font-semibold text-berry">
+        <p className="text-2xl font-semibold num text-berry">
           {formatPercent(loss.predicted_loss_rate)}
         </p>
       </div>
       <div>
         <p className="text-sm text-muted-foreground">계획 대비 추가 손실액</p>
-        <p className="num text-2xl font-semibold text-berry">
+        <p className="text-2xl font-semibold num text-berry">
           +{formatManwon(loss.delta_krw)}
           <span className="ml-1 text-base text-muted-foreground">만 원</span>
         </p>

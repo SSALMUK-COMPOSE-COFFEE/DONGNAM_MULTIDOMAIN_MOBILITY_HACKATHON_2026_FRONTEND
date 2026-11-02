@@ -18,7 +18,7 @@ export function PlanSummary({ plan }: PlanSummaryPropsT) {
         <Card key={label}>
           <CardContent>
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className={`mt-1 num text-3xl font-semibold ${tone}`}>
+            <p className={`mt-1 text-3xl font-semibold num ${tone}`}>
               {formatManwon(value)}
               <span className="ml-1 text-base text-muted-foreground">만 원</span>
             </p>

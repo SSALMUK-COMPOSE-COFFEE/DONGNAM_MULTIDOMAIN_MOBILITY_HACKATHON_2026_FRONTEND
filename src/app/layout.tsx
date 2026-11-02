@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Gothic_A1, Hahmlet, IBM_Plex_Mono } from 'next/font/google';
+import { Noto_Sans_KR } from 'next/font/google';
 
 import { DemoNav } from '@/components/demo-nav';
 import { Providers } from '@/components/providers';
@@ -7,21 +7,8 @@ import { Providers } from '@/components/providers';
 import './globals.css';
 
 // 한글 글리프는 subsets 와 상관없이 unicode-range 로 나뉘어 함께 제공된다 (subsets 는 preload 대상)
-const gothicA1 = Gothic_A1({
-  variable: '--font-gothic-a1',
-  weight: ['400', '500', '700', '800'],
-  subsets: ['latin'],
-});
-
-const hahmlet = Hahmlet({
-  variable: '--font-hahmlet',
-  weight: ['600', '700', '800'],
-  subsets: ['latin'],
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: '--font-ibm-plex-mono',
-  weight: ['500', '600'],
+const notoSansKr = Noto_Sans_KR({
+  variable: '--font-noto-sans-kr',
   subsets: ['latin'],
 });
 
@@ -32,10 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html
-      lang="ko"
-      className={`${gothicA1.variable} ${hahmlet.variable} ${ibmPlexMono.variable} h-full antialiased`}
-    >
+    <html lang="ko" className={`${notoSansKr.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Providers>
           <DemoNav />
