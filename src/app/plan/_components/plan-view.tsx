@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { planQueryOptions } from '@/apis/getPlan';
 import { postPlan } from '@/apis/postPlan';
@@ -12,14 +12,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_SCENARIO_ID } from '@/consts/demo';
+import { useCurrentPlan } from '@/hooks/useCurrentPlan';
 import { usePlanStore } from '@/stores/usePlanStore';
+import type { PlanSessionT } from '@/types/api';
 
 export function PlanView() {
-  const planId = usePlanStore(state => state.planId);
+  const { planId, hasHydrated, data: session, isPending, isError } = useCurrentPlan();
 
+  if (!hasHydrated) return <Skeleton className="h-96" />;
   if (!planId) return <CreatePlanCard />;
+  if (isError) return <p className="text-destructive">운송계획을 불러오지 못했습니다.</p>;
+  if (isPending) return <Skeleton className="h-96" />;
 
-  return <PlanDetail planId={planId} />;
+  return <PlanDetail session={session} />;
 }
 
 function CreatePlanCard() {
@@ -52,12 +57,7 @@ function CreatePlanCard() {
   );
 }
 
-function PlanDetail({ planId }: { planId: string }) {
-  const { data: session, isPending, isError } = useQuery(planQueryOptions(planId));
-
-  if (isError) return <p className="text-destructive">운송계획을 불러오지 못했습니다.</p>;
-  if (isPending) return <Skeleton className="h-96" />;
-
+function PlanDetail({ session }: { session: PlanSessionT }) {
   const { plan, scenario } = session;
   const usedContainers = plan.containers.filter(container => container.used);
 

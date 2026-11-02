@@ -12,6 +12,7 @@ import { TemperatureChart } from '@/app/sensor/_components/temperature-chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DEMO_CONTAINER_ID,
   DEMO_DEVICE_ID,
@@ -20,13 +21,14 @@ import {
 } from '@/consts/demo';
 import { ROUTES } from '@/consts/route';
 import { useAlertStream } from '@/hooks/useAlertStream';
-import { usePlanStore } from '@/stores/usePlanStore';
+import { useCurrentPlan } from '@/hooks/useCurrentPlan';
 import type { AlertT, TwinStateT } from '@/types/api';
 import { formatManwon, formatPercent } from '@/utils/format';
 
 export function SensorView() {
-  const planId = usePlanStore(state => state.planId);
+  const { planId, hasHydrated, isSuccess } = useCurrentPlan();
 
+  if (!hasHydrated) return <Skeleton className="h-96" />;
   if (!planId) {
     return (
       <p className="text-muted-foreground">
@@ -38,6 +40,8 @@ export function SensorView() {
       </p>
     );
   }
+  // 서버에 계획이 남아 있는지 확인한 뒤에 센서를 연결한다 (사라졌으면 useCurrentPlan 이 지운다)
+  if (!isSuccess) return <Skeleton className="h-96" />;
 
   return <SensorDashboard planId={planId} />;
 }
