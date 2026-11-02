@@ -74,7 +74,8 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
             </Select>
 
             <p className="leading-relaxed text-muted-foreground">
-              도착한 뒤 팔 수 있는 날이 짧으면, 배로 가는 동안 상할 위험이 커져 해상 총비용이 뛴다.
+              도착한 뒤 팔 수 있는 기간이 짧으면 배로 가는 동안 상할 위험이 커져 해상 총비용이
+              올라갑니다.
             </p>
             <Button
               size="lg"
@@ -108,8 +109,8 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
                   <span className="num">
                     {formatManwon(tariff.sea_loss_risk_short_window)}만 원
                   </span>
-                  으로 잡으면 해상이 항공보다 비싸진다. 평소 해상은{' '}
-                  <span className="num">{formatManwon(tariff.sea_total)}만 원</span>
+                  으로 잡으면 해상이 항공보다 비쌉니다. 평소 해상은{' '}
+                  <span className="num">{formatManwon(tariff.sea_total)}만 원</span>입니다.
                 </p>
                 <p className="rounded-2xl bg-brand-soft px-5 py-4 text-center text-xl font-bold text-brand">
                   → 항공 전환으로 파렛트당{' '}

@@ -129,7 +129,7 @@ function IntakePreviewPlaceholder() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-muted-foreground">등록하면 여기에 바로 나온다</CardTitle>
+        <CardTitle className="text-muted-foreground">등록하면 이 자리에 나옵니다</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {PLACEHOLDER_ROWS.map(({ icon: Icon, label, note }) => (

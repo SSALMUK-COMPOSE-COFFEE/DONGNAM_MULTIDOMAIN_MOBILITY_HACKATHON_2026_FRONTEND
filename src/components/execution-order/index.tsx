@@ -44,7 +44,7 @@ export function ExecutionOrderPanel({ planId, order }: ExecutionOrderPanelPropsT
       queryClient.invalidateQueries({ queryKey: planOrdersQueryOptions(planId).queryKey });
       if (actor === 'forwarder') {
         queryClient.invalidateQueries({ queryKey: planQueryOptions(planId).queryKey });
-        toast.success(`계획 v${updated.target_version} 확정. 자동 조치를 실행했습니다.`);
+        toast.success('계획을 확정하고 자동 조치를 실행했습니다.');
       }
     },
     onError: () => toast.error('확정하지 못했습니다.'),

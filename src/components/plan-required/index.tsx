@@ -10,7 +10,7 @@ export function PlanRequired({ reason }: { reason: string }) {
       <Link href={ROUTES.PLAN} className="font-bold text-brand underline">
         운송계획
       </Link>
-      을 생성하세요. {reason}
+      을 만들어 주세요. {reason}
     </p>
   );
 }

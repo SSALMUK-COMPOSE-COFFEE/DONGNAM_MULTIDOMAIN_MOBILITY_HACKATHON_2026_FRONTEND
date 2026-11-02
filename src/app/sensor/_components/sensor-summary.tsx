@@ -26,7 +26,7 @@ export function SensorSummary({ twin, onStart, isStarting }: SensorSummaryPropsT
         </p>
       ) : (
         <p className="text-2xl font-bold">
-          아직 측정값이 없습니다. 아두이노를 연결하거나 시뮬레이션을 시작하세요
+          아직 측정값이 없습니다. 아두이노를 연결하거나 시뮬레이션을 시작하세요.
         </p>
       )}
       <Button
@@ -37,7 +37,7 @@ export function SensorSummary({ twin, onStart, isStarting }: SensorSummaryPropsT
         disabled={isStarting}
       >
         <PlayIcon />
-        단전 시뮬레이션 (4시간 단전 → 복구)
+        4시간 단전 시뮬레이션
       </Button>
     </div>
   );

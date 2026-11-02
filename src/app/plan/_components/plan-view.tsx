@@ -42,14 +42,14 @@ function CreatePlanCard() {
   return (
     <Card className="max-w-xl">
       <CardHeader>
-        <CardTitle>공동적재 계획 생성</CardTitle>
+        <CardTitle>공동적재 계획 만들기</CardTitle>
         <CardDescription>
-          기본 시나리오(딸기 3화주 + 포도 2화주)를 최적화해 컨테이너 배정·집하 경로·정산을 만든다
+          딸기 화주 3곳과 포도 화주 2곳의 출하로 컨테이너 배정, 집하 경로, 정산을 만듭니다.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex items-center gap-3">
         <Button onClick={() => mutate()} disabled={isPending}>
-          {isPending ? '최적화 중' : '계획 생성'}
+          {isPending ? '계획 짜는 중' : '계획 만들기'}
         </Button>
         {isError && <p className="text-sm text-destructive">계획을 만들지 못했습니다.</p>}
       </CardContent>
