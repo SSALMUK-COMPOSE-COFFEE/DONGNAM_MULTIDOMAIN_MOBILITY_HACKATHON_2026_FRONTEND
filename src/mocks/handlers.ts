@@ -2,17 +2,53 @@ import { HttpResponse, delay, http, sse } from 'msw';
 
 import { SIMULATION_INTERVAL_SECONDS } from '@/consts/demo';
 import alertsFixture from '@/mocks/fixtures/alerts.json';
+import orderForwarderConfirmedFixture from '@/mocks/fixtures/order-forwarder-confirmed.json';
+import orderProposedFixture from '@/mocks/fixtures/order-proposed.json';
+import orderShipperConfirmedFixture from '@/mocks/fixtures/order-shipper-confirmed.json';
+import planAppliedFixture from '@/mocks/fixtures/plan-applied.json';
+import planCommittedFixture from '@/mocks/fixtures/plan-committed.json';
 import planSessionFixture from '@/mocks/fixtures/plan-session.json';
+import replanReduceFixture from '@/mocks/fixtures/replan-reduce.json';
 import twinFixture from '@/mocks/fixtures/twin.json';
-import type { AlertT, PlanSessionT, TwinStateT } from '@/types/api';
+import type {
+  AlertT,
+  ConfirmRequestT,
+  ExecutionOrderT,
+  PlanSessionT,
+  ReplanResponseT,
+  TwinStateT,
+} from '@/types/api';
 
 /**
  * 백엔드가 죽었을 때 쓰는 시연 백업.
  * fixtures 는 실제 백엔드 응답을 그대로 저장한 것이다 (기본 시나리오 + 4시간 단전 시뮬레이션).
  */
-const planSession = planSessionFixture as unknown as PlanSessionT;
 const twin = twinFixture as unknown as TwinStateT;
 const alerts = alertsFixture.alerts as unknown as AlertT[];
+
+/**
+ * 취소 재최적화 시연(산청 5→3, 당겨 채우기 적용 → 밀양 수락 → 포워더 확정)을 그대로 재생한다.
+ * 계획 v1 → 적용(v2 확정 대기) → 확정(v2) 순서로 상태만 넘긴다
+ */
+const planSessions = {
+  initial: planSessionFixture as unknown as PlanSessionT,
+  applied: planAppliedFixture as unknown as PlanSessionT,
+  committed: planCommittedFixture as unknown as PlanSessionT,
+};
+const replanReduce = replanReduceFixture as unknown as ReplanResponseT;
+const orderStages = {
+  proposed: orderProposedFixture as unknown as ExecutionOrderT,
+  shipperConfirmed: orderShipperConfirmedFixture as unknown as ExecutionOrderT,
+  forwarderConfirmed: orderForwarderConfirmedFixture as unknown as ExecutionOrderT,
+};
+
+let planStage: keyof typeof planSessions = 'initial';
+let currentOrder: ExecutionOrderT | null = null;
+
+const resetPlanStage = () => {
+  planStage = 'initial';
+  currentOrder = null;
+};
 
 const TICK_MS = SIMULATION_INTERVAL_SECONDS * 1_000;
 
@@ -27,14 +63,45 @@ const getPlayedCount = () =>
 export const handlers = [
   http.post('*/api/plans', async () => {
     await delay(600);
+    resetPlanStage();
 
-    return HttpResponse.json(planSession, { status: 201 });
+    return HttpResponse.json(planSessions.initial, { status: 201 });
   }),
 
-  http.get('*/api/plans/:planId', () => HttpResponse.json(planSession)),
+  http.get('*/api/plans/:planId', () => HttpResponse.json(planSessions[planStage])),
+
+  http.post('*/api/plans/:planId/events', async () => {
+    await delay(300);
+
+    return HttpResponse.json(replanReduce);
+  }),
+
+  http.post('*/api/plans/:planId/apply', () => {
+    planStage = 'applied';
+    currentOrder = orderStages.proposed;
+
+    return HttpResponse.json(planSessions.applied);
+  }),
+
+  http.get('*/api/plans/:planId/orders', () =>
+    HttpResponse.json(currentOrder ? [currentOrder] : [])
+  ),
+
+  http.post('*/api/plans/:planId/orders/:orderId/confirm', async ({ request }) => {
+    const { actor } = (await request.json()) as ConfirmRequestT;
+    if (actor === 'forwarder') {
+      planStage = 'committed';
+      currentOrder = orderStages.forwarderConfirmed;
+    } else {
+      currentOrder = orderStages.shipperConfirmed;
+    }
+
+    return HttpResponse.json(currentOrder);
+  }),
 
   http.post('*/api/demo/reset', () => {
     simulationStartedAt = null;
+    resetPlanStage();
 
     return HttpResponse.json({ cleared_sessions: 1 });
   }),
