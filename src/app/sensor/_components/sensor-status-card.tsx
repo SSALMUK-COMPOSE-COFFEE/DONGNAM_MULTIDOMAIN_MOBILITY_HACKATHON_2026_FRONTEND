@@ -39,39 +39,52 @@ export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) 
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         {twin && current ? (
-          <>
-            <div className="grid grid-cols-4 gap-4">
-              <Stat
-                label="지금 품온"
-                value={`${current.temp_c}℃`}
-                isAlert={current.excursion_c > 0}
-                note={`적정 ${twin.excursion.band_min_c}~${twin.excursion.band_max_c}℃`}
-              />
-              <Stat
-                label="누적 단전"
-                value={`${twin.outage.cumulative_minutes}분`}
-                isAlert={twin.outage.cumulative_minutes > 0}
-                note={`실증 노선 ${twin.outage.reference_minutes}분 · 보험 ${twin.outage.insurance_threshold_minutes}분`}
-              />
-              <Stat
-                label="최고 품온"
-                value={`${twin.excursion.max_temp_c}℃`}
-                isAlert={twin.excursion.minutes_above_band > 0}
-                note={`적정 초과 ${twin.excursion.minutes_above_band}분`}
-              />
-              <Stat
-                label="센서 기준 손실률"
-                value={formatPercent(twin.loss.sensor_loss_rate)}
-                isAlert={twin.loss.sensor_loss_rate > twin.loss.no_outage_loss_rate}
-                note={`단전 없을 때 ${formatPercent(twin.loss.no_outage_loss_rate)}`}
-              />
+          <div className="grid grid-cols-[260px_1fr] gap-8">
+            <div className="flex flex-col gap-6">
+              <div>
+                <p className="text-muted-foreground">지금 품온</p>
+                <p
+                  className={cn(
+                    'text-6xl font-black num tracking-tight',
+                    current.excursion_c > 0 ? 'text-berry' : 'text-navy'
+                  )}
+                >
+                  {current.temp_c}
+                  <span className="text-3xl font-bold">℃</span>
+                </p>
+                <p className="mt-1 text-sm num text-muted-foreground">
+                  적정 {twin.excursion.band_min_c}~{twin.excursion.band_max_c}℃
+                </p>
+              </div>
+
+              <dl className="flex flex-col gap-4 border-t border-line pt-5">
+                <Fact
+                  label="누적 단전"
+                  value={`${twin.outage.cumulative_minutes}분`}
+                  isAlert={twin.outage.cumulative_minutes > 0}
+                  note={`실증 노선 ${twin.outage.reference_minutes}분, 보험 기준 ${twin.outage.insurance_threshold_minutes}분`}
+                />
+                <Fact
+                  label="최고 품온"
+                  value={`${twin.excursion.max_temp_c}℃`}
+                  isAlert={twin.excursion.minutes_above_band > 0}
+                  note={`적정 범위를 ${twin.excursion.minutes_above_band}분 넘김`}
+                />
+                <Fact
+                  label="센서 기준 손실률"
+                  value={formatPercent(twin.loss.sensor_loss_rate)}
+                  isAlert={twin.loss.sensor_loss_rate > twin.loss.no_outage_loss_rate}
+                  note={`단전이 없으면 ${formatPercent(twin.loss.no_outage_loss_rate)}`}
+                />
+              </dl>
             </div>
+
             <TemperatureChart
               timeline={twin.timeline}
               bandMin={twin.excursion.band_min_c}
               bandMax={twin.excursion.band_max_c}
             />
-          </>
+          </div>
         ) : (
           <p className="text-muted-foreground">
             시뮬레이션을 시작하면 품온·전원·손실이 1초마다 갱신됩니다.
@@ -82,19 +95,21 @@ export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) 
   );
 }
 
-type StatPropsT = {
+type FactPropsT = {
   label: string;
   value: ReactNode;
   note: string;
   isAlert: boolean;
 };
 
-function Stat({ label, value, note, isAlert }: StatPropsT) {
+function Fact({ label, value, note, isAlert }: FactPropsT) {
   return (
-    <div className="rounded-2xl bg-panel px-5 py-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className={cn('text-3xl font-bold num', isAlert ? 'text-berry' : 'text-navy')}>{value}</p>
-      <p className="mt-1 text-xs num text-muted-foreground">{note}</p>
+    <div>
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className={cn('text-2xl font-bold num', isAlert ? 'text-berry' : 'text-navy')}>
+        {value}
+      </dd>
+      <dd className="text-xs num text-muted-foreground">{note}</dd>
     </div>
   );
 }

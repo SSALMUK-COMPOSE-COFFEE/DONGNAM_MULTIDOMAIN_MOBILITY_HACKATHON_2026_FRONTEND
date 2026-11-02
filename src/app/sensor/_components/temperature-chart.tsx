@@ -41,7 +41,7 @@ const getOutageRanges = (timeline: TimelinePointT[]) => {
 export function TemperatureChart({ timeline, bandMin, bandMax }: TemperatureChartPropsT) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="h-80">
+      <div className="h-96">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={timeline}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
