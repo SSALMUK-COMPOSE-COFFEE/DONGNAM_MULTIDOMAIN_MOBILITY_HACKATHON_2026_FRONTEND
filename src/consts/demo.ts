@@ -10,3 +10,12 @@ export const SIMULATION_INTERVAL_SECONDS = 0.5;
 /** 시연 ② 취소 재최적화: 산청 딸기 5 → 3파렛트 (2파렛트 취소) */
 export const DEMO_REDUCE_LOT_ID = 'lot-sancheong-sb-1';
 export const DEMO_REDUCE_TO_PALLETS = 3;
+
+/** 시연 ① 출하 입력: 산청 딸기 2파렛트, 11/17 출하, 홍콩 (백엔드 시연 스크립트 1단계) */
+export const DEMO_INTAKE = {
+  product: 'strawberry',
+  pallets: 2,
+  ready_date: '2026-11-17',
+  shipper: 'sh-sancheong',
+  destination: 'HKHKG',
+} as const;

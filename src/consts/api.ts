@@ -4,6 +4,9 @@ export const API_BASE_URL =
 export const IS_API_MOCKING = process.env.NEXT_PUBLIC_API_MOCKING === 'enabled';
 
 export const ENDPOINTS = {
+  SCENARIO: (scenarioId: string) => `/api/scenarios/${scenarioId}`,
+  INTAKE_LOTS: '/api/intake/lots',
+
   PLANS: '/api/plans',
   PLAN: (planId: string) => `/api/plans/${planId}`,
   PLAN_EVENTS: (planId: string) => `/api/plans/${planId}/events`,

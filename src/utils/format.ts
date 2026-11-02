@@ -17,3 +17,11 @@ export const formatSignedManwon = (krw: number | null | undefined) => {
 
   return `${krw > 0 ? '+' : '−'}${formatManwon(Math.abs(krw))}`;
 };
+
+/** '2026-11-21' → '11/21' */
+export const formatMonthDay = (date: string | null | undefined) =>
+  date ? `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}` : EMPTY;
+
+/** '2026-11-18T18:00:00+09:00' → '11/18 18:00' (백엔드는 한국 시각 오프셋으로 보낸다) */
+export const formatMonthDayTime = (dateTime: string | null | undefined) =>
+  dateTime ? `${formatMonthDay(dateTime)} ${dateTime.slice(11, 16)}` : EMPTY;
