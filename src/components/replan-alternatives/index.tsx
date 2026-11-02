@@ -29,6 +29,8 @@ type ReplanAlternativesPropsT = {
   appliedId: AlternativeIdT | null;
   applyingId: AlternativeIdT | null;
   onApply: (alternativeId: AlternativeIdT) => void;
+  /** 비용 변화의 기준. 기본은 '지금 계획 대비' */
+  costDeltaLabel?: string;
 };
 
 /** 재최적화 대안 3개(당겨 채우기·다음 배 이월·그대로 출항)를 비용·적재·화주 영향으로 비교한다 */
@@ -39,6 +41,7 @@ export function ReplanAlternatives({
   appliedId,
   applyingId,
   onApply,
+  costDeltaLabel = '지금 계획 대비 총비용 변화',
 }: ReplanAlternativesPropsT) {
   return (
     <div className="flex flex-col gap-5">
@@ -60,6 +63,7 @@ export function ReplanAlternatives({
             isApplied={alternative.id === appliedId}
             isApplying={alternative.id === applyingId}
             isLocked={!!appliedId || !!applyingId}
+            costDeltaLabel={costDeltaLabel}
             onApply={() => onApply(alternative.id)}
           />
         ))}
@@ -76,6 +80,7 @@ type AlternativeCardPropsT = {
   isApplied: boolean;
   isApplying: boolean;
   isLocked: boolean;
+  costDeltaLabel: string;
   onApply: () => void;
 };
 
@@ -87,6 +92,7 @@ function AlternativeCard({
   isApplied,
   isApplying,
   isLocked,
+  costDeltaLabel,
   onApply,
 }: AlternativeCardPropsT) {
   const { label, feasible, infeasible_reasons, cost_delta, plan, diff } = alternative;
@@ -108,7 +114,7 @@ function AlternativeCard({
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-5">
         <div>
-          <p className="text-sm text-muted-foreground">전체 총비용 변화</p>
+          <p className="text-sm text-muted-foreground">{costDeltaLabel}</p>
           <p className={cn('text-3xl font-bold num', cost_delta <= 0 ? 'text-ok' : 'text-berry')}>
             {formatSignedManwon(cost_delta)}
             <span className="ml-1 text-base font-medium text-muted-foreground">만 원</span>
