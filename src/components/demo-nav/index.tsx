@@ -4,6 +4,7 @@ import { cn } from 'cn';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { DemoResetButton } from '@/components/demo-reset-button';
 import { Badge } from '@/components/ui/badge';
 import { IS_API_MOCKING } from '@/consts/api';
 import { DEMO_NAV } from '@/consts/route';
@@ -19,7 +20,7 @@ export function DemoNav() {
           <span className="text-brand">≈</span>
         </Link>
 
-        <nav className="flex gap-6">
+        <nav className="flex gap-3">
           {DEMO_NAV.map(({ href, step, label }) => (
             <Link
               key={href}
@@ -43,11 +44,10 @@ export function DemoNav() {
           ))}
         </nav>
 
-        {IS_API_MOCKING && (
-          <Badge variant="secondary" className="ml-auto">
-            목업 데이터
-          </Badge>
-        )}
+        <div className="ml-auto flex items-center gap-3">
+          {IS_API_MOCKING && <Badge variant="secondary">목업 데이터</Badge>}
+          <DemoResetButton />
+        </div>
       </div>
     </header>
   );

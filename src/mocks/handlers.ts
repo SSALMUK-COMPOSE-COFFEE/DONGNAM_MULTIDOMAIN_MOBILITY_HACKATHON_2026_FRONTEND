@@ -33,6 +33,12 @@ export const handlers = [
 
   http.get('*/api/plans/:planId', () => HttpResponse.json(planSession)),
 
+  http.post('*/api/demo/reset', () => {
+    simulationStartedAt = null;
+
+    return HttpResponse.json({ cleared_sessions: 1 });
+  }),
+
   http.post('*/api/coldchain/bindings', () => HttpResponse.json({}, { status: 201 })),
 
   http.post('*/api/coldchain/simulate', () => {
