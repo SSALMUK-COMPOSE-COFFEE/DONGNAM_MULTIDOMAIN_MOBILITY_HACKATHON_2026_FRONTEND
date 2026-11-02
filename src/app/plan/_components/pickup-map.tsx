@@ -13,9 +13,9 @@ type PickupMapPropsT = {
 
 /** 화물 그룹별 경로 색. SO2 처리 포도는 딸기와 따로 싣는다 */
 const ROUTE_COLOR: Record<string, string> = {
-  grape_so2: '#2f55c4',
+  grape_so2: '#6b55d9',
 };
-const DEFAULT_ROUTE_COLOR = '#0b6a7a';
+const DEFAULT_ROUTE_COLOR = '#1a7bff';
 
 export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
   const port = scenario.ports[0];
@@ -34,7 +34,7 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <KakaoMap center={{ lat: 35.5, lng: 128.5 }} level={11} className="h-160 w-full rounded-xl">
+        <KakaoMap center={{ lat: 35.5, lng: 128.5 }} level={11} className="h-105 w-full rounded-xl">
           {truckRoutes.map(route => {
             const path = route.stops.flatMap(({ packhouse_id }) => {
               const packhouse = findPackhouse(packhouse_id);
