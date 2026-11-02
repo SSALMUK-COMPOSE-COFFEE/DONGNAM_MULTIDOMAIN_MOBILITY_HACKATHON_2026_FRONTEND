@@ -10,4 +10,4 @@ services:
         NEXT_PUBLIC_KAKAO_MAP_KEY: ${NEXT_PUBLIC_KAKAO_MAP_KEY:-}
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${HOST_PORT:-18104}:3000"
+      - '127.0.0.1:${HOST_PORT:-18104}:3000'
