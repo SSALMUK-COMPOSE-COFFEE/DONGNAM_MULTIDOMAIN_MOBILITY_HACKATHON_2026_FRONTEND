@@ -75,7 +75,7 @@ export function SurchargeCard({ result, selectedIndex, onSelect, baseline }: Sur
               {upThreshold.surcharge_per_kg.toLocaleString()}원
             </span>
             을 넘으면 항공 <span className="font-bold num">{thresholdPallets}</span>파렛트가 해상
-            공동적재로 바뀐다
+            공동적재로 바뀝니다
           </p>
         )}
 

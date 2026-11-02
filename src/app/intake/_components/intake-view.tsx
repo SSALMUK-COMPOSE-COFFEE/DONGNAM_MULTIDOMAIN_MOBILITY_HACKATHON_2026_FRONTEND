@@ -78,7 +78,7 @@ export function IntakeView() {
                 .catch(() => toast.error('계획을 만들지 못했습니다.'))
             }
           >
-            {createPlan.isPending ? 'AI가 최적화하는 중' : '이 출하들로 공동적재 계획 만들기'}
+            {createPlan.isPending ? '계획 짜는 중' : '이 출하들로 공동적재 계획 만들기'}
             <ArrowRightIcon />
           </Button>
         </CardContent>

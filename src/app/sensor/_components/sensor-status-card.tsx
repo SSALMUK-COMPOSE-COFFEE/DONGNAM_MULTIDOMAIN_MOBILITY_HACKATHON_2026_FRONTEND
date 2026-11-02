@@ -87,7 +87,7 @@ export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) 
           </div>
         ) : (
           <p className="text-muted-foreground">
-            시뮬레이션을 시작하면 품온·전원·손실이 1초마다 갱신됩니다.
+            시뮬레이션을 시작하면 품온과 전원, 손실이 1초마다 바뀝니다.
           </p>
         )}
       </CardContent>

@@ -16,7 +16,10 @@ export default function KakaoMap(props: KakaoMapPropsT) {
   // 키 없이 SDK를 부르면 401 재시도가 반복되므로 키가 있을 때만 로더를 쓴다
   if (!KAKAO_MAP_KEY) {
     return (
-      <MapNotice className={props.className} message="NEXT_PUBLIC_KAKAO_MAP_KEY 가 없습니다" />
+      <MapNotice
+        className={props.className}
+        message="카카오맵 키(NEXT_PUBLIC_KAKAO_MAP_KEY)가 없습니다."
+      />
     );
   }
 
@@ -30,7 +33,7 @@ function LoadedKakaoMap({ className, ...props }: KakaoMapPropsT) {
     return (
       <MapNotice
         className={className}
-        message="카카오맵을 불러오지 못했습니다 (키·도메인 등록 확인)"
+        message="카카오맵을 불러오지 못했습니다. 키와 도메인 등록을 확인하세요."
       />
     );
   }
