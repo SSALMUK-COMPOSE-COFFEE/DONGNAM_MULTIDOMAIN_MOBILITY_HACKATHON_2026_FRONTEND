@@ -17,11 +17,16 @@
 
 - 타입은 `XxxT` 접미사, API 함수는 `apis/getXxx.ts` 에 `xxxQueryOptions` 와 함께 둔다
 - 엔드포인트는 `consts/api.ts` 의 `ENDPOINTS` 에만 쓴다
-- 외부에서 오는 실시간 데이터(WebSocket)는 Zod 스키마로 검증한다
 - 브라우저 전용 라이브러리는 `next/dynamic` 의 `ssr: false` 로 불러온다 (`msw/browser` 등)
 - `undefined` 리터럴 사용 금지 (ESLint `no-undefined`)
 
-## API 계약
+## API
 
-FE가 주도한다. 화면을 그리며 `types/` 와 `mocks/fixtures/` 를 정하고 백엔드(FastAPI)에 넘긴다.
-camelCase, 금액은 원 단위 정수, 시각은 ISO 8601.
+백엔드 OpenAPI가 기준이다 (https://freshswitch.ssalhub.xyz/api/docs, 모든 경로 `/api` 접두사).
+
+- 타입은 손으로 쓰지 않는다. `pnpm gen:api` 로 `types/openapi.d.ts` 를 만들고 `types/api.ts` 에서 `SchemaT<'Name'>` 별칭을 쓴다
+- 필드는 snake_case 그대로 쓴다. 금액은 원 단위 정수, 시각은 ISO 8601
+- 생성 타입의 `| null` 은 실제로 null 이 온다. 단언하지 말고 처리한다
+- 실시간: 알림은 SSE(`useAlertStream`), 디지털 트윈은 1초 폴링. WebSocket 은 없다
+- 시연 흐름은 `GET /api/demo/script` 를 따른다
+- `mocks/fixtures/` 는 실제 응답을 저장한 것이다. 백엔드 응답이 바뀌면 다시 저장한다
