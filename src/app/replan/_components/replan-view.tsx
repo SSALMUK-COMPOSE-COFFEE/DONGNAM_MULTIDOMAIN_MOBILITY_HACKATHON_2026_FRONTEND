@@ -9,7 +9,7 @@ import { ExecutionOrderPanel } from '@/components/execution-order';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -60,12 +60,10 @@ function ReplanWorkspace({ session }: { session: PlanSessionT }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-[440px_1fr] gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>변동 입력</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
+      <Card>
+        <CardContent className="grid grid-cols-[400px_1fr] items-start gap-10">
+          <div className="flex flex-col gap-5">
+            <h2 className="text-2xl font-bold">변동 입력</h2>
             <Select value={lotId} onValueChange={setLotId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="로트 선택" />
@@ -112,30 +110,24 @@ function ReplanWorkspace({ session }: { session: PlanSessionT }) {
               {flow.isReplanning
                 ? '다시 짜는 중'
                 : `${lot ? getShipperShortName(scenario, lot.shipper_id) : ''} ${
-                    clampedPallets === 0
-                      ? '전량 취소'
-                      : `${(lot?.pallets ?? 0) - clampedPallets}파렛트 취소`
-                  } → 재최적화`}
+                    clampedPallets === 0 ? '전량' : `${(lot?.pallets ?? 0) - clampedPallets}파렛트`
+                  } 취소하고 다시 짜기`}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <div className="flex flex-col gap-5 border-l border-line pl-10">
+            <h2 className="flex items-center gap-2 text-2xl font-bold">
               지금 계획
               {session.status === 'pending_confirmation' && (
                 <Badge className="bg-air">확정 대기</Badge>
               )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h2>
             {container && (
               <ContainerLoadBar container={container} plan={plan} scenario={scenario} />
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {flow.replanResult && (
         <ReplanAlternatives

@@ -12,15 +12,7 @@ type IntakePreviewPropsT = {
 
 /** 등록 즉시 보여주는 결과: 자동으로 채운 값, 실을 수 있는 배, 항공 가능 여부, 혼적 경고 */
 export function IntakePreview({ preview }: IntakePreviewPropsT) {
-  if (!preview) {
-    return (
-      <Card className="justify-center">
-        <CardContent className="py-16 text-center text-lg text-muted-foreground">
-          등록하면 실을 수 있는 배와 항공 가능 여부를 바로 알려줍니다
-        </CardContent>
-      </Card>
-    );
-  }
+  if (!preview) return <IntakePreviewPlaceholder />;
 
   const { lot, resolved, defaults_applied, hints } = preview;
   const earliestContainerId = hints.earliest_feasible?.container_id;
@@ -39,16 +31,18 @@ export function IntakePreview({ preview }: IntakePreviewPropsT) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-panel p-4">
-            <p className="text-sm text-muted-foreground">판매기한 (자동)</p>
-            <p className="text-2xl font-bold num">{formatMonthDay(lot.sell_by_date)}</p>
-          </div>
-          <div className="rounded-2xl bg-panel p-4">
-            <p className="text-sm text-muted-foreground">로트 번호 (자동)</p>
-            <p className="text-lg font-bold num break-all">{lot.id}</p>
-          </div>
-        </div>
+        <p className="flex flex-wrap gap-x-8 gap-y-1 text-muted-foreground">
+          <span>
+            판매기한{' '}
+            <span className="text-xl font-bold num text-foreground">
+              {formatMonthDay(lot.sell_by_date)}
+            </span>
+          </span>
+          <span>
+            로트 번호 <span className="font-bold num text-foreground">{lot.id}</span>
+          </span>
+          <span className="text-sm">둘 다 자동으로 채움</span>
+        </p>
 
         <section className="flex flex-col gap-2">
           <h3 className="flex items-center gap-2 font-bold">
@@ -119,6 +113,35 @@ export function IntakePreview({ preview }: IntakePreviewPropsT) {
             <li key={text}>· {text}</li>
           ))}
         </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
+const PLACEHOLDER_ROWS = [
+  { icon: ShipIcon, label: '실을 수 있는 배', note: '컨테이너 · 출항 · 도착' },
+  { icon: PlaneIcon, label: '항공', note: '판매기한 안에 닿는지' },
+  { icon: TriangleAlertIcon, label: '혼적 경고', note: '같이 실으면 안 되는 품목' },
+];
+
+/** 등록 전: 결과가 들어올 자리를 미리 보여준다 */
+function IntakePreviewPlaceholder() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-muted-foreground">등록하면 여기에 바로 나온다</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        {PLACEHOLDER_ROWS.map(({ icon: Icon, label, note }) => (
+          <div
+            key={label}
+            className="flex items-center gap-3 rounded-xl border-2 border-dashed border-line px-5 py-5"
+          >
+            <Icon className="size-5 text-slate" />
+            <span className="font-bold text-slate">{label}</span>
+            <span className="ml-auto text-sm text-muted-foreground">{note}</span>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );
