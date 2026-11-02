@@ -5,8 +5,6 @@ import { clientApi } from '@/apis/client';
 import { ENDPOINTS } from '@/consts/api';
 import type { TwinStateT } from '@/types/api';
 
-const POLLING_INTERVAL_MS = 1_000;
-
 /** 손실 디지털 트윈. 아직 측정값이 없으면 404 이므로 null 로 돌려준다 */
 export const getColdchainContainer = async (containerId: string) => {
   try {
@@ -19,10 +17,10 @@ export const getColdchainContainer = async (containerId: string) => {
   }
 };
 
+/** 폴링 간격은 화면이 정한다 (측정값이 바뀌는 동안만 빠르게) */
 export const coldchainContainerQueryOptions = (containerId: string) =>
   queryOptions({
     queryKey: ['coldchain', 'containers', containerId],
     queryFn: () => getColdchainContainer(containerId),
-    refetchInterval: POLLING_INTERVAL_MS,
     staleTime: 0,
   });
