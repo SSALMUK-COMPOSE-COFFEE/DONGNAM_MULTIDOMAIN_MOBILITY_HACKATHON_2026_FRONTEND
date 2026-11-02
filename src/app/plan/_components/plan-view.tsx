@@ -8,6 +8,7 @@ import { ContainerCard } from '@/app/plan/_components/container-card';
 import { PickupMap } from '@/app/plan/_components/pickup-map';
 import { PlanSummary } from '@/app/plan/_components/plan-summary';
 import { SettlementTable } from '@/app/plan/_components/settlement-table';
+import { TariffCard } from '@/app/plan/_components/tariff-card';
 import { PlanLoadError } from '@/components/plan-load-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,17 +79,25 @@ function PlanDetail({ session }: { session: PlanSessionT }) {
     <div className="flex flex-col gap-6">
       <PlanSummary plan={plan} />
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-[1fr_560px] gap-6">
+        <div className="flex flex-col gap-6">
           <ContainerCard
             containers={usedContainers}
             assignments={plan.assignments}
             scenario={scenario}
           />
-          <SettlementTable settlements={plan.settlements} scenario={scenario} />
+          <SettlementTable
+            containerSettlements={plan.container_settlements ?? []}
+            scenario={scenario}
+          />
         </div>
 
-        <PickupMap scenario={scenario} voyagePickups={session.routes} />
+        <div className="flex flex-col gap-6">
+          {plan.settlement_tariffs?.map(tariff => (
+            <TariffCard key={tariff.product_id} tariff={tariff} scenario={scenario} />
+          ))}
+          <PickupMap scenario={scenario} voyagePickups={session.routes} />
+        </div>
       </div>
     </div>
   );

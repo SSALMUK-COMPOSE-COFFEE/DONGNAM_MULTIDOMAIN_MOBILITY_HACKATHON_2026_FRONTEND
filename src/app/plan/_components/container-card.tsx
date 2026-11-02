@@ -1,6 +1,7 @@
 import { PalletBar } from '@/components/pallet-bar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ContainerLoadT, ScenarioT, SchemaT } from '@/types/api';
+import { getShipperShortName } from '@/utils/scenario';
 
 /** 같은 컨테이너 안의 화주 색. 딸기는 파랑 계열, SO2 처리 포도는 보라 계열 */
 const SHIPPER_COLORS = ['bg-navy', 'bg-brand', 'bg-cyan'];
@@ -55,17 +56,12 @@ function ContainerLoad({
     ? SO2_SHIPPER_COLORS
     : SHIPPER_COLORS;
 
-  const segments = loads.map(({ lot_id, shipper_id, pallets }, index) => {
-    const shipperName = scenario.shippers.find(({ id }) => id === shipper_id)?.name ?? shipper_id;
-
-    return {
-      key: lot_id,
-      // '진주 딸기 수출농가 A' → '진주'
-      label: shipperName.split(' ')[0],
-      pallets,
-      colorClassName: colors[index % colors.length],
-    };
-  });
+  const segments = loads.map(({ lot_id, shipper_id, pallets }, index) => ({
+    key: lot_id,
+    label: getShipperShortName(scenario, shipper_id),
+    pallets,
+    colorClassName: colors[index % colors.length],
+  }));
 
   return (
     <PalletBar

@@ -10,6 +10,9 @@ export type PlanSessionT = SchemaT<'PlanSession'>;
 export type CreatePlanRequestT = SchemaT<'CreatePlanRequest'>;
 export type ContainerLoadT = SchemaT<'ContainerLoad'>;
 export type ScenarioT = SchemaT<'Scenario'>;
+export type PlanT = SchemaT<'Plan'>;
+export type ContainerSettlementT = SchemaT<'ContainerSettlement'>;
+export type TariffSheetT = SchemaT<'TariffSheet'>;
 
 export type BindingRequestT = SchemaT<'BindingRequest'>;
 export type SimulationRequestT = SchemaT<'SimulationRequest'>;
