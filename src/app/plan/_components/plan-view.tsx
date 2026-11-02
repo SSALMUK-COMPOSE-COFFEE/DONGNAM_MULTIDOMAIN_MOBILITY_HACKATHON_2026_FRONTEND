@@ -80,14 +80,11 @@ function PlanDetail({ session }: { session: PlanSessionT }) {
 
       <div className="grid grid-cols-2 gap-6">
         <div className="flex flex-col gap-4">
-          {usedContainers.map(container => (
-            <ContainerCard
-              key={container.container_id}
-              container={container}
-              assignments={plan.assignments}
-              scenario={scenario}
-            />
-          ))}
+          <ContainerCard
+            containers={usedContainers}
+            assignments={plan.assignments}
+            scenario={scenario}
+          />
           <SettlementTable settlements={plan.settlements} scenario={scenario} />
         </div>
 

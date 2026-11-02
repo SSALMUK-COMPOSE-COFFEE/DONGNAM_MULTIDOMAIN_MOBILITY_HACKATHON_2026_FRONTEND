@@ -41,6 +41,7 @@
   - 팔레트: `navy`(주 색·배지·배너), `brand`(파랑 강조), `cyan`, `grape`·`grape-soft`(포도), `slate`(비교에서 진 쪽), `line`(테두리)
   - 의미: `sea`(해상·주 경로), `air`(항공·대안), `berry`(문제·위험), `gov`(정책·데이터), `ok`(정상·절감)
   - 화주 구분: 딸기는 `navy` → `brand` → `cyan`, 포도는 `grape` → `grape-soft`
+- 컨테이너 적재는 `components/pallet-bar` 의 파렛트 칸 막대로 보여준다
 - 숫자는 `num` 유틸리티(tabular-nums)로 표시한다. 금액은 `utils/format.ts` 로 만 원 단위 표시
 - 예시 수치는 화면에 "예시", 우리가 정한 값은 "가정"으로 표시한다
 - 화면 문구와 주석은 한국어로 쓴다
