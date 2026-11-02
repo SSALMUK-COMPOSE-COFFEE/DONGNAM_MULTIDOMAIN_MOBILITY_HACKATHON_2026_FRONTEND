@@ -19,3 +19,6 @@ export const DEMO_INTAKE = {
   shipper: 'sh-sancheong',
   destination: 'HKHKG',
 } as const;
+
+/** 시연 ③ 항공 전환: 판매 기간이 짧아진 산청 딸기를 항공으로 (백엔드 시연 스크립트 5단계) */
+export const DEMO_AIR_SWITCH_LOT_ID = 'lot-sancheong-sb-1';
