@@ -1,94 +1,85 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { MapMarker, Polyline } from 'react-kakao-maps-sdk';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { planQueryOptions } from '@/apis/getPlan';
-import KakaoMap from '@/components/kakao-map';
-import { Badge } from '@/components/ui/badge';
+import { postPlan } from '@/apis/postPlan';
+import { ContainerCard } from '@/app/plan/_components/container-card';
+import { PickupMap } from '@/app/plan/_components/pickup-map';
+import { PlanSummary } from '@/app/plan/_components/plan-summary';
+import { SettlementTable } from '@/app/plan/_components/settlement-table';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { ContainerT } from '@/types/plan';
-
-const DEMO_PLAN_ID = 'demo-plan';
-
-/** 선과장 집하 순서 (예시 좌표) */
-const PICKUP_ROUTE = [
-  { name: '산청 선과장', lat: 35.4156, lng: 127.8734 },
-  { name: '진주 선과장', lat: 35.18, lng: 128.1076 },
-  { name: '밀양 선과장', lat: 35.5038, lng: 128.7467 },
-  { name: '부산신항', lat: 35.0746, lng: 128.8183 },
-];
+import { DEMO_SCENARIO_ID } from '@/consts/demo';
+import { usePlanStore } from '@/stores/usePlanStore';
 
 export function PlanView() {
-  const { data: plan, isPending, isError } = useQuery(planQueryOptions(DEMO_PLAN_ID));
+  const planId = usePlanStore(state => state.planId);
 
-  if (isError) return <p className="text-destructive">운송계획을 불러오지 못했습니다.</p>;
+  if (!planId) return <CreatePlanCard />;
+
+  return <PlanDetail planId={planId} />;
+}
+
+function CreatePlanCard() {
+  const queryClient = useQueryClient();
+  const setPlanId = usePlanStore(state => state.setPlanId);
+
+  const { mutate, isPending, isError } = useMutation({
+    mutationFn: () => postPlan({ scenario_id: DEMO_SCENARIO_ID, use_learned_loss: false }),
+    onSuccess: session => {
+      queryClient.setQueryData(planQueryOptions(session.plan_id).queryKey, session);
+      setPlanId(session.plan_id);
+    },
+  });
 
   return (
-    <div className="grid grid-cols-[1fr_1fr] gap-6">
-      <section className="flex flex-col gap-4">
-        {isPending ? (
-          <>
-            <Skeleton className="h-36" />
-            <Skeleton className="h-36" />
-          </>
-        ) : (
-          plan.containers.map(container => (
-            <ContainerCard key={container.id} container={container} />
-          ))
-        )}
-      </section>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>선과장 집하 경로 · 트럭 T1</CardTitle>
-          <CardDescription>예시 좌표</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <KakaoMap center={{ lat: 35.3, lng: 128.3 }} level={10} className="h-[420px] w-full">
-            {PICKUP_ROUTE.map(({ name, lat, lng }) => (
-              <MapMarker key={name} position={{ lat, lng }} title={name} />
-            ))}
-            <Polyline
-              path={PICKUP_ROUTE.map(({ lat, lng }) => ({ lat, lng }))}
-              strokeWeight={4}
-              strokeColor="#0b6a7a"
-              strokeOpacity={0.9}
-            />
-          </KakaoMap>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="max-w-xl">
+      <CardHeader>
+        <CardTitle>공동적재 계획 생성</CardTitle>
+        <CardDescription>
+          기본 시나리오(딸기 3화주 + 포도 2화주)를 최적화해 컨테이너 배정·집하 경로·정산을 만든다
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex items-center gap-3">
+        <Button onClick={() => mutate()} disabled={isPending}>
+          {isPending ? '최적화 중' : '계획 생성'}
+        </Button>
+        {isError && <p className="text-sm text-destructive">계획을 만들지 못했습니다.</p>}
+      </CardContent>
+    </Card>
   );
 }
 
-function ContainerCard({ container }: { container: ContainerT }) {
-  const loaded = container.allocations.reduce((sum, { pallets }) => sum + pallets, 0);
-  const loadRate = Math.round((loaded / container.capacityPallets) * 100);
+function PlanDetail({ planId }: { planId: string }) {
+  const { data: session, isPending, isError } = useQuery(planQueryOptions(planId));
+
+  if (isError) return <p className="text-destructive">운송계획을 불러오지 못했습니다.</p>;
+  if (isPending) return <Skeleton className="h-96" />;
+
+  const { plan, scenario } = session;
+  const usedContainers = plan.containers.filter(container => container.used);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {container.id} · {container.destination}행
-          <Badge variant="secondary">{container.item === 'strawberry' ? '딸기' : '포도'}</Badge>
-        </CardTitle>
-        <CardDescription className="num">
-          {loaded} / {container.capacityPallets} 파렛트 · {loadRate}%
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <Progress value={loadRate} />
-        <div className="flex gap-2">
-          {container.allocations.map(({ shipperId, shipperName, pallets }) => (
-            <Badge key={shipperId} variant="outline">
-              {shipperName} <span className="num">{pallets}</span>
-            </Badge>
+    <div className="flex flex-col gap-6">
+      <PlanSummary plan={plan} />
+
+      <div className="grid grid-cols-2 gap-6">
+        <div className="flex flex-col gap-4">
+          {usedContainers.map(container => (
+            <ContainerCard
+              key={container.container_id}
+              container={container}
+              assignments={plan.assignments}
+              scenario={scenario}
+            />
           ))}
+          <SettlementTable settlements={plan.settlements} scenario={scenario} />
         </div>
-      </CardContent>
-    </Card>
+
+        <PickupMap scenario={scenario} voyagePickups={session.routes} />
+      </div>
+    </div>
   );
 }

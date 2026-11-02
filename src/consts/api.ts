@@ -1,12 +1,14 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
-export const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL ?? 'ws://localhost:8000';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? 'https://freshswitch.ssalhub.xyz';
 
 export const IS_API_MOCKING = process.env.NEXT_PUBLIC_API_MOCKING === 'enabled';
 
-/**
- * NOTE: 엔드포인트는 백엔드와 확정 전 초안이다. 확정되면 docs/api.md 와 함께 갱신한다.
- */
 export const ENDPOINTS = {
-  PLAN: (planId: string) => `/plans/${planId}`,
-  SENSOR_WS: (containerId: string) => `/ws/sensor/${containerId}`,
+  PLANS: '/api/plans',
+  PLAN: (planId: string) => `/api/plans/${planId}`,
+
+  COLDCHAIN_BINDINGS: '/api/coldchain/bindings',
+  COLDCHAIN_SIMULATE: '/api/coldchain/simulate',
+  COLDCHAIN_CONTAINER: (containerId: string) => `/api/coldchain/containers/${containerId}`,
+  COLDCHAIN_ALERTS_STREAM: '/api/coldchain/alerts/stream',
 } as const;

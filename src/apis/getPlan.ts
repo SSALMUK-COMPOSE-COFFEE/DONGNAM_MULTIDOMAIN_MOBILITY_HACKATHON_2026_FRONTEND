@@ -2,10 +2,10 @@ import { queryOptions } from '@tanstack/react-query';
 
 import { clientApi } from '@/apis/client';
 import { ENDPOINTS } from '@/consts/api';
-import type { PlanT } from '@/types/plan';
+import type { PlanSessionT } from '@/types/api';
 
 export const getPlan = async (planId: string) => {
-  const { data } = await clientApi.get<PlanT>(ENDPOINTS.PLAN(planId));
+  const { data } = await clientApi.get<PlanSessionT>(ENDPOINTS.PLAN(planId));
 
   return data;
 };
