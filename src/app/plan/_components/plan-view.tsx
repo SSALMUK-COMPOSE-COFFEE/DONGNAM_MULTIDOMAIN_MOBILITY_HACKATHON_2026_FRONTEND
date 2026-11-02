@@ -1,9 +1,5 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-import { planQueryOptions } from '@/apis/getPlan';
-import { postPlan } from '@/apis/postPlan';
 import { ContainerCard } from '@/app/plan/_components/container-card';
 import { PickupMap } from '@/app/plan/_components/pickup-map';
 import { PlanSummary } from '@/app/plan/_components/plan-summary';
@@ -13,9 +9,8 @@ import { PlanLoadError } from '@/components/plan-load-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DEMO_SCENARIO_ID } from '@/consts/demo';
+import { useCreatePlan } from '@/hooks/useCreatePlan';
 import { useCurrentPlan } from '@/hooks/useCurrentPlan';
-import { usePlanStore } from '@/stores/usePlanStore';
 import type { PlanSessionT } from '@/types/api';
 
 export function PlanView() {
@@ -42,16 +37,7 @@ export function PlanView() {
 }
 
 function CreatePlanCard() {
-  const queryClient = useQueryClient();
-  const setPlanId = usePlanStore(state => state.setPlanId);
-
-  const { mutate, isPending, isError } = useMutation({
-    mutationFn: () => postPlan({ scenario_id: DEMO_SCENARIO_ID, use_learned_loss: false }),
-    onSuccess: session => {
-      queryClient.setQueryData(planQueryOptions(session.plan_id).queryKey, session);
-      setPlanId(session.plan_id);
-    },
-  });
+  const { mutate, isPending, isError } = useCreatePlan();
 
   return (
     <Card className="max-w-xl">
