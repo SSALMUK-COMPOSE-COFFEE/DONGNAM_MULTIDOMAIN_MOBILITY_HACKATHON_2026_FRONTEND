@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { CustomOverlayMap, Polyline, useMap } from 'react-kakao-maps-sdk';
+import { Polyline, useMap } from 'react-kakao-maps-sdk';
 
 import KakaoMap from '@/components/kakao-map';
+import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ScenarioT, SchemaT } from '@/types/api';
 
@@ -41,39 +42,39 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <KakaoMap center={{ lat: 35.7, lng: 128.6 }} level={11} className="h-105 w-full rounded-xl">
-          <FitToPlaces places={places} />
-          {truckRoutes.map(route => {
-            const path = route.stops.flatMap(({ packhouse_id }) => {
-              const packhouse = findPackhouse(packhouse_id);
-              return packhouse ? [{ lat: packhouse.lat, lng: packhouse.lon }] : [];
-            });
+        <SectionErrorBoundary message="지도를 그리지 못했습니다." className="h-105">
+          <KakaoMap
+            center={{ lat: 35.7, lng: 128.6 }}
+            level={11}
+            className="h-105 w-full rounded-xl"
+          >
+            <FitToPlaces places={places} />
+            {truckRoutes.map(route => {
+              const path = route.stops.flatMap(({ packhouse_id }) => {
+                const packhouse = findPackhouse(packhouse_id);
+                return packhouse ? [{ lat: packhouse.lat, lng: packhouse.lon }] : [];
+              });
 
-            return (
-              <Polyline
-                key={`${route.truck_id}-${route.trip}`}
-                path={[...path, { lat: port.lat, lng: port.lon }]}
-                strokeWeight={4}
-                strokeColor={ROUTE_COLOR[route.cargo_group ?? ''] ?? DEFAULT_ROUTE_COLOR}
-                strokeOpacity={0.85}
-              />
-            );
-          })}
+              return (
+                <Polyline
+                  key={`${route.truck_id}-${route.trip}`}
+                  path={[...path, { lat: port.lat, lng: port.lon }]}
+                  strokeWeight={4}
+                  strokeColor={ROUTE_COLOR[route.cargo_group ?? ''] ?? DEFAULT_ROUTE_COLOR}
+                  strokeOpacity={0.85}
+                />
+              );
+            })}
 
-          {places.map(({ id, name, lat, lon }) => (
-            <CustomOverlayMap key={id} position={{ lat, lng: lon }} yAnchor={1.4}>
-              <span className="rounded-md border bg-card px-2 py-0.5 text-xs font-bold shadow-sm">
-                {name}
-              </span>
-            </CustomOverlayMap>
-          ))}
-        </KakaoMap>
+            <PlaceLabels places={places} />
+          </KakaoMap>
+        </SectionErrorBoundary>
       </CardContent>
     </Card>
   );
 }
 
-type PlaceT = { lat: number; lon: number };
+type PlaceT = { id: string; name: string; lat: number; lon: number };
 
 /**
  * 고정 중심·확대 수준으로는 상주·포항이 지도 밖으로 나가므로 모든 선과장과 항구가 들어오게 맞춘다.
@@ -86,6 +87,35 @@ function FitToPlaces({ places }: { places: PlaceT[] }) {
     const bounds = new kakao.maps.LatLngBounds();
     places.forEach(({ lat, lon }) => bounds.extend(new kakao.maps.LatLng(lat, lon)));
     map.setBounds(bounds, BOUNDS_PADDING, BOUNDS_PADDING, BOUNDS_PADDING, BOUNDS_PADDING);
+  }, [map, places]);
+
+  return null;
+}
+
+/**
+ * 선과장·항구 이름표.
+ * CustomOverlayMap 은 카카오가 관리하는 DOM 안에 React portal 로 그리는데, 숨겨진 화면(Activity)에서
+ * 계획이 바뀌어 다시 그리면 카카오가 바꿔 둔 DOM 에 끼워 넣다가 insertBefore 오류로 화면 전체가 깨졌다.
+ * 그래서 React 를 거치지 않고 카카오 API 로 직접 만들고 지운다
+ */
+function PlaceLabels({ places }: { places: PlaceT[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const overlays = places.map(({ name, lat, lon }) => {
+      const label = document.createElement('span');
+      label.className = 'rounded-md border bg-card px-2 py-0.5 text-xs font-bold shadow-sm';
+      label.textContent = name;
+
+      return new kakao.maps.CustomOverlay({
+        map,
+        position: new kakao.maps.LatLng(lat, lon),
+        content: label,
+        yAnchor: 1.4,
+      });
+    });
+
+    return () => overlays.forEach(overlay => overlay.setMap(null));
   }, [map, places]);
 
   return null;
