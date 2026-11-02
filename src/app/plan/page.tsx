@@ -7,7 +7,8 @@ export default function PlanPage() {
       <PageHeader
         step="01"
         title="운송계획"
-        description="여러 업체 출하를 한 계획으로 묶고 화주별 실제 절감액을 보여준다"
+        headline="출하 5건을 한 계획으로."
+        highlight="실제 절감액까지"
       />
       <PlanView />
     </>

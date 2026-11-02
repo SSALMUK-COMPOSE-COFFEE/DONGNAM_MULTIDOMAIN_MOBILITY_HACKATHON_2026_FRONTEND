@@ -6,7 +6,8 @@ export default function ModeSwitchPage() {
     <PageHeader
       step="04"
       title="항공 전환"
-      description="배로 가면 팔 시간이 모자랄 때 총비용으로 다시 비교한다"
+      headline="팔 시간이 모자라면"
+      highlight="항공으로 바꾼다"
     />
   );
 }
