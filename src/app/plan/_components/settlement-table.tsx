@@ -73,7 +73,7 @@ function ContainerRows({
       <TableRow className="bg-panel hover:bg-panel">
         <TableCell colSpan={7} className="font-bold text-navy">
           {container.container_id}
-          <span className="ml-2 text-xs font-medium text-muted-foreground">
+          <span className="ml-2 text-sm font-medium text-muted-foreground">
             {container.pallets}/{container.capacity_pallets} 파렛트 · {BASIS_LABEL[basis] ?? basis}
           </span>
         </TableCell>
@@ -87,11 +87,11 @@ function ContainerRows({
               {formatManwon(baseline_cost)}
             </TableCell>
             <TableCell className="text-right num">{formatManwon(shared_cost)}</TableCell>
-            <TableCell className="text-right font-semibold num">{formatManwon(savings)}</TableCell>
-            <TableCell className="text-right num">{formatManwon(fee)}</TableCell>
-            <TableCell className="text-right font-semibold num text-ok">
-              {formatManwon(shipper_gain)}
+            <TableCell className="text-right font-bold num text-ok">
+              {formatManwon(savings)}
             </TableCell>
+            <TableCell className="text-right num">{formatManwon(fee)}</TableCell>
+            <TableCell className="text-right num">{formatManwon(shipper_gain)}</TableCell>
           </TableRow>
         )
       )}
@@ -99,11 +99,11 @@ function ContainerRows({
         <TableCell colSpan={4} className="text-right text-muted-foreground">
           {container.container_id} 합계
         </TableCell>
-        <TableCell className="text-right num text-brand">
+        <TableCell className="text-right num text-ok">
           {formatManwon(container.total_savings)}
         </TableCell>
         <TableCell className="text-right num">{formatManwon(container.total_fee)}</TableCell>
-        <TableCell className="text-right num text-ok">
+        <TableCell className="text-right num">
           {formatManwon(container.total_shipper_gain)}
         </TableCell>
       </TableRow>

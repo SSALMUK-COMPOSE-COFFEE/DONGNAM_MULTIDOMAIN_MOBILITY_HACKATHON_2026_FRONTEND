@@ -68,14 +68,10 @@ export function ShockShipperTable({ shockCase, scenario }: ShockShipperTableProp
                     {formatManwon(baseline_cost)}
                   </TableCell>
                   <TableCell className="text-right">{formatManwon(plan_cost)}</TableCell>
-                  <TableCell className="text-right font-bold text-ok">
-                    {formatManwon(savings)}
-                  </TableCell>
+                  <TableCell className="text-right font-bold">{formatManwon(savings)}</TableCell>
                   <TableCell className="text-right">{formatManwon(fee)}</TableCell>
                   <TableCell className="text-right">{formatManwon(shipper_gain)}</TableCell>
-                  <TableCell
-                    className={cn('text-right font-bold', savings_delta > 0 && 'text-brand')}
-                  >
+                  <TableCell className={cn('text-right font-bold', savings_delta > 0 && 'text-ok')}>
                     {formatSignedManwon(savings_delta)}
                   </TableCell>
                 </TableRow>

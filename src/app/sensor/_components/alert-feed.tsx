@@ -6,9 +6,9 @@ import type { AlertT } from '@/types/api';
 import { formatMonthDayTime } from '@/utils/format';
 
 const LEVEL_STYLE: Record<AlertT['level'], string> = {
-  critical: 'border-berry',
-  warning: 'border-air',
-  info: 'border-ok',
+  critical: 'text-berry',
+  warning: 'text-foreground',
+  info: 'text-ok',
 };
 
 /** 실시간 알림(SSE). 최신 알림이 위로 온다 */
@@ -23,19 +23,18 @@ export function AlertFeed({ alerts }: { alerts: AlertT[] }) {
           <p className="text-sm text-muted-foreground">아직 알림이 없습니다.</p>
         ) : (
           <ScrollArea className="h-96">
-            <ul className="flex flex-col gap-2 pr-3">
+            <ul className="flex flex-col divide-y divide-line pr-3">
               {alerts.map(({ seq, level, title, message, at }) => (
-                <li
-                  key={seq}
-                  className={cn('rounded-xl border-l-4 bg-panel px-4 py-3', LEVEL_STYLE[level])}
-                >
-                  <p className="flex items-baseline justify-between gap-3 text-sm font-bold">
-                    {title}
-                    <span className="shrink-0 text-xs font-medium num text-muted-foreground">
-                      {formatMonthDayTime(at)}
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{message}</p>
+                <li key={seq} className="grid grid-cols-[3.5rem_1fr] gap-x-3 py-3">
+                  <span className="text-sm font-bold num text-muted-foreground">
+                    {formatMonthDayTime(at).slice(-5)}
+                  </span>
+                  <div>
+                    <p className={cn('font-bold', LEVEL_STYLE[level])}>
+                      {title.replace(/^CA-\d+\s*/, '')}
+                    </p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{message}</p>
+                  </div>
                 </li>
               ))}
             </ul>
