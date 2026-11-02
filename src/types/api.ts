@@ -13,6 +13,8 @@ export type ScenarioT = SchemaT<'Scenario'>;
 export type PlanT = SchemaT<'Plan'>;
 export type ContainerSettlementT = SchemaT<'ContainerSettlement'>;
 export type TariffSheetT = SchemaT<'TariffSheet'>;
+export type IntakeRequestT = SchemaT<'IntakeRequest'>;
+export type IntakePreviewT = SchemaT<'IntakePreview'>;
 
 export type PlanEventT = SchemaT<'EventRequest'>['event'];
 export type ReplanResponseT = SchemaT<'ReplanResponse'>;
