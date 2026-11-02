@@ -8,6 +8,7 @@ import { ContainerCard } from '@/app/plan/_components/container-card';
 import { PickupMap } from '@/app/plan/_components/pickup-map';
 import { PlanSummary } from '@/app/plan/_components/plan-summary';
 import { SettlementTable } from '@/app/plan/_components/settlement-table';
+import { PlanLoadError } from '@/components/plan-load-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,12 +18,24 @@ import { usePlanStore } from '@/stores/usePlanStore';
 import type { PlanSessionT } from '@/types/api';
 
 export function PlanView() {
-  const { planId, hasHydrated, data: session, isPending, isError } = useCurrentPlan();
+  const {
+    planId,
+    hasHydrated,
+    data: session,
+    isSuccess,
+    isError,
+    isExpired,
+    refetch,
+    isFetching,
+  } = useCurrentPlan();
 
   if (!hasHydrated) return <Skeleton className="h-96" />;
   if (!planId) return <CreatePlanCard />;
-  if (isError) return <p className="text-destructive">운송계획을 불러오지 못했습니다.</p>;
-  if (isPending) return <Skeleton className="h-96" />;
+  if (isError && !isExpired) {
+    return <PlanLoadError onRetry={() => refetch()} isRetrying={isFetching} />;
+  }
+  // 404 면 useCurrentPlan 이 ID를 지우고 생성 카드로 넘어간다
+  if (!isSuccess) return <Skeleton className="h-96" />;
 
   return <PlanDetail session={session} />;
 }

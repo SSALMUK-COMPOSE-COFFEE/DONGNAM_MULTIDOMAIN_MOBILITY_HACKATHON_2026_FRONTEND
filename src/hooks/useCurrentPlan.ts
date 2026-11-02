@@ -28,5 +28,5 @@ export const useCurrentPlan = () => {
     toast.info('서버에서 계획이 초기화되어 다시 생성해야 합니다.');
   }, [isExpired, clearPlan]);
 
-  return { planId, hasHydrated, ...query };
+  return { planId, hasHydrated, isExpired, ...query };
 };

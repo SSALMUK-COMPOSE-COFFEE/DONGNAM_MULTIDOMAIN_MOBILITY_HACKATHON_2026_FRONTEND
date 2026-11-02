@@ -9,6 +9,7 @@ import { coldchainContainerQueryOptions } from '@/apis/getColdchainContainer';
 import { postColdchainBinding, postColdchainSimulation } from '@/apis/postColdchainSimulation';
 import { AlertFeed } from '@/app/sensor/_components/alert-feed';
 import { TemperatureChart } from '@/app/sensor/_components/temperature-chart';
+import { PlanLoadError } from '@/components/plan-load-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +27,8 @@ import type { AlertT, TwinStateT } from '@/types/api';
 import { formatManwon, formatPercent } from '@/utils/format';
 
 export function SensorView() {
-  const { planId, hasHydrated, isSuccess } = useCurrentPlan();
+  const { planId, hasHydrated, isSuccess, isError, isExpired, refetch, isFetching } =
+    useCurrentPlan();
 
   if (!hasHydrated) return <Skeleton className="h-96" />;
   if (!planId) {
@@ -39,6 +41,10 @@ export function SensorView() {
         을 생성하세요. 센서를 계획의 컨테이너에 연결해야 손실액을 계산할 수 있습니다.
       </p>
     );
+  }
+  // 404 가 아닌 실패(네트워크·타임아웃)는 계획을 지우지 않고 다시 시도하게 한다
+  if (isError && !isExpired) {
+    return <PlanLoadError onRetry={() => refetch()} isRetrying={isFetching} />;
   }
   // 서버에 계획이 남아 있는지 확인한 뒤에 센서를 연결한다 (사라졌으면 useCurrentPlan 이 지운다)
   if (!isSuccess) return <Skeleton className="h-96" />;
