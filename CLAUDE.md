@@ -24,9 +24,9 @@
 
 ## 내부 자료
 
-- 기획서·참가신청서·디자인 프로토타입 HTML 은 `private/` 에 둔다. 폴더째 gitignore 되어 있다
+- 기획서·참가신청서·프로토타입 HTML·스타일 레퍼런스 이미지는 `private/` 에 둔다. 폴더째 gitignore 되어 있다
 - 공개 레포다. `private/` 의 파일, 팀원 개인정보(연락처·이메일), `.env.local` 은 절대 커밋하지 않는다
-- 화면 문구·수치의 근거는 `private/` 의 기획서를, 색·레이아웃은 프로토타입 HTML 을 참고한다
+- 화면 문구·수치의 근거는 `private/` 의 기획서를, 시각 스타일은 `private/style ex.png`(발표 자료)를 참고한다
 
 ## 규칙
 
@@ -35,8 +35,13 @@
 - 브랜치는 `feat/xxx`, `fix/xxx`, `chore/xxx` 로 main 에서 따고 PR 로 머지한다. main 에 푸시하면 자동 배포된다
 - 커밋 전에 `pnpm lint`, `pnpm check-types`, `pnpm format:check` 를 통과시킨다
 - `src/components/ui/` 는 shadcn CLI 생성물이다. 가능하면 수정하지 말고 감싸서 쓴다
-- 색은 `globals.css` 토큰을 쓴다: `sea`(해상·주 경로), `air`(항공·대안), `berry`(문제·위험), `gov`(정책·데이터), `ok`(정상·절감)
-- 숫자는 `num` 유틸리티(IBM Plex Mono, tabular-nums)로 표시한다. 금액은 `utils/format.ts` 로 만 원 단위 표시
+- 스타일은 발표 자료를 따른다: 흰 카드 + 연한 파랑 테두리, 위→아래 흰색→연파랑 배경, 남색 알약 배지(단계 번호), 큰 굵은 제목에 파란 강조, 결론은 남색 배너
+- 폰트는 Noto Sans KR 하나만 쓴다. 제목은 `font-black`, 강조 숫자는 `font-bold`
+- 색은 `globals.css` 토큰을 쓴다
+  - 팔레트: `navy`(주 색·배지·배너), `brand`(파랑 강조), `cyan`, `grape`·`grape-soft`(포도), `slate`(비교에서 진 쪽), `line`(테두리)
+  - 의미: `sea`(해상·주 경로), `air`(항공·대안), `berry`(문제·위험), `gov`(정책·데이터), `ok`(정상·절감)
+  - 화주 구분: 딸기는 `navy` → `brand` → `cyan`, 포도는 `grape` → `grape-soft`
+- 숫자는 `num` 유틸리티(tabular-nums)로 표시한다. 금액은 `utils/format.ts` 로 만 원 단위 표시
 - 예시 수치는 화면에 "예시", 우리가 정한 값은 "가정"으로 표시한다
 - 화면 문구와 주석은 한국어로 쓴다
 
