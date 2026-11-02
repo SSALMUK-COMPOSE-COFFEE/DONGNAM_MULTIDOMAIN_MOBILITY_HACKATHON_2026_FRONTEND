@@ -1,0 +1,28 @@
+{
+  "id": "demo-plan",
+  "port": "부산신항",
+  "departureAt": "2026-12-03T14:00:00+09:00",
+  "containers": [
+    {
+      "id": "CA-01",
+      "item": "strawberry",
+      "destination": "홍콩",
+      "capacityPallets": 20,
+      "allocations": [
+        { "shipperId": "jinju", "shipperName": "진주 농협", "pallets": 8 },
+        { "shipperId": "sancheong", "shipperName": "산청 수출업체", "pallets": 5 },
+        { "shipperId": "miryang", "shipperName": "밀양 수출업체", "pallets": 4 }
+      ]
+    },
+    {
+      "id": "CA-02",
+      "item": "grape",
+      "destination": "가오슝",
+      "capacityPallets": 20,
+      "allocations": [
+        { "shipperId": "sangju", "shipperName": "상주 포도단지", "pallets": 13 },
+        { "shipperId": "pohang", "shipperName": "포항 포도단지", "pallets": 5 }
+      ]
+    }
+  ]
+}
