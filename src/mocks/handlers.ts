@@ -2,6 +2,8 @@ import { HttpResponse, delay, http, sse } from 'msw';
 
 import { SIMULATION_INTERVAL_SECONDS } from '@/consts/demo';
 import alertsFixture from '@/mocks/fixtures/alerts.json';
+import intakeGrapeFixture from '@/mocks/fixtures/intake-grape.json';
+import intakeStrawberryFixture from '@/mocks/fixtures/intake-strawberry.json';
 import orderForwarderConfirmedFixture from '@/mocks/fixtures/order-forwarder-confirmed.json';
 import orderProposedFixture from '@/mocks/fixtures/order-proposed.json';
 import orderShipperConfirmedFixture from '@/mocks/fixtures/order-shipper-confirmed.json';
@@ -14,6 +16,8 @@ import type {
   AlertT,
   ConfirmRequestT,
   ExecutionOrderT,
+  IntakePreviewT,
+  IntakeRequestT,
   PlanSessionT,
   ReplanResponseT,
   TwinStateT,
@@ -61,6 +65,18 @@ const getPlayedCount = () =>
     : Math.min(twin.timeline.length, Math.floor((Date.now() - simulationStartedAt) / TICK_MS) + 1);
 
 export const handlers = [
+  http.get('*/api/scenarios/:scenarioId', () => HttpResponse.json(planSessions.initial.scenario)),
+
+  // 저장한 미리보기는 딸기(산청 2파렛트)와 SO2 포도(포항 3파렛트) 두 가지다
+  http.post('*/api/intake/lots', async ({ request }) => {
+    const { product } = (await request.json()) as IntakeRequestT;
+    await delay(300);
+
+    return HttpResponse.json(
+      (product === 'grape_so2' ? intakeGrapeFixture : intakeStrawberryFixture) as IntakePreviewT
+    );
+  }),
+
   http.post('*/api/plans', async () => {
     await delay(600);
     resetPlanStage();
