@@ -40,7 +40,7 @@ export function SettlementTable({ settlements, scenario }: SettlementTablePropsT
                 </TableCell>
                 <TableCell className="text-right num">{formatManwon(savings)}</TableCell>
                 <TableCell className="text-right num">{formatManwon(fee)}</TableCell>
-                <TableCell className="text-right num font-semibold text-ok">
+                <TableCell className="text-right font-semibold num text-ok">
                   {formatManwon(shipper_gain)}
                 </TableCell>
               </TableRow>

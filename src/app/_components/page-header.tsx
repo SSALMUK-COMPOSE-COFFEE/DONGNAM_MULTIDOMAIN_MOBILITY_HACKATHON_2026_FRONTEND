@@ -3,17 +3,26 @@ import type { ReactNode } from 'react';
 type PageHeaderPropsT = {
   step: string;
   title: string;
-  description: string;
+  /** 큰 제목. highlight 는 그 뒤에 파란색으로 이어 붙는다 */
+  headline: string;
+  highlight?: string;
   children?: ReactNode;
 };
 
-export function PageHeader({ step, title, description, children }: PageHeaderPropsT) {
+export function PageHeader({ step, title, headline, highlight, children }: PageHeaderPropsT) {
   return (
-    <div className="mb-8 flex items-end gap-5">
-      <span className="num text-5xl leading-none font-semibold text-sea">{step}</span>
+    <div className="mb-10 flex items-end gap-6">
       <div className="flex-1">
-        <h1 className="font-heading text-3xl font-bold">{title}</h1>
-        <p className="mt-1 text-muted-foreground">{description}</p>
+        <div className="flex items-center gap-3">
+          <span className="rounded-full bg-navy px-4 py-1 text-lg font-bold num text-white">
+            {step}
+          </span>
+          <span className="text-lg font-bold">{title}</span>
+        </div>
+        <h1 className="mt-5 text-5xl leading-tight font-black tracking-tight">
+          {headline}
+          {highlight && <span className="text-brand"> {highlight}</span>}
+        </h1>
       </div>
       {children}
     </div>

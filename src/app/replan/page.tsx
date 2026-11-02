@@ -6,7 +6,8 @@ export default function ReplanPage() {
     <PageHeader
       step="02"
       title="취소 재최적화"
-      description="화주가 빠지면 남은 화주의 배정과 집하 경로를 다시 짠다"
+      headline="화주가 빠지면 AI가"
+      highlight="다시 짠다"
     />
   );
 }

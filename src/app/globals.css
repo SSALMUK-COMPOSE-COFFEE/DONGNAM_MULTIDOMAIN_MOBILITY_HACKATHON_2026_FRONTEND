@@ -5,16 +5,25 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * 색 체계는 기획 HTML 프로토타입을 따른다.
- * 바다(sea) = 주 경로·해상, 하늘(air) = 대안·항공, 딸기(berry) = 문제·위험,
- * 정책(gov) = 정책·데이터, ok = 정상·절감.
+ * 색 체계는 발표 자료 스타일(남색·파랑·하늘색, 흰 카드, 연한 파랑 배경)을 따른다.
+ * 의미 토큰: sea = 주 경로·해상, air = 대안·항공, berry = 문제·위험,
+ * gov = 정책·데이터, ok = 정상·절감.
+ * 화주 구분 색: 딸기는 navy → brand → cyan, 포도는 grape → grape-soft.
  */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-gothic-a1);
-  --font-heading: var(--font-hahmlet);
-  --font-mono: var(--font-ibm-plex-mono);
+  --font-sans: var(--font-noto-sans-kr);
+  --font-heading: var(--font-noto-sans-kr);
+
+  --color-navy: var(--navy);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-cyan: var(--cyan);
+  --color-grape: var(--grape);
+  --color-grape-soft: var(--grape-soft);
+  --color-slate: var(--slate);
+  --color-line: var(--line);
 
   --color-sea: var(--sea);
   --color-sea-soft: var(--sea-soft);
@@ -67,55 +76,62 @@
 }
 
 :root {
-  /* 프로토타입 원본 토큰 */
-  --ink: #112027;
-  --line: #cfdce0;
-  --grid: #dfe9ec;
-  --panel: #f6f9fa;
-  --sea: #0b6a7a;
-  --sea-soft: #d7ecef;
-  --berry: #c93a45;
-  --berry-soft: #fbe2e3;
-  --air: #be7a12;
-  --air-soft: #f8ebd3;
-  --gov: #2f55c4;
-  --gov-soft: #e1e8fa;
-  --ok: #2e7d4f;
-  --ok-soft: #dcefe3;
+  /* 발표 자료 팔레트 */
+  --ink: #0f1b33;
+  --navy: #0d2a5e;
+  --brand: #1a7bff;
+  --brand-soft: #eaf2ff;
+  --cyan: #22c3ea;
+  --grape: #6b55d9;
+  --grape-soft: #ab9cec;
+  --slate: #8e97a8;
+  --line: #dce7f7;
+  --panel: #f4f8fe;
 
-  /* shadcn 토큰 ← 프로토타입 토큰 */
-  --background: #eff4f5;
+  --sea: var(--brand);
+  --sea-soft: var(--brand-soft);
+  --air: #0aa5c8;
+  --air-soft: #e0f6fc;
+  --berry: #e5484d;
+  --berry-soft: #fde8e9;
+  --gov: var(--navy);
+  --gov-soft: #e3e9f4;
+  --ok: #129c74;
+  --ok-soft: #dff5ed;
+
+  /* shadcn 토큰 ← 팔레트 */
+  --background: #f5f8fe;
   --foreground: var(--ink);
   --card: #ffffff;
   --card-foreground: var(--ink);
   --popover: #ffffff;
   --popover-foreground: var(--ink);
-  --primary: var(--sea);
+  --primary: var(--navy);
   --primary-foreground: #ffffff;
-  --secondary: var(--sea-soft);
-  --secondary-foreground: var(--sea);
+  --secondary: var(--brand-soft);
+  --secondary-foreground: var(--navy);
   --muted: var(--panel);
-  --muted-foreground: #566a72;
-  --accent: var(--sea-soft);
-  --accent-foreground: var(--ink);
+  --muted-foreground: #5b6577;
+  --accent: var(--brand-soft);
+  --accent-foreground: var(--navy);
   --destructive: var(--berry);
   --border: var(--line);
   --input: var(--line);
-  --ring: var(--sea);
-  --chart-1: var(--sea);
-  --chart-2: var(--air);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--cyan);
   --chart-3: var(--berry);
-  --chart-4: var(--gov);
-  --chart-5: var(--ok);
-  --radius: 0.75rem;
+  --chart-4: var(--navy);
+  --chart-5: var(--grape);
+  --radius: 1rem;
   --sidebar: #ffffff;
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--sea);
+  --sidebar-primary: var(--navy);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--sea-soft);
-  --sidebar-accent-foreground: var(--sea);
+  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent-foreground: var(--navy);
   --sidebar-border: var(--line);
-  --sidebar-ring: var(--sea);
+  --sidebar-ring: var(--brand);
 }
 
 @layer base {
@@ -124,19 +140,33 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* 프로토타입의 해도(海圖) 격자 배경 */
-    background-image:
-      linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 32px 32px;
+    /* 위는 흰색, 아래로 갈수록 연한 파랑 */
+    background-image: linear-gradient(180deg, #ffffff 0%, #f3f7fe 55%, #e6effc 100%);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans;
+    letter-spacing: -0.01em;
   }
 }
 
+/*
+ * shadcn 카드: 흰 바탕 + 연한 파랑 테두리 + 옅은 그림자.
+ * ui/card.tsx 를 고치지 않으려고 레이어 밖에서 덮어쓴다 (utilities 보다 우선)
+ */
+[data-slot='card'] {
+  --tw-ring-color: var(--line);
+  --tw-shadow: 0 2px 12px rgb(13 42 94 / 0.04);
+}
+[data-slot='card']:not([data-size='sm']) {
+  --card-spacing: calc(var(--spacing) * 6);
+}
+[data-slot='card-title'] {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
 @utility num {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
