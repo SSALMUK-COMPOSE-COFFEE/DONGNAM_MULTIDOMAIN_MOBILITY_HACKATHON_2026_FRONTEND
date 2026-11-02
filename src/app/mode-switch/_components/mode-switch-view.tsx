@@ -9,7 +9,7 @@ import { ExecutionOrderPanel } from '@/components/execution-order';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -53,15 +53,12 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-[560px_1fr] gap-6">
+      <div className="grid grid-cols-[440px_1fr] gap-6">
         <Card>
           <CardHeader>
             <CardTitle>판매 기간이 짧은 화주</CardTitle>
-            <CardDescription>
-              도착 후 팔 시간이 짧으면 배에서 상할 위험이 커져 해상 총비용이 뛴다 (파렛트당)
-            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-5">
+          <CardContent className="flex flex-1 flex-col gap-5">
             <Select value={lotId} onValueChange={setLotId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="로트 선택" />
@@ -76,6 +73,28 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
               </SelectContent>
             </Select>
 
+            <p className="leading-relaxed text-muted-foreground">
+              도착한 뒤 팔 수 있는 날이 짧으면, 배로 가는 동안 상할 위험이 커져 해상 총비용이 뛴다.
+            </p>
+            <Button
+              size="lg"
+              className="mt-auto"
+              disabled={!lot || flow.isReplanning}
+              onClick={() => lot && flow.runReplan({ type: 'air_switch', lot_id: lot.lot_id })}
+            >
+              {flow.isReplanning ? '다시 짜는 중' : `${shipperName} 항공으로 돌리고 다시 짜기`}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {shipperName} {lot && getProductName(scenario, lot.product_id)} 파렛트당 총비용
+              <span className="ml-2 text-base font-medium text-muted-foreground">만 원</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-6">
             {tariff && (
               <>
                 <CostCompare
@@ -84,15 +103,15 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
                     { label: '항공', value: tariff.air_total, isChosen: true },
                   ]}
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground">
                   해상 품질손실 위험을{' '}
                   <span className="num">
                     {formatManwon(tariff.sea_loss_risk_short_window)}만 원
                   </span>
-                  으로 잡으면 해상이 항공보다 비싸진다 (평소 해상{' '}
-                  <span className="num">{formatManwon(tariff.sea_total)}만 원</span>)
+                  으로 잡으면 해상이 항공보다 비싸진다. 평소 해상은{' '}
+                  <span className="num">{formatManwon(tariff.sea_total)}만 원</span>
                 </p>
-                <p className="rounded-2xl bg-brand-soft px-5 py-4 text-center text-lg font-bold text-brand">
+                <p className="rounded-2xl bg-brand-soft px-5 py-4 text-center text-xl font-bold text-brand">
                   → 항공 전환으로 파렛트당{' '}
                   <span className="num">
                     {formatManwon(tariff.sea_total_short_window - tariff.air_total)}만 원
@@ -102,29 +121,17 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
               </>
             )}
 
-            <Button
-              size="lg"
-              disabled={!lot || flow.isReplanning}
-              onClick={() => lot && flow.runReplan({ type: 'air_switch', lot_id: lot.lot_id })}
-            >
-              {flow.isReplanning ? '다시 짜는 중' : `${shipperName} 항공 전환 → 남은 화주 재배정`}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              지금 계획
-              {session.status === 'pending_confirmation' && (
-                <Badge className="bg-air">확정 대기</Badge>
+            <div className="flex flex-col gap-4 border-t border-line pt-6">
+              <h3 className="flex items-center gap-2 text-lg font-bold">
+                지금 계획
+                {session.status === 'pending_confirmation' && (
+                  <Badge className="bg-air">확정 대기</Badge>
+                )}
+              </h3>
+              {container && (
+                <ContainerLoadBar container={container} plan={plan} scenario={scenario} />
               )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {container && (
-              <ContainerLoadBar container={container} plan={plan} scenario={scenario} />
-            )}
+            </div>
           </CardContent>
         </Card>
       </div>

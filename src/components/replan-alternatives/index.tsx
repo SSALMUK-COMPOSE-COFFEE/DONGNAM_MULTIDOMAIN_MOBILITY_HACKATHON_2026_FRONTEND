@@ -43,14 +43,20 @@ export function ReplanAlternatives({
   onApply,
   costDeltaLabel = '지금 계획 대비 총비용 변화',
 }: ReplanAlternativesPropsT) {
+  const recommended = replan.alternatives.find(({ id }) => id === replan.recommended_id);
+
   return (
     <div className="flex flex-col gap-5">
-      {replan.explanation && (
-        <p className="rounded-2xl bg-brand-soft px-6 py-4 leading-relaxed text-navy">
-          {replan.explanation.operator_summary}
-          <span className="ml-2 text-sm num text-muted-foreground">재계산 {replan.solve_ms}ms</span>
-        </p>
-      )}
+      <p className="text-lg">
+        세 가지 안을 다시 계산했습니다
+        <span className="ml-1 num text-muted-foreground">({replan.solve_ms}ms)</span>.
+        {recommended && (
+          <>
+            {' '}
+            추천은 <span className="font-bold text-brand">{recommended.label}</span>입니다.
+          </>
+        )}
+      </p>
 
       <div className="grid grid-cols-3 gap-6">
         {replan.alternatives.map(alternative => (
@@ -104,7 +110,7 @@ function AlternativeCard({
   );
 
   return (
-    <Card className={cn(isRecommended && 'ring-2! ring-brand!', !feasible && 'opacity-60')}>
+    <Card className={cn(isRecommended && 'ring-2! ring-brand!', !feasible && 'bg-panel')}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {label}
@@ -115,7 +121,12 @@ function AlternativeCard({
       <CardContent className="flex flex-1 flex-col gap-5">
         <div>
           <p className="text-sm text-muted-foreground">{costDeltaLabel}</p>
-          <p className={cn('text-3xl font-bold num', cost_delta <= 0 ? 'text-ok' : 'text-berry')}>
+          <p
+            className={cn(
+              'text-3xl font-bold num',
+              (!feasible && 'text-muted-foreground') || (cost_delta <= 0 ? 'text-ok' : 'text-berry')
+            )}
+          >
             {formatSignedManwon(cost_delta)}
             <span className="ml-1 text-base font-medium text-muted-foreground">만 원</span>
           </p>
