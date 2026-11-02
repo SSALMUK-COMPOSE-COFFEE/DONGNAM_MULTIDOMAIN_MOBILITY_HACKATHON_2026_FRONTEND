@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { API_BASE_URL, ENDPOINTS } from '@/consts/api';
+import { mockingReady } from '@/mocks/ready';
 import type { AlertT } from '@/types/api';
 
 /**
@@ -21,18 +22,28 @@ export const useAlertStream = (containerId: string, onAlert?: (alert: AlertT) =>
   useEffect(() => {
     const seen = new Set<number>();
     const params = new URLSearchParams({ container_id: containerId });
-    const source = new EventSource(`${API_BASE_URL}${ENDPOINTS.COLDCHAIN_ALERTS_STREAM}?${params}`);
+    let source: EventSource | null = null;
+    let isClosed = false;
 
-    source.addEventListener('alert', event => {
-      const alert = JSON.parse((event as MessageEvent<string>).data) as AlertT;
-      if (seen.has(alert.seq)) return;
+    // 목업 모드면 MSW 워커가 준비된 뒤에 연결한다
+    mockingReady.then(() => {
+      if (isClosed) return;
 
-      seen.add(alert.seq);
-      setAlerts(prev => [alert, ...prev]);
-      onAlertRef.current?.(alert);
+      source = new EventSource(`${API_BASE_URL}${ENDPOINTS.COLDCHAIN_ALERTS_STREAM}?${params}`);
+      source.addEventListener('alert', event => {
+        const alert = JSON.parse((event as MessageEvent<string>).data) as AlertT;
+        if (seen.has(alert.seq)) return;
+
+        seen.add(alert.seq);
+        setAlerts(prev => [alert, ...prev]);
+        onAlertRef.current?.(alert);
+      });
     });
 
-    return () => source.close();
+    return () => {
+      isClosed = true;
+      source?.close();
+    };
   }, [containerId]);
 
   return alerts;
