@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
-import type { ComponentProps } from 'react';
+import { type ComponentProps, useLayoutEffect, useState } from 'react';
 import { Map as KakaoMapBase, useKakaoLoader } from 'react-kakao-maps-sdk';
 
 const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? '';
@@ -29,6 +29,20 @@ export default function KakaoMap(props: KakaoMapPropsT) {
 function LoadedKakaoMap({ className, ...props }: KakaoMapPropsT) {
   const [isLoading, error] = useKakaoLoader({ appkey: KAKAO_MAP_KEY });
 
+  /**
+   * 다른 화면으로 가면 Next 가 이 화면을 숨긴 채 남겨 두고(Activity) effect 를 정리한다.
+   * 그때 지도 DOM 이 비워지는데, 다시 보일 때 경로선·이름표가 비워진 옛 지도에 붙으려다
+   * 카카오 내부 insertBefore 오류가 났다. 숨겨지면 지도를 내리고, 보일 때 새로 만든다
+   */
+  const [isVisible, setIsVisible] = useState(false);
+  useLayoutEffect(() => {
+    const frame = requestAnimationFrame(() => setIsVisible(true));
+    return () => {
+      cancelAnimationFrame(frame);
+      setIsVisible(false);
+    };
+  }, []);
+
   if (error) {
     return (
       <MapNotice
@@ -37,7 +51,9 @@ function LoadedKakaoMap({ className, ...props }: KakaoMapPropsT) {
       />
     );
   }
-  if (isLoading) return <MapNotice className={className} message="지도를 불러오는 중" />;
+  if (isLoading || !isVisible) {
+    return <MapNotice className={className} message="지도를 불러오는 중" />;
+  }
 
   return <KakaoMapBase className={className} {...props} />;
 }
