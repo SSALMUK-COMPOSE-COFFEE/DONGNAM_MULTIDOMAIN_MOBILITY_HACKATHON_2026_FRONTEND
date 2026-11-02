@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { coldchainContainerQueryOptions } from '@/apis/getColdchainContainer';
@@ -30,6 +30,14 @@ export function SensorView() {
   );
 }
 
+/** 측정값이 바뀌는 동안은 1초, 멈춰 있으면 10초마다 확인한다 (아두이노가 새로 보내기 시작해도 10초 안에 잡힌다) */
+const LIVE_POLLING_MS = 1_000;
+const IDLE_POLLING_MS = 10_000;
+/** 마지막으로 측정값이 늘어난 뒤 이 시간 동안은 빠르게 확인한다 */
+const LIVE_GRACE_MS = 15_000;
+/** 시뮬레이션을 시작하면 첫 측정값이 들어올 때까지 빠르게 확인한다 */
+const SIMULATION_START_GRACE_MS = 60_000;
+
 /** 서버와 브라우저 시계가 조금 어긋나도 새 알림을 놓치지 않도록 둔 여유 */
 const CLOCK_SKEW_MS = 2_000;
 const nowWithSkew = () => new Date(Date.now() - CLOCK_SKEW_MS).toISOString();
@@ -45,7 +53,19 @@ function SensorDashboard({ session }: { session: PlanSessionT }) {
   const [since, setSince] = useState(nowWithSkew);
   const isRecent = (alert: AlertT) => !!alert.created_at && alert.created_at >= since;
 
-  const twinQuery = useQuery(coldchainContainerQueryOptions(DEMO_CONTAINER_ID));
+  const liveUntilRef = useRef(0);
+  const lastReadingCountRef = useRef<number | null>(null);
+  const twinQuery = useQuery({
+    ...coldchainContainerQueryOptions(DEMO_CONTAINER_ID),
+    refetchInterval: query => {
+      const readingCount = query.state.data?.reading_count ?? null;
+      if (readingCount !== lastReadingCountRef.current) {
+        lastReadingCountRef.current = readingCount;
+        liveUntilRef.current = Date.now() + LIVE_GRACE_MS;
+      }
+      return Date.now() < liveUntilRef.current ? LIVE_POLLING_MS : IDLE_POLLING_MS;
+    },
+  });
   const twin = twinQuery.data ?? null;
   const alerts = useAlertStream(DEMO_CONTAINER_ID, alert => {
     if (!isRecent(alert)) return;
@@ -54,7 +74,10 @@ function SensorDashboard({ session }: { session: PlanSessionT }) {
   }).filter(isRecent);
 
   const { mutate: startSimulation, isPending } = useMutation({
-    onMutate: () => setSince(nowWithSkew()),
+    onMutate: () => {
+      setSince(nowWithSkew());
+      liveUntilRef.current = Date.now() + SIMULATION_START_GRACE_MS;
+    },
     mutationFn: async () => {
       await postColdchainBinding({
         device_id: DEMO_DEVICE_ID,
@@ -72,6 +95,8 @@ function SensorDashboard({ session }: { session: PlanSessionT }) {
         reset: true,
       });
     },
+    // 10초 간격으로 예약된 다음 확인을 기다리지 않고 바로 불러와 1초 간격으로 돌린다
+    onSuccess: () => twinQuery.refetch(),
     onError: () => toast.error('시뮬레이션을 시작하지 못했습니다.'),
   });
 
