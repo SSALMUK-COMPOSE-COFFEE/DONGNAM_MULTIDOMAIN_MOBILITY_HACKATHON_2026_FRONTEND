@@ -61,5 +61,6 @@ export default defineConfig([
     // shadcn CLI 생성물과 MSW 워커는 린트하지 않는다
     'src/components/ui/**',
     'public/mockServiceWorker.js',
+    'src/types/openapi.d.ts',
   ]),
 ]);
