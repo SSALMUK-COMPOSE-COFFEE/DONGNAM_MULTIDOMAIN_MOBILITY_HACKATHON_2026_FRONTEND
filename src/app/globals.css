@@ -1,0 +1,142 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * 색 체계는 기획 HTML 프로토타입을 따른다.
+ * 바다(sea) = 주 경로·해상, 하늘(air) = 대안·항공, 딸기(berry) = 문제·위험,
+ * 정책(gov) = 정책·데이터, ok = 정상·절감.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-gothic-a1);
+  --font-heading: var(--font-hahmlet);
+  --font-mono: var(--font-ibm-plex-mono);
+
+  --color-sea: var(--sea);
+  --color-sea-soft: var(--sea-soft);
+  --color-berry: var(--berry);
+  --color-berry-soft: var(--berry-soft);
+  --color-air: var(--air);
+  --color-air-soft: var(--air-soft);
+  --color-gov: var(--gov);
+  --color-gov-soft: var(--gov-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-panel: var(--panel);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* 프로토타입 원본 토큰 */
+  --ink: #112027;
+  --line: #cfdce0;
+  --grid: #dfe9ec;
+  --panel: #f6f9fa;
+  --sea: #0b6a7a;
+  --sea-soft: #d7ecef;
+  --berry: #c93a45;
+  --berry-soft: #fbe2e3;
+  --air: #be7a12;
+  --air-soft: #f8ebd3;
+  --gov: #2f55c4;
+  --gov-soft: #e1e8fa;
+  --ok: #2e7d4f;
+  --ok-soft: #dcefe3;
+
+  /* shadcn 토큰 ← 프로토타입 토큰 */
+  --background: #eff4f5;
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--sea);
+  --primary-foreground: #ffffff;
+  --secondary: var(--sea-soft);
+  --secondary-foreground: var(--sea);
+  --muted: var(--panel);
+  --muted-foreground: #566a72;
+  --accent: var(--sea-soft);
+  --accent-foreground: var(--ink);
+  --destructive: var(--berry);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--sea);
+  --chart-1: var(--sea);
+  --chart-2: var(--air);
+  --chart-3: var(--berry);
+  --chart-4: var(--gov);
+  --chart-5: var(--ok);
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--sea);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--sea-soft);
+  --sidebar-accent-foreground: var(--sea);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--sea);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* 프로토타입의 해도(海圖) 격자 배경 */
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
