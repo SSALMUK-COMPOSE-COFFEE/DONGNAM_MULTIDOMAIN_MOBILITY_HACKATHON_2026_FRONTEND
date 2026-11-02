@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+build
+coverage
+pnpm-lock.yaml
+next-env.d.ts
+# shadcn CLI가 생성하는 원본은 그대로 둔다 (재설치 시 diff 방지)
+src/components/ui
+public/mockServiceWorker.js
+# 생성 파일
+src/types/openapi.d.ts
+src/mocks/fixtures
