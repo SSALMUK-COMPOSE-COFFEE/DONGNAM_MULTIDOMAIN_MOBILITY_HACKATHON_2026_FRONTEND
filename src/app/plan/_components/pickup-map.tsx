@@ -1,6 +1,7 @@
 'use client';
 
-import { CustomOverlayMap, Polyline } from 'react-kakao-maps-sdk';
+import { useEffect, useMemo } from 'react';
+import { CustomOverlayMap, Polyline, useMap } from 'react-kakao-maps-sdk';
 
 import KakaoMap from '@/components/kakao-map';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,8 @@ const ROUTE_COLOR: Record<string, string> = {
   grape_so2: '#6b55d9',
 };
 const DEFAULT_ROUTE_COLOR = '#1a7bff';
+/** 가장자리 선과장 이름표가 잘리지 않도록 둔 여백 (px) */
+const BOUNDS_PADDING = 48;
 
 export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
   const port = scenario.ports[0];
@@ -23,6 +26,7 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
     scenario.packhouses.find(({ id }) => id === packhouseId);
 
   const truckRoutes = voyagePickups.flatMap(({ pickup }) => pickup.routes);
+  const places = useMemo(() => [...scenario.packhouses, port], [scenario.packhouses, port]);
 
   return (
     <Card>
@@ -37,7 +41,8 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <KakaoMap center={{ lat: 35.5, lng: 128.5 }} level={11} className="h-105 w-full rounded-xl">
+        <KakaoMap center={{ lat: 35.7, lng: 128.6 }} level={11} className="h-105 w-full rounded-xl">
+          <FitToPlaces places={places} />
           {truckRoutes.map(route => {
             const path = route.stops.flatMap(({ packhouse_id }) => {
               const packhouse = findPackhouse(packhouse_id);
@@ -55,7 +60,7 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
             );
           })}
 
-          {[...scenario.packhouses, port].map(({ id, name, lat, lon }) => (
+          {places.map(({ id, name, lat, lon }) => (
             <CustomOverlayMap key={id} position={{ lat, lng: lon }} yAnchor={1.4}>
               <span className="rounded-md border bg-card px-2 py-0.5 text-xs font-bold shadow-sm">
                 {name}
@@ -66,4 +71,22 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
       </CardContent>
     </Card>
   );
+}
+
+type PlaceT = { lat: number; lon: number };
+
+/**
+ * 고정 중심·확대 수준으로는 상주·포항이 지도 밖으로 나가므로 모든 선과장과 항구가 들어오게 맞춘다.
+ * Map 이 center·level prop 을 레이아웃 effect 에서 다시 적용하므로, 그 뒤(일반 effect)에 맞춰야 덮이지 않는다
+ */
+function FitToPlaces({ places }: { places: PlaceT[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const bounds = new kakao.maps.LatLngBounds();
+    places.forEach(({ lat, lon }) => bounds.extend(new kakao.maps.LatLng(lat, lon)));
+    map.setBounds(bounds, BOUNDS_PADDING, BOUNDS_PADDING, BOUNDS_PADDING, BOUNDS_PADDING);
+  }, [map, places]);
+
+  return null;
 }
