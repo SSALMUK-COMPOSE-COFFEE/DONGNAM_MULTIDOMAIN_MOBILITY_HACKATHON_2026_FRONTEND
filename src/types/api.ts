@@ -14,6 +14,13 @@ export type PlanT = SchemaT<'Plan'>;
 export type ContainerSettlementT = SchemaT<'ContainerSettlement'>;
 export type TariffSheetT = SchemaT<'TariffSheet'>;
 
+export type PlanEventT = SchemaT<'EventRequest'>['event'];
+export type ReplanResponseT = SchemaT<'ReplanResponse'>;
+export type AlternativeT = SchemaT<'Alternative'>;
+export type AlternativeIdT = AlternativeT['id'];
+export type ExecutionOrderT = SchemaT<'ExecutionOrder'>;
+export type ConfirmRequestT = SchemaT<'ConfirmRequest'>;
+
 export type BindingRequestT = SchemaT<'BindingRequest'>;
 export type SimulationRequestT = SchemaT<'SimulationRequest'>;
 export type SimulationRunT = SchemaT<'SimulationRun'>;
