@@ -1,18 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MinusIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
-import { planQueryOptions } from '@/apis/getPlan';
-import { planOrdersQueryOptions } from '@/apis/getPlanOrders';
-import { postPlanApply } from '@/apis/postPlanApply';
-import { postPlanEvent } from '@/apis/postPlanEvent';
 import { ContainerLoadBar } from '@/components/container-load-bar';
+import { CurrentPlanGate } from '@/components/current-plan-gate';
 import { ExecutionOrderPanel } from '@/components/execution-order';
-import { PlanLoadError } from '@/components/plan-load-error';
-import { PlanRequired } from '@/components/plan-required';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,28 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_REDUCE_LOT_ID, DEMO_REDUCE_TO_PALLETS } from '@/consts/demo';
-import { useCurrentPlan } from '@/hooks/useCurrentPlan';
-import type { AlternativeIdT, PlanEventT, PlanSessionT } from '@/types/api';
+import { useReplanFlow } from '@/hooks/useReplanFlow';
+import type { PlanSessionT } from '@/types/api';
 import { getProductName, getShipperShortName } from '@/utils/scenario';
 
 export function ReplanView() {
-  const { planId, hasHydrated, data, isSuccess, isError, isExpired, refetch, isFetching } =
-    useCurrentPlan();
-
-  if (!hasHydrated) return <Skeleton className="h-96" />;
-  if (!planId) return <PlanRequired reason="취소가 생길 계획이 있어야 다시 짤 수 있습니다." />;
-  if (isError && !isExpired) {
-    return <PlanLoadError onRetry={() => refetch()} isRetrying={isFetching} />;
-  }
-  if (!isSuccess) return <Skeleton className="h-96" />;
-
-  return <ReplanWorkspace session={data} />;
+  return (
+    <CurrentPlanGate reason="취소가 생길 계획이 있어야 다시 짤 수 있습니다.">
+      {session => <ReplanWorkspace session={session} />}
+    </CurrentPlanGate>
+  );
 }
 
 function ReplanWorkspace({ session }: { session: PlanSessionT }) {
-  const queryClient = useQueryClient();
   const { plan_id: planId, plan, scenario } = session;
 
   // 해상으로 가는 로트만 취소·감축 대상이다
@@ -61,29 +46,11 @@ function ReplanWorkspace({ session }: { session: PlanSessionT }) {
   const clampedPallets = Math.min(newPallets, (lot?.pallets ?? 1) - 1);
   const container = plan.containers.find(({ container_id }) => container_id === lot?.container_id);
 
-  const replan = useMutation({
-    mutationFn: (event: PlanEventT) => postPlanEvent(planId, event),
-    onError: () => toast.error('재최적화하지 못했습니다.'),
-  });
-
-  const apply = useMutation({
-    mutationFn: (alternativeId: AlternativeIdT) =>
-      postPlanApply(planId, { alternativeId, replanId: replan.data?.replan_id ?? '' }),
-    onSuccess: updated => {
-      queryClient.setQueryData(planQueryOptions(planId).queryKey, updated);
-      queryClient.invalidateQueries({ queryKey: planOrdersQueryOptions(planId).queryKey });
-      toast.success('대안을 적용했습니다. 화주·포워더 확정을 기다립니다.');
-    },
-    onError: () => toast.error('대안을 적용하지 못했습니다.'),
-  });
-
-  const { data: orders } = useQuery(planOrdersQueryOptions(planId));
-  const latestOrder = orders?.at(-1);
+  const flow = useReplanFlow(planId);
 
   const runReplan = () => {
     if (!lot) return;
-    apply.reset();
-    replan.mutate(
+    flow.runReplan(
       clampedPallets === 0
         ? { type: 'cancel', lot_id: lot.lot_id }
         : { type: 'reduce', lot_id: lot.lot_id, new_pallets: clampedPallets }
@@ -141,8 +108,8 @@ function ReplanWorkspace({ session }: { session: PlanSessionT }) {
               </div>
             </div>
 
-            <Button size="lg" disabled={!lot || replan.isPending} onClick={runReplan}>
-              {replan.isPending
+            <Button size="lg" disabled={!lot || flow.isReplanning} onClick={runReplan}>
+              {flow.isReplanning
                 ? '다시 짜는 중'
                 : `${lot ? getShipperShortName(scenario, lot.shipper_id) : ''} ${
                     clampedPallets === 0
@@ -169,20 +136,18 @@ function ReplanWorkspace({ session }: { session: PlanSessionT }) {
         </Card>
       </div>
 
-      {replan.data && (
+      {flow.replanResult && (
         <ReplanAlternatives
-          replan={replan.data}
+          replan={flow.replanResult}
           scenario={scenario}
-          focusContainerId={
-            container?.container_id ?? replan.data.diff?.containers[0]?.container_id ?? null
-          }
-          appliedId={apply.isSuccess ? apply.variables : null}
-          applyingId={apply.isPending ? apply.variables : null}
-          onApply={alternativeId => apply.mutate(alternativeId)}
+          focusContainerId={container?.container_id ?? null}
+          appliedId={flow.appliedId}
+          applyingId={flow.applyingId}
+          onApply={flow.applyAlternative}
         />
       )}
 
-      {latestOrder && <ExecutionOrderPanel planId={planId} order={latestOrder} />}
+      {flow.latestOrder && <ExecutionOrderPanel planId={planId} order={flow.latestOrder} />}
     </div>
   );
 }
