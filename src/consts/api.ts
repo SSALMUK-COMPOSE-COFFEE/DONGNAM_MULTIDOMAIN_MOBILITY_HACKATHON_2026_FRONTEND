@@ -7,6 +7,8 @@ export const ENDPOINTS = {
   PLANS: '/api/plans',
   PLAN: (planId: string) => `/api/plans/${planId}`,
 
+  DEMO_RESET: '/api/demo/reset',
+
   COLDCHAIN_BINDINGS: '/api/coldchain/bindings',
   COLDCHAIN_SIMULATE: '/api/coldchain/simulate',
   COLDCHAIN_CONTAINER: (containerId: string) => `/api/coldchain/containers/${containerId}`,
