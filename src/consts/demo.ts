@@ -1,3 +1,5 @@
+import type { FuelShockRequestT } from '@/types/api';
+
 /** 백엔드 시연 스크립트(GET /api/demo/script)와 같은 값 */
 export const DEMO_SCENARIO_ID = 'default';
 export const DEMO_CONTAINER_ID = 'CA-01';
@@ -22,3 +24,9 @@ export const DEMO_INTAKE = {
 
 /** 시연 ③ 항공 전환: 판매 기간이 짧아진 산청 딸기를 항공으로 (백엔드 시연 스크립트 5단계) */
 export const DEMO_AIR_SWITCH_LOT_ID = 'lot-sancheong-sb-1';
+
+/** 시연 ⑤ 운임 쇼크: 항공 유류할증료 kg당 470원(2026.4.16 이전) → 2,060원 (백엔드 시연 스크립트 12단계) */
+export const DEMO_FUEL_SHOCK = {
+  scenario_id: 'fuel-shock',
+  surcharges: [470, 2060],
+} satisfies Partial<FuelShockRequestT>;

@@ -7,8 +7,14 @@ const SHIPPER_COLORS = ['bg-navy', 'bg-brand', 'bg-cyan'];
 const SO2_SHIPPER_COLORS = ['bg-grape', 'bg-grape-soft'];
 
 type ContainerLoadBarPropsT = {
-  container: ContainerLoadT;
-  plan: Pick<PlanT, 'assignments'>;
+  container: Pick<ContainerLoadT, 'container_id' | 'voyage_id' | 'capacity_pallets'>;
+  /** 계획의 배정. 운임 쇼크 분석처럼 계획이 아닌 응답도 같은 모양으로 넘길 수 있다 */
+  plan: {
+    assignments: Pick<
+      PlanT['assignments'][number],
+      'container_id' | 'shipper_id' | 'product_id' | 'pallets'
+    >[];
+  };
   scenario: ScenarioT;
 };
 
@@ -56,7 +62,7 @@ export function ContainerLoadBar({ container, plan, scenario }: ContainerLoadBar
 }
 
 /** 같은 계열(SO2 처리 여부) 품목을 내는 화주 중 몇 번째인지로 색을 고른다 */
-const getShipperColor = (scenario: ScenarioT, shipperId: string, isSo2: boolean) => {
+export const getShipperColor = (scenario: ScenarioT, shipperId: string, isSo2: boolean) => {
   const colors = isSo2 ? SO2_SHIPPER_COLORS : SHIPPER_COLORS;
   const sameGroupShipperIds = [
     ...new Set(

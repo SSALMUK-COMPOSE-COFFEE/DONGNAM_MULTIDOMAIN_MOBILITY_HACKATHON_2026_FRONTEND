@@ -15,6 +15,8 @@ export const ENDPOINTS = {
   PLAN_ORDER_CONFIRM: (planId: string, orderId: string) =>
     `/api/plans/${planId}/orders/${orderId}/confirm`,
 
+  ANALYSIS_FUEL_SHOCK: '/api/analysis/fuel-shock',
+
   DEMO_RESET: '/api/demo/reset',
 
   COLDCHAIN_BINDINGS: '/api/coldchain/bindings',

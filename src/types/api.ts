@@ -23,6 +23,11 @@ export type AlternativeIdT = AlternativeT['id'];
 export type ExecutionOrderT = SchemaT<'ExecutionOrder'>;
 export type ConfirmRequestT = SchemaT<'ConfirmRequest'>;
 
+export type FuelShockRequestT = SchemaT<'FuelShockRequest'>;
+export type FuelShockResultT = SchemaT<'FuelShockResult'>;
+export type FuelShockCaseT = SchemaT<'FuelShockCase'>;
+export type ModeSwitchT = SchemaT<'ModeSwitch'>;
+
 export type BindingRequestT = SchemaT<'BindingRequest'>;
 export type SimulationRequestT = SchemaT<'SimulationRequest'>;
 export type SimulationRunT = SchemaT<'SimulationRun'>;

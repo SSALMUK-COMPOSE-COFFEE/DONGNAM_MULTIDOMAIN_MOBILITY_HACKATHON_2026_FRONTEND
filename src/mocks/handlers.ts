@@ -2,6 +2,7 @@ import { HttpResponse, delay, http, sse } from 'msw';
 
 import { SIMULATION_INTERVAL_SECONDS } from '@/consts/demo';
 import alertsFixture from '@/mocks/fixtures/alerts.json';
+import fuelShockFixture from '@/mocks/fixtures/fuel-shock.json';
 import intakeGrapeFixture from '@/mocks/fixtures/intake-grape.json';
 import intakeStrawberryFixture from '@/mocks/fixtures/intake-strawberry.json';
 import orderAirForwarderConfirmedFixture from '@/mocks/fixtures/order-air-forwarder-confirmed.json';
@@ -17,16 +18,19 @@ import planCommittedFixture from '@/mocks/fixtures/plan-committed.json';
 import planSessionFixture from '@/mocks/fixtures/plan-session.json';
 import replanAirSwitchFixture from '@/mocks/fixtures/replan-air-switch.json';
 import replanReduceFixture from '@/mocks/fixtures/replan-reduce.json';
+import scenarioFuelShockFixture from '@/mocks/fixtures/scenario-fuel-shock.json';
 import twinFixture from '@/mocks/fixtures/twin.json';
 import type {
   AlertT,
   ConfirmRequestT,
   ExecutionOrderT,
+  FuelShockResultT,
   IntakePreviewT,
   IntakeRequestT,
   PlanEventT,
   PlanSessionT,
   ReplanResponseT,
+  ScenarioT,
   TwinStateT,
 } from '@/types/api';
 
@@ -91,7 +95,14 @@ const getPlayedCount = () =>
     : Math.min(twin.timeline.length, Math.floor((Date.now() - simulationStartedAt) / TICK_MS) + 1);
 
 export const handlers = [
-  http.get('*/api/scenarios/:scenarioId', () => HttpResponse.json(initialSession.scenario)),
+  // 운임 쇼크는 다음 배 후속 딸기 3로트가 더 있는 별도 시나리오다
+  http.get('*/api/scenarios/:scenarioId', ({ params }) =>
+    HttpResponse.json(
+      params.scenarioId === 'fuel-shock'
+        ? (scenarioFuelShockFixture as unknown as ScenarioT)
+        : initialSession.scenario
+    )
+  ),
 
   // 저장한 미리보기는 딸기(산청 2파렛트)와 SO2 포도(포항 3파렛트) 두 가지다
   http.post('*/api/intake/lots', async ({ request }) => {
@@ -142,6 +153,13 @@ export const handlers = [
     }
 
     return HttpResponse.json(currentOrder);
+  }),
+
+  // 저장한 응답은 시연 값(470 → 2,060원) 한 가지다
+  http.post('*/api/analysis/fuel-shock', async () => {
+    await delay(600);
+
+    return HttpResponse.json(fuelShockFixture as unknown as FuelShockResultT);
   }),
 
   http.post('*/api/demo/reset', () => {
