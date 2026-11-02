@@ -1,6 +1,6 @@
 import { cn } from 'cn';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TwinStateT } from '@/types/api';
 import { formatMonthDayTime } from '@/utils/format';
 
@@ -12,7 +12,6 @@ export function ActionList({ actions }: ActionListPropsT) {
     <Card>
       <CardHeader>
         <CardTitle>자동 조치</CardTitle>
-        <CardDescription>단전이 길어질수록 포워더가 보낼 요청을 단계별로 만든다</CardDescription>
       </CardHeader>
       <CardContent>
         {actions.length === 0 ? (

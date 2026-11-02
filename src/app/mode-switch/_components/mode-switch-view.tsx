@@ -7,6 +7,7 @@ import { CostCompare } from '@/components/cost-compare';
 import { CurrentPlanGate } from '@/components/current-plan-gate';
 import { ExecutionOrderPanel } from '@/components/execution-order';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -113,11 +114,12 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>지금 계획</CardTitle>
-            <CardDescription>
-              v{session.version}
-              {session.status === 'pending_confirmation' && ' · 확정 대기'}
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              지금 계획
+              {session.status === 'pending_confirmation' && (
+                <Badge className="bg-air">확정 대기</Badge>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {container && (

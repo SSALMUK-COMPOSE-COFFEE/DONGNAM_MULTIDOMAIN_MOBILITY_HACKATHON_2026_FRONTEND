@@ -12,7 +12,7 @@ import { type IntakeFieldErrorT, IntakeForm } from '@/app/intake/_components/int
 import { IntakePreview } from '@/app/intake/_components/intake-preview';
 import { ShipmentList } from '@/app/intake/_components/shipment-list';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_SCENARIO_ID } from '@/consts/demo';
 import { ROUTES } from '@/consts/route';
@@ -64,13 +64,6 @@ export function IntakeView() {
           <CardTitle>
             이번 주 등록된 출하 <span className="num text-brand">{scenario.lots.length}</span>건
           </CardTitle>
-          <CardDescription>
-            화주{' '}
-            <span className="num">
-              {new Set(scenario.lots.map(({ shipper_id }) => shipper_id)).size}
-            </span>
-            곳의 출하를 한 계획으로 묶는다 · 딸기와 SO2 처리 포도는 컨테이너를 나눈다
-          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <ShipmentList scenario={scenario} />

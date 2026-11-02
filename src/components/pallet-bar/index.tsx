@@ -46,10 +46,10 @@ export function PalletBar({ title, description, capacity, segments }: PalletBarP
         ))}
       </div>
 
-      <div className="flex gap-4 text-sm text-muted-foreground">
+      <div className="flex gap-5 text-muted-foreground">
         {segments.map(({ key, label, pallets, colorClassName }) => (
           <span key={key} className="flex items-center gap-1.5">
-            <span className={cn('size-3 rounded-[2px]', colorClassName)} />
+            <span className={cn('size-3.5 rounded-[3px]', colorClassName)} />
             {label} <span className="num">{pallets}</span>
           </span>
         ))}
