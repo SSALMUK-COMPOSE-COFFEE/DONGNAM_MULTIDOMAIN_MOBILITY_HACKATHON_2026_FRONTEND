@@ -1635,6 +1635,47 @@ export interface components {
              */
             terminal_plug_cost: number;
         };
+        /** ContainerSettlement */
+        ContainerSettlement: {
+            /** Container Id */
+            container_id: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Pallets */
+            pallets: number;
+            /** Capacity Pallets */
+            capacity_pallets: number;
+            /** Shippers */
+            shippers: components["schemas"]["ContainerShipperSettlement"][];
+            /** Total Savings */
+            total_savings: number;
+            /** Total Fee */
+            total_fee: number;
+            /** Total Shipper Gain */
+            total_shipper_gain: number;
+        };
+        /** ContainerShipperSettlement */
+        ContainerShipperSettlement: {
+            /** Shipper Id */
+            shipper_id: string;
+            /** Pallets */
+            pallets: number;
+            /** Baseline Cost */
+            baseline_cost: number;
+            /** Shared Cost */
+            shared_cost: number;
+            /** Savings */
+            savings: number;
+            /** Fee */
+            fee: number;
+            /** Shipper Gain */
+            shipper_gain: number;
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "tariff" | "operational" | "mixed";
+        };
         /** CostBreakdown */
         CostBreakdown: {
             /**
@@ -1642,6 +1683,11 @@ export interface components {
              * @default 0
              */
             freight: number;
+            /**
+             * Inland
+             * @default 0
+             */
+            inland: number;
             /**
              * Handling
              * @default 0
@@ -1801,6 +1847,10 @@ export interface components {
             default_product_cost?: components["schemas"]["ProductCostParams"];
             /** Loss Adjustments */
             loss_adjustments?: components["schemas"]["LossAdjustment"][];
+            /** Pallet Tariffs */
+            pallet_tariffs?: {
+                [key: string]: components["schemas"]["PalletTariff"];
+            };
         };
         /** CreatePlanRequest */
         CreatePlanRequest: {
@@ -2525,6 +2575,12 @@ export interface components {
             /** Sell By Date */
             sell_by_date?: string | null;
             /**
+             * Sell Window
+             * @default normal
+             * @enum {string}
+             */
+            sell_window: "normal" | "short";
+            /**
              * Scenario Id
              * @default default
              */
@@ -2698,6 +2754,12 @@ export interface components {
              * Format: date
              */
             sell_by_date: string;
+            /**
+             * Sell Window
+             * @default normal
+             * @enum {string}
+             */
+            sell_window: "normal" | "short";
         };
         /** LotChange */
         LotChange: {
@@ -2904,6 +2966,21 @@ export interface components {
             total_savings: number;
             /** Total Fee */
             total_fee: number;
+            /**
+             * Total Operational Baseline Cost
+             * @default 0
+             */
+            total_operational_baseline_cost: number;
+            /**
+             * Total Operational Cost
+             * @default 0
+             */
+            total_operational_cost: number;
+            /**
+             * Total Operational Savings
+             * @default 0
+             */
+            total_operational_savings: number;
             /**
              * Collection Basis
              * @default route
@@ -3186,6 +3263,17 @@ export interface components {
             /** Lon */
             lon: number;
         };
+        /** PalletTariff */
+        PalletTariff: {
+            air_freight: components["schemas"]["Quantity"];
+            air_inland: components["schemas"]["Quantity"];
+            air_loss_risk: components["schemas"]["Quantity"];
+            sea_freight: components["schemas"]["Quantity"];
+            sea_inland: components["schemas"]["Quantity"];
+            sea_loss_risk: components["schemas"]["Quantity"];
+            sea_loss_risk_short_window: components["schemas"]["Quantity"];
+            air_rate_basis_per_kg: components["schemas"]["Quantity"];
+        };
         /** ParamRange */
         ParamRange: {
             /** Key */
@@ -3281,6 +3369,25 @@ export interface components {
             total_savings: number;
             /** Total Fee */
             total_fee: number;
+            /**
+             * Total Operational Baseline Cost
+             * @default 0
+             */
+            total_operational_baseline_cost: number;
+            /**
+             * Total Operational Cost
+             * @default 0
+             */
+            total_operational_cost: number;
+            /**
+             * Total Operational Savings
+             * @default 0
+             */
+            total_operational_savings: number;
+            /** Container Settlements */
+            container_settlements?: components["schemas"]["ContainerSettlement"][];
+            /** Settlement Tariffs */
+            settlement_tariffs?: components["schemas"]["TariffSheet"][];
             /**
              * Collection Basis
              * @default estimate
@@ -3700,6 +3807,22 @@ export interface components {
             fee: number;
             /** Shipper Gain */
             shipper_gain: number;
+            /**
+             * Sea Pallets
+             * @default 0
+             */
+            sea_pallets: number;
+            /**
+             * Air Pallets
+             * @default 0
+             */
+            air_pallets: number;
+            /**
+             * Basis
+             * @default operational
+             * @enum {string}
+             */
+            basis: "tariff" | "operational" | "mixed";
             /** Fee Before Refund */
             fee_before_refund: number;
             /** Quality Refund */
@@ -4171,6 +4294,22 @@ export interface components {
             fee: number;
             /** Shipper Gain */
             shipper_gain: number;
+            /**
+             * Sea Pallets
+             * @default 0
+             */
+            sea_pallets: number;
+            /**
+             * Air Pallets
+             * @default 0
+             */
+            air_pallets: number;
+            /**
+             * Basis
+             * @default operational
+             * @enum {string}
+             */
+            basis: "tariff" | "operational" | "mixed";
         };
         /** SettlementPreview */
         SettlementPreview: {
@@ -4224,6 +4363,14 @@ export interface components {
             total_refund: number;
             /** Total Fee */
             total_fee: number;
+            /** Total Savings */
+            total_savings: number;
+            /** Containers */
+            containers: components["schemas"]["ContainerSettlement"][];
+            /** Tariffs */
+            tariffs: components["schemas"]["TariffSheet"][];
+            /** Assumed Items */
+            assumed_items: string[];
         };
         /** Shipper */
         Shipper: {
@@ -4300,6 +4447,8 @@ export interface components {
             air_pallets: number;
             plan: components["schemas"]["CostBreakdown"];
             baseline: components["schemas"]["CostBreakdown"];
+            operational?: components["schemas"]["CostBreakdown"] | null;
+            operational_baseline?: components["schemas"]["CostBreakdown"] | null;
         };
         /** ShipperDelta */
         ShipperDelta: {
@@ -4598,6 +4747,60 @@ export interface components {
             iterations: number;
             /** Switches */
             switches: components["schemas"]["ModeSwitch"][];
+        };
+        /** TariffLine */
+        TariffLine: {
+            /**
+             * Key
+             * @enum {string}
+             */
+            key: "freight" | "inland" | "loss_risk";
+            /** Label */
+            label: string;
+            /** Air */
+            air: number;
+            /** Sea */
+            sea: number;
+            /** Air Assumed */
+            air_assumed: boolean;
+            /** Sea Assumed */
+            sea_assumed: boolean;
+            /** Air Source */
+            air_source: string;
+            /** Sea Source */
+            sea_source: string;
+        };
+        /** TariffSheet */
+        TariffSheet: {
+            /** Product Id */
+            product_id: string;
+            /**
+             * Unit
+             * @default 원/파렛트
+             */
+            unit: string;
+            /** Lines */
+            lines: components["schemas"]["TariffLine"][];
+            /** Air Total */
+            air_total: number;
+            /** Sea Total */
+            sea_total: number;
+            /** Savings Per Pallet */
+            savings_per_pallet: number;
+            /** Fee Rate */
+            fee_rate: number;
+            /** Fee Per Pallet */
+            fee_per_pallet: number;
+            /** Shipper Share Per Pallet */
+            shipper_share_per_pallet: number;
+            /** Sea Loss Risk Short Window */
+            sea_loss_risk_short_window: number;
+            /** Sea Total Short Window */
+            sea_total_short_window: number;
+            /** Short Window Rule */
+            short_window_rule: string;
+            /** Assumed Items */
+            assumed_items: string[];
         };
         /** Threshold */
         Threshold: {
