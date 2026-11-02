@@ -144,7 +144,8 @@ function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
           focusContainerId={container?.container_id ?? null}
           appliedId={flow.appliedId}
           applyingId={flow.applyingId}
-          costDeltaLabel="지금 계획(평소 판매 기간 가정) 대비 총비용 변화"
+          costDeltaLabel={`${shipperName}만 항공으로 빼고 그대로 출항할 때 대비`}
+          baselineAlternativeId="sail_as_is"
           onApply={flow.applyAlternative}
         />
       )}
