@@ -73,7 +73,6 @@ function CreatePlanCard() {
 
 function PlanDetail({ session }: { session: PlanSessionT }) {
   const { plan, scenario } = session;
-  const usedContainers = plan.containers.filter(container => container.used);
 
   return (
     <div className="flex flex-col gap-6">
@@ -81,11 +80,7 @@ function PlanDetail({ session }: { session: PlanSessionT }) {
 
       <div className="grid grid-cols-[1fr_560px] gap-6">
         <div className="flex flex-col gap-6">
-          <ContainerCard
-            containers={usedContainers}
-            assignments={plan.assignments}
-            scenario={scenario}
-          />
+          <ContainerCard plan={plan} scenario={scenario} />
           <SettlementTable
             containerSettlements={plan.container_settlements ?? []}
             scenario={scenario}
