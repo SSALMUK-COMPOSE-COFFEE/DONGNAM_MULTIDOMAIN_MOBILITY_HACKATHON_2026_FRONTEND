@@ -29,8 +29,13 @@ type ReplanAlternativesPropsT = {
   appliedId: AlternativeIdT | null;
   applyingId: AlternativeIdT | null;
   onApply: (alternativeId: AlternativeIdT) => void;
-  /** 비용 변화의 기준. 기본은 '지금 계획 대비' */
+  /** 비용 변화의 기준 문구. 기본은 '지금 계획 대비' */
   costDeltaLabel?: string;
+  /**
+   * 이 대안의 총비용을 0 으로 두고 나머지를 견준다.
+   * 백엔드 cost_delta 는 지금 계획 대비라서, 모든 안에 똑같이 드는 비용(예: 항공 전환 운임)이 섞여 있을 때 쓴다
+   */
+  baselineAlternativeId?: AlternativeIdT;
 };
 
 /** 재최적화 대안 3개(당겨 채우기·다음 배 이월·그대로 출항)를 비용·적재·화주 영향으로 비교한다 */
@@ -42,7 +47,10 @@ export function ReplanAlternatives({
   applyingId,
   onApply,
   costDeltaLabel = '지금 계획 대비 총비용 변화',
+  baselineAlternativeId,
 }: ReplanAlternativesPropsT) {
+  const baselineDelta =
+    replan.alternatives.find(({ id }) => id === baselineAlternativeId)?.cost_delta ?? 0;
   const recommended = replan.alternatives.find(({ id }) => id === replan.recommended_id);
 
   return (
@@ -70,6 +78,7 @@ export function ReplanAlternatives({
             isApplying={alternative.id === applyingId}
             isLocked={!!appliedId || !!applyingId}
             costDeltaLabel={costDeltaLabel}
+            costDelta={alternative.cost_delta - baselineDelta}
             onApply={() => onApply(alternative.id)}
           />
         ))}
@@ -87,6 +96,7 @@ type AlternativeCardPropsT = {
   isApplying: boolean;
   isLocked: boolean;
   costDeltaLabel: string;
+  costDelta: number;
   onApply: () => void;
 };
 
@@ -99,9 +109,10 @@ function AlternativeCard({
   isApplying,
   isLocked,
   costDeltaLabel,
+  costDelta,
   onApply,
 }: AlternativeCardPropsT) {
-  const { label, feasible, infeasible_reasons, cost_delta, plan, diff } = alternative;
+  const { label, feasible, infeasible_reasons, plan, diff } = alternative;
   const container = plan.containers.find(({ container_id }) => container_id === focusContainerId);
   const applyLabel = (isApplied && '적용됨') || (isApplying && '적용 중') || '이 안으로 적용';
   const affectedShippers = diff.shippers.filter(
@@ -124,10 +135,12 @@ function AlternativeCard({
           <p
             className={cn(
               'text-3xl font-bold num',
-              (!feasible && 'text-muted-foreground') || (cost_delta <= 0 ? 'text-ok' : 'text-berry')
+              (!feasible && 'text-muted-foreground') ||
+                (costDelta === 0 && 'text-foreground') ||
+                (costDelta < 0 ? 'text-ok' : 'text-berry')
             )}
           >
-            {formatSignedManwon(cost_delta)}
+            {formatSignedManwon(costDelta)}
             <span className="ml-1 text-base font-medium text-muted-foreground">만 원</span>
           </p>
         </div>
