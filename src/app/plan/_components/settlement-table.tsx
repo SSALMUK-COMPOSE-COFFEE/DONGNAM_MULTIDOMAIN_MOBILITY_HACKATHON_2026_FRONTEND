@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -26,8 +26,10 @@ export function SettlementTable({ containerSettlements, scenario }: SettlementTa
   return (
     <Card>
       <CardHeader>
-        <CardTitle>화주별 총비용 절감액</CardTitle>
-        <CardDescription>항공으로 혼자 보낼 때 대비 · 성과보수 25% · 만 원</CardDescription>
+        <CardTitle>
+          화주별 총비용 절감액
+          <span className="ml-2 text-base font-medium text-muted-foreground">만 원</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -35,10 +37,10 @@ export function SettlementTable({ containerSettlements, scenario }: SettlementTa
             <TableRow>
               <TableHead>화주</TableHead>
               <TableHead className="text-right">파렛트</TableHead>
-              <TableHead className="text-right">항공 기준</TableHead>
+              <TableHead className="text-right">혼자 항공</TableHead>
               <TableHead className="text-right">공동적재</TableHead>
               <TableHead className="text-right">절감</TableHead>
-              <TableHead className="text-right">수수료</TableHead>
+              <TableHead className="text-right">수수료 25%</TableHead>
               <TableHead className="text-right">화주 몫</TableHead>
             </TableRow>
           </TableHeader>

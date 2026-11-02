@@ -140,9 +140,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* 위는 흰색, 아래로 갈수록 연한 파랑 */
+    /* 위는 흰색, 아래로 갈수록 연한 파랑. html 높이를 고정하지 않아야 긴 화면에서 반복되지 않는다 */
     background-image: linear-gradient(180deg, #ffffff 0%, #f3f7fe 55%, #e6effc 100%);
-    background-attachment: fixed;
   }
   html {
     @apply font-sans;
@@ -157,13 +156,48 @@
 [data-slot='card'] {
   --tw-ring-color: var(--line);
   --tw-shadow: 0 2px 12px rgb(13 42 94 / 0.04);
+  /* 빔프로젝터 기준 본문은 16px */
+  font-size: var(--text-base);
 }
 [data-slot='card']:not([data-size='sm']) {
   --card-spacing: calc(var(--spacing) * 6);
 }
 [data-slot='card-title'] {
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* 빔프로젝터에서 읽히도록 shadcn 기본 크기를 한 단계 키운다 (ui/ 는 그대로 둔다) */
+[data-slot='button'][data-size='default'] {
+  height: calc(var(--spacing) * 11);
+  padding-inline: calc(var(--spacing) * 4);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+[data-slot='button'][data-size='lg'] {
+  height: calc(var(--spacing) * 13);
+  padding-inline: calc(var(--spacing) * 5);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+[data-slot='badge'] {
+  height: calc(var(--spacing) * 6.5);
+  padding-inline: calc(var(--spacing) * 2.5);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+[data-slot='input'],
+[data-slot='select-trigger'] {
+  height: calc(var(--spacing) * 11);
+  font-size: var(--text-base);
+}
+[data-slot='table'] {
+  font-size: var(--text-base);
+}
+[data-slot='table-head'] {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
 }
 
 @utility num {

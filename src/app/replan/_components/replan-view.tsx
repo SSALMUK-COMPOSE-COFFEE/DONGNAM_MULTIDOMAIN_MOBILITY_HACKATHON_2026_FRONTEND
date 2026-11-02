@@ -7,8 +7,9 @@ import { ContainerLoadBar } from '@/components/container-load-bar';
 import { CurrentPlanGate } from '@/components/current-plan-gate';
 import { ExecutionOrderPanel } from '@/components/execution-order';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -63,7 +64,6 @@ function ReplanWorkspace({ session }: { session: PlanSessionT }) {
         <Card>
           <CardHeader>
             <CardTitle>변동 입력</CardTitle>
-            <CardDescription>화주가 출하량을 줄이거나 취소했다</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             <Select value={lotId} onValueChange={setLotId}>
@@ -122,11 +122,12 @@ function ReplanWorkspace({ session }: { session: PlanSessionT }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>지금 계획</CardTitle>
-            <CardDescription>
-              v{session.version}
-              {session.status === 'pending_confirmation' && ' · 확정 대기'}
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              지금 계획
+              {session.status === 'pending_confirmation' && (
+                <Badge className="bg-air">확정 대기</Badge>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {container && (

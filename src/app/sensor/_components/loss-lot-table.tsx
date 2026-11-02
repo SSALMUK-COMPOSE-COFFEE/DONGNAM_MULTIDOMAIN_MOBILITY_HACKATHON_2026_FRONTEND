@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -21,8 +21,10 @@ export function LossLotTable({ lots, scenario }: LossLotTablePropsT) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>화주별 추가 손실</CardTitle>
-        <CardDescription>계획에 넣은 손실률 대비 센서 기준 예상 손실 · 만 원</CardDescription>
+        <CardTitle>
+          화주별 추가 손실
+          <span className="ml-2 text-base font-medium text-muted-foreground">만 원</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>

@@ -10,7 +10,7 @@ import { planOrdersQueryOptions } from '@/apis/getPlanOrders';
 import { postOrderConfirm } from '@/apis/postOrderConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ConfirmRequestT, ExecutionOrderT } from '@/types/api';
 import { formatSignedManwon } from '@/utils/format';
 
@@ -59,9 +59,6 @@ export function ExecutionOrderPanel({ planId, order }: ExecutionOrderPanelPropsT
             {STATUS_LABEL[order.status]}
           </Badge>
         </CardTitle>
-        <CardDescription>
-          계획 v{order.base_version} → v{order.target_version} · 화주는 확정만, 나머지는 자동
-        </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-3 gap-8">
         <section className="flex flex-col gap-3">

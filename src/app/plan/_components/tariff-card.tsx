@@ -1,6 +1,6 @@
 import { CostCompare } from '@/components/cost-compare';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ScenarioT, TariffSheetT } from '@/types/api';
 import { formatManwon } from '@/utils/format';
 import { getProductName } from '@/utils/scenario';
@@ -15,8 +15,10 @@ export function TariffCard({ tariff, scenario }: TariffCardPropsT) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{getProductName(scenario, tariff.product_id)} 1파렛트 정산표</CardTitle>
-        <CardDescription>운임 + 내륙·장비·보관 + 품질손실 위험 · 만 원</CardDescription>
+        <CardTitle>
+          {getProductName(scenario, tariff.product_id)} 1파렛트 정산표
+          <span className="ml-2 text-base font-medium text-muted-foreground">만 원</span>
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <CostCompare

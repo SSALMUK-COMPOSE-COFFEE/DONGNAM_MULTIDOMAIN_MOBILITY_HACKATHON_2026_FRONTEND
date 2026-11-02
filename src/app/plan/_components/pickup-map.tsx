@@ -3,7 +3,7 @@
 import { CustomOverlayMap, Polyline } from 'react-kakao-maps-sdk';
 
 import KakaoMap from '@/components/kakao-map';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ScenarioT, SchemaT } from '@/types/api';
 
 type PickupMapPropsT = {
@@ -27,11 +27,14 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>선과장 집하 경로</CardTitle>
-        <CardDescription>
-          트럭 {new Set(truckRoutes.map(({ truck_id }) => truck_id)).size}대 · 반입 마감에 맞춘 순회
-          경로
-        </CardDescription>
+        <CardTitle>
+          선과장 집하 경로
+          <span className="ml-2 text-base font-medium text-muted-foreground">
+            트럭{' '}
+            <span className="num">{new Set(truckRoutes.map(({ truck_id }) => truck_id)).size}</span>
+            대
+          </span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <KakaoMap center={{ lat: 35.5, lng: 128.5 }} level={11} className="h-105 w-full rounded-xl">

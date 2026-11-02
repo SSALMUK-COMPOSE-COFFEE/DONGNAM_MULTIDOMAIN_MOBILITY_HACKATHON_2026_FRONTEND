@@ -1,6 +1,6 @@
 import { cn } from 'cn';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { FuelShockCaseT, FuelShockResultT } from '@/types/api';
 import { formatManwon, formatSignedManwon } from '@/utils/format';
 
@@ -25,7 +25,6 @@ export function SurchargeCard({ result, selectedIndex, onSelect, baseline }: Sur
     <Card>
       <CardHeader>
         <CardTitle>항공 유류할증료</CardTitle>
-        <CardDescription>2026.4.16 kg당 470원 → 2,060원 (한국농어민신문 2026.4)</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-6">
         <div className="grid grid-cols-2 gap-3">
@@ -81,7 +80,9 @@ export function SurchargeCard({ result, selectedIndex, onSelect, baseline }: Sur
         )}
 
         <p className="mt-auto text-sm num text-muted-foreground">
-          할증료별 재계산 {solve_count}회 · {solve_ms.toLocaleString()}ms
+          출처 한국농어민신문 2026.4 (4.16 인상)
+          <br />
+          할증료별 재계산 {solve_count}회, {solve_ms.toLocaleString()}ms
         </p>
       </CardContent>
     </Card>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -43,7 +43,6 @@ export function IntakeForm({ scenario, isPending, fieldErrors, onSubmit }: Intak
     <Card>
       <CardHeader>
         <CardTitle>출하 등록</CardTitle>
-        <CardDescription>다섯 칸만 채우면 판매기한·로트 번호는 자동으로 채운다</CardDescription>
       </CardHeader>
       <CardContent>
         <form
