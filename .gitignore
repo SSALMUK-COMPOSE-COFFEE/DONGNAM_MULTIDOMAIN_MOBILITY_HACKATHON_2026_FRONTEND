@@ -41,7 +41,7 @@ yarn-error.log*
 next-env.d.ts
 !.env.example
 
-# 기획 원본 문서 (개인정보 포함, 공개 레포에 올리지 않음)
+# 기획서·신청서·프로토타입 등 내부 자료 (개인정보 포함, 공개 레포에 올리지 않음)
+/private/
 *.docx
 *.pdf
-/프레시스위치*.html
