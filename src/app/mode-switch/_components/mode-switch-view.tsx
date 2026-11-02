@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { ContainerLoadBar } from '@/components/container-load-bar';
 import { CostCompare } from '@/components/cost-compare';
 import { CurrentPlanGate } from '@/components/current-plan-gate';
 import { ExecutionOrderPanel } from '@/components/execution-order';
+import { PlanLoadError } from '@/components/plan-load-error';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_AIR_SWITCH_LOT_ID } from '@/consts/demo';
+import { useCreatePlan } from '@/hooks/useCreatePlan';
 import { useReplanFlow } from '@/hooks/useReplanFlow';
 import type { PlanSessionT } from '@/types/api';
 import { formatManwon } from '@/utils/format';
@@ -26,9 +30,50 @@ import { getProductName, getShipperShortName } from '@/utils/scenario';
 export function ModeSwitchView() {
   return (
     <CurrentPlanGate reason="해상으로 가는 화물이 있어야 항공 전환을 비교할 수 있습니다.">
-      {session => <ModeSwitchWorkspace session={session} />}
+      {session => <BasePlanForAirSwitch session={session} />}
     </CurrentPlanGate>
   );
+}
+
+/**
+ * 항공 전환은 처음 계획에서 비교해야 '빈자리에 밀양 2차를 당겨 싣는' 재배정이 보인다.
+ * 03 취소 재최적화를 적용한 계획이면 산청이 이미 줄고 밀양 2차도 실려 있어 비교할 것이 없으므로,
+ * 처음 계획을 새로 만들어 그 위에서 비교한다. 04 에서 항공 전환을 적용한 계획은 그대로 둔다
+ */
+function BasePlanForAirSwitch({ session }: { session: PlanSessionT }) {
+  const hasOtherChanges = session.history.some(
+    ({ kind, event }) => kind === 'apply' && event.type !== 'air_switch'
+  );
+  const { mutateAsync: createPlan, isError, isPending } = useCreatePlan();
+  /** 같은 계획으로 두 번 만들지 않도록 (개발 모드의 effect 두 번 실행, 화면 재진입) */
+  const requestedPlanIdRef = useRef<string | null>(null);
+
+  const recreate = () => {
+    requestedPlanIdRef.current = session.plan_id;
+    createPlan()
+      .then(() => toast.info('취소를 반영하기 전의 처음 계획으로 항공 전환을 비교합니다.'))
+      .catch(() => toast.error('처음 계획을 다시 만들지 못했습니다.'));
+  };
+
+  useEffect(() => {
+    if (!hasOtherChanges || requestedPlanIdRef.current === session.plan_id) return;
+    recreate();
+  });
+
+  if (hasOtherChanges) {
+    if (isError && !isPending) {
+      return (
+        <PlanLoadError
+          message="처음 계획을 다시 만들지 못했습니다. 서버 연결을 확인하세요."
+          onRetry={recreate}
+          isRetrying={isPending}
+        />
+      );
+    }
+    return <Skeleton className="h-96" />;
+  }
+
+  return <ModeSwitchWorkspace key={session.plan_id} session={session} />;
 }
 
 function ModeSwitchWorkspace({ session }: { session: PlanSessionT }) {
