@@ -18,25 +18,55 @@ import type { IntakeRequestT, ScenarioT } from '@/types/api';
 
 export type IntakeFieldErrorT = { field: string; message: string };
 
+export type IntakeOptionT = { id: string; label: string };
+
+export type IntakeFormOptionsT = {
+  products: IntakeOptionT[];
+  shippers: IntakeOptionT[];
+  destinations: IntakeOptionT[];
+};
+
 type IntakeFormPropsT = {
   scenario: ScenarioT;
   isPending: boolean;
   fieldErrors: IntakeFieldErrorT[];
   onSubmit: (request: IntakeRequestT) => void;
+  initialValues?: Partial<IntakeRequestT>;
+  options?: Partial<IntakeFormOptionsT>;
+  hideShipperField?: boolean;
 };
 
 /** 화주가 넣는 건 품목·수량·선과장·목적지·출하일 다섯 개뿐이다 */
-export function IntakeForm({ scenario, isPending, fieldErrors, onSubmit }: IntakeFormPropsT) {
-  const [form, setForm] = useState<IntakeRequestT>({
-    ...DEMO_INTAKE,
-    sell_window: 'normal',
-    scenario_id: DEMO_SCENARIO_ID,
+export function IntakeForm({
+  scenario,
+  isPending,
+  fieldErrors,
+  onSubmit,
+  initialValues,
+  options,
+  hideShipperField = false,
+}: IntakeFormPropsT) {
+  const products = options?.products ?? toProductOptions(scenario);
+  const shippers = options?.shippers ?? toShipperOptions(scenario);
+  const destinations = options?.destinations ?? toDestinationOptions(scenario);
+
+  const [form, setForm] = useState<IntakeRequestT>(() => {
+    const base: IntakeRequestT = {
+      ...DEMO_INTAKE,
+      sell_window: 'normal',
+      scenario_id: DEMO_SCENARIO_ID,
+      ...initialValues,
+    };
+
+    return {
+      ...base,
+      product: pickOption(options?.products, base.product),
+      shipper: pickOption(options?.shippers, base.shipper),
+      destination: pickOption(options?.destinations, base.destination),
+    };
   });
   const update = (patch: Partial<IntakeRequestT>) => setForm(prev => ({ ...prev, ...patch }));
 
-  // 출발항(부산신항)은 목적지에서 뺀다
-  const destinationIds = new Set(scenario.voyages.map(({ destination }) => destination));
-  const destinations = scenario.ports.filter(({ id }) => destinationIds.has(id));
   const errorOf = (field: string) => fieldErrors.find(error => error.field === field)?.message;
 
   return (
@@ -58,9 +88,9 @@ export function IntakeForm({ scenario, isPending, fieldErrors, onSubmit }: Intak
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {scenario.products.map(({ id, name }) => (
+                {products.map(({ id, label }) => (
                   <SelectItem key={id} value={id}>
-                    {name}
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -77,21 +107,26 @@ export function IntakeForm({ scenario, isPending, fieldErrors, onSubmit }: Intak
             />
           </Field>
 
-          <Field label="화주 · 선과장" error={errorOf('shipper')}>
-            <Select value={form.shipper} onValueChange={shipper => update({ shipper })}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {scenario.shippers.map(({ id, name, packhouse_id }) => (
-                  <SelectItem key={id} value={id}>
-                    {name} ·{' '}
-                    {scenario.packhouses.find(({ id: phId }) => phId === packhouse_id)?.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+          {hideShipperField && errorOf('shipper') && (
+            <p className="text-sm text-berry">{errorOf('shipper')}</p>
+          )}
+
+          {!hideShipperField && (
+            <Field label="화주 · 선과장" error={errorOf('shipper')}>
+              <Select value={form.shipper} onValueChange={shipper => update({ shipper })}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {shippers.map(({ id, label }) => (
+                    <SelectItem key={id} value={id}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
 
           <Field label="목적지" error={errorOf('destination')}>
             <Select value={form.destination} onValueChange={destination => update({ destination })}>
@@ -99,9 +134,9 @@ export function IntakeForm({ scenario, isPending, fieldErrors, onSubmit }: Intak
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {destinations.map(({ id, name }) => (
+                {destinations.map(({ id, label }) => (
                   <SelectItem key={id} value={id}>
-                    {name}
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -125,6 +160,27 @@ export function IntakeForm({ scenario, isPending, fieldErrors, onSubmit }: Intak
     </Card>
   );
 }
+
+const pickOption = (list: IntakeOptionT[] | undefined, current: string): string =>
+  !list || list.some(({ id }) => id === current) ? current : (list[0]?.id ?? current);
+
+const toProductOptions = (scenario: ScenarioT): IntakeOptionT[] =>
+  scenario.products.map(({ id, name }) => ({ id, label: name }));
+
+const toShipperOptions = (scenario: ScenarioT): IntakeOptionT[] =>
+  scenario.shippers.map(({ id, name, packhouse_id }) => ({
+    id,
+    label: `${name} · ${scenario.packhouses.find(({ id: phId }) => phId === packhouse_id)?.name ?? ''}`,
+  }));
+
+const toDestinationOptions = (scenario: ScenarioT): IntakeOptionT[] => {
+  // 출발항(부산신항)은 목적지에서 뺀다
+  const destinationIds = new Set(scenario.voyages.map(({ destination }) => destination));
+
+  return scenario.ports
+    .filter(({ id }) => destinationIds.has(id))
+    .map(({ id, name }) => ({ id, label: name }));
+};
 
 function Field({
   label,

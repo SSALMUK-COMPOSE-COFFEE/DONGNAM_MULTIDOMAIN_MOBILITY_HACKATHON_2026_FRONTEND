@@ -1,17 +1,13 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { cn } from 'cn';
 import { CheckCircle2Icon, CircleIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
-import { planQueryOptions } from '@/apis/getPlan';
-import { planOrdersQueryOptions } from '@/apis/getPlanOrders';
-import { postOrderConfirm } from '@/apis/postOrderConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ConfirmRequestT, ExecutionOrderT } from '@/types/api';
+import { type UseConfirmOrderOptionsT, useConfirmOrder } from '@/hooks/useConfirmOrder';
+import type { ExecutionOrderT } from '@/types/api';
 import { formatSignedManwon } from '@/utils/format';
 
 const STATUS_LABEL: Record<ExecutionOrderT['status'], string> = {
@@ -23,32 +19,44 @@ const STATUS_LABEL: Record<ExecutionOrderT['status'], string> = {
   expired: '기한 만료',
 };
 
+const SHIPPER_STATUS_LABEL: Record<
+  ExecutionOrderT['shipper_confirmations'][number]['status'],
+  string
+> = {
+  pending: '확인 대기',
+  accepted: '수락함',
+  rejected: '거절함',
+};
+
 const DONE_STATUSES: ExecutionOrderT['status'][] = ['forwarder_confirmed', 'executed'];
+
+export type ExecutionOrderRoleT = 'demo' | 'platform' | 'shipper' | 'forwarder';
 
 type ExecutionOrderPanelPropsT = {
   planId: string;
   order: ExecutionOrderT;
+  role?: ExecutionOrderRoleT;
+  viewerShipperId?: string;
+  confirmOptions?: UseConfirmOrderOptionsT;
 };
 
 /**
  * 대안을 적용하면 생기는 실행 지시.
  * 화주가 하는 일은 확정 한 번뿐이고, 나머지(배정·배차·정산)는 자동 조치로 처리된다는 걸 보여준다
  */
-export function ExecutionOrderPanel({ planId, order }: ExecutionOrderPanelPropsT) {
-  const queryClient = useQueryClient();
+export function ExecutionOrderPanel({
+  planId,
+  order,
+  role = 'demo',
+  viewerShipperId,
+  confirmOptions,
+}: ExecutionOrderPanelPropsT) {
   const isDone = DONE_STATUSES.includes(order.status);
+  const { mutate: confirm, isPending } = useConfirmOrder(planId, order.order_id, confirmOptions);
 
-  const { mutate: confirm, isPending } = useMutation({
-    mutationFn: (request: ConfirmRequestT) => postOrderConfirm(planId, order.order_id, request),
-    onSuccess: (updated, { actor }) => {
-      queryClient.invalidateQueries({ queryKey: planOrdersQueryOptions(planId).queryKey });
-      if (actor === 'forwarder') {
-        queryClient.invalidateQueries({ queryKey: planQueryOptions(planId).queryKey });
-        toast.success('계획을 확정하고 자동 조치를 실행했습니다.');
-      }
-    },
-    onError: () => toast.error('확정하지 못했습니다.'),
-  });
+  const canAcceptFor = (shipperId: string) =>
+    role === 'demo' || (role === 'shipper' && (!viewerShipperId || shipperId === viewerShipperId));
+  const canForwarderConfirm = role === 'demo' || role === 'forwarder';
 
   return (
     <Card>
@@ -92,7 +100,7 @@ export function ExecutionOrderPanel({ planId, order }: ExecutionOrderPanelPropsT
                     부담 {formatSignedManwon(net_cost_delta ?? cost_delta)}만 원
                   </p>
                 </div>
-                {status === 'pending' ? (
+                {status === 'pending' && canAcceptFor(shipper_id) ? (
                   <Button
                     size="sm"
                     disabled={isPending}
@@ -103,18 +111,20 @@ export function ExecutionOrderPanel({ planId, order }: ExecutionOrderPanelPropsT
                     수락
                   </Button>
                 ) : (
-                  <Badge variant="secondary">{status === 'accepted' ? '수락함' : '거절함'}</Badge>
+                  <Badge variant="secondary">{SHIPPER_STATUS_LABEL[status]}</Badge>
                 )}
               </div>
             )
           )}
-          <Button
-            size="lg"
-            disabled={isPending || order.status !== 'shipper_confirmed'}
-            onClick={() => confirm({ actor: 'forwarder', accept: true })}
-          >
-            {isDone ? '포워더 확정 완료' : '포워더 확정'}
-          </Button>
+          {canForwarderConfirm && (
+            <Button
+              size="lg"
+              disabled={isPending || order.status !== 'shipper_confirmed'}
+              onClick={() => confirm({ actor: 'forwarder', accept: true })}
+            >
+              {isDone ? '포워더 확정 완료' : '포워더 확정'}
+            </Button>
+          )}
         </section>
 
         <section className="flex flex-col gap-3">

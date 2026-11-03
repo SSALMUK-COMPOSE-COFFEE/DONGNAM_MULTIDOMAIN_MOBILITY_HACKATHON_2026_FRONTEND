@@ -1,10 +1,13 @@
-import { PalletBar } from '@/components/pallet-bar';
+import { PalletBar, type PalletSegmentT } from '@/components/pallet-bar';
 import type { ContainerLoadT, PlanT, ScenarioT } from '@/types/api';
 import { getPortName, getProductName, getShipperShortName } from '@/utils/scenario';
 
 /** 화주 색. 딸기는 파랑 계열, SO2 처리 포도는 보라 계열 */
 const SHIPPER_COLORS = ['bg-navy', 'bg-brand', 'bg-cyan'];
 const SO2_SHIPPER_COLORS = ['bg-grape', 'bg-grape-soft'];
+const OTHER_SHIPPERS_KEY = 'other-shippers';
+const OTHER_SHIPPERS_LABEL = '다른 화주';
+const OTHER_SHIPPERS_COLOR = 'bg-slate';
 
 type ContainerLoadBarPropsT = {
   container: Pick<ContainerLoadT, 'container_id' | 'voyage_id' | 'capacity_pallets'>;
@@ -16,13 +19,19 @@ type ContainerLoadBarPropsT = {
     >[];
   };
   scenario: ScenarioT;
+  viewerShipperId?: string;
 };
 
 /**
  * 컨테이너 한 대의 적재를 화주별 파렛트 칸으로 그린다.
  * 재최적화 전후를 나란히 볼 때 색이 바뀌지 않도록 화주 색은 시나리오 순서로 고정한다
  */
-export function ContainerLoadBar({ container, plan, scenario }: ContainerLoadBarPropsT) {
+export function ContainerLoadBar({
+  container,
+  plan,
+  scenario,
+  viewerShipperId,
+}: ContainerLoadBarPropsT) {
   const loads = plan.assignments.filter(
     ({ container_id }) => container_id === container.container_id
   );
@@ -38,12 +47,15 @@ export function ContainerLoadBar({ container, plan, scenario }: ContainerLoadBar
     palletsByShipper.set(shipper_id, (palletsByShipper.get(shipper_id) ?? 0) + pallets)
   );
 
-  const segments = [...palletsByShipper].map(([shipperId, pallets]) => ({
+  const shipperSegments = [...palletsByShipper].map(([shipperId, pallets]) => ({
     key: shipperId,
     label: getShipperShortName(scenario, shipperId),
     pallets,
     colorClassName: getShipperColor(scenario, shipperId, isSo2),
   }));
+  const segments = viewerShipperId
+    ? anonymizeSegments(shipperSegments, viewerShipperId)
+    : shipperSegments;
 
   return (
     <PalletBar
@@ -77,4 +89,23 @@ export const getShipperColor = (scenario: ScenarioT, shipperId: string, isSo2: b
   const index = Math.max(sameGroupShipperIds.indexOf(shipperId), 0);
 
   return colors[index % colors.length];
+};
+
+const anonymizeSegments = (segments: PalletSegmentT[], viewerShipperId: string) => {
+  const own = segments.filter(({ key }) => key === viewerShipperId);
+  const otherPallets = segments
+    .filter(({ key }) => key !== viewerShipperId)
+    .reduce((sum, { pallets }) => sum + pallets, 0);
+
+  return otherPallets > 0
+    ? [
+        ...own,
+        {
+          key: OTHER_SHIPPERS_KEY,
+          label: OTHER_SHIPPERS_LABEL,
+          pallets: otherPallets,
+          colorClassName: OTHER_SHIPPERS_COLOR,
+        },
+      ]
+    : own;
 };

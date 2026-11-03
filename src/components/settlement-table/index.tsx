@@ -16,13 +16,19 @@ const BASIS_LABEL: Record<string, string> = {
   tariff: '정산표 단가',
   operational: '운영비 기준',
 };
+const OTHER_SHIPPER_LABEL = '다른 화주';
 
 type SettlementTablePropsT = {
   containerSettlements: ContainerSettlementT[];
   scenario: ScenarioT;
+  viewerShipperId?: string;
 };
 
-export function SettlementTable({ containerSettlements, scenario }: SettlementTablePropsT) {
+export function SettlementTable({
+  containerSettlements,
+  scenario,
+  viewerShipperId,
+}: SettlementTablePropsT) {
   return (
     <Card>
       <CardHeader>
@@ -50,6 +56,7 @@ export function SettlementTable({ containerSettlements, scenario }: SettlementTa
                 key={container.container_id}
                 container={container}
                 scenario={scenario}
+                viewerShipperId={viewerShipperId}
               />
             ))}
           </TableBody>
@@ -62,9 +69,11 @@ export function SettlementTable({ containerSettlements, scenario }: SettlementTa
 function ContainerRows({
   container,
   scenario,
+  viewerShipperId,
 }: {
   container: ContainerSettlementT;
   scenario: ScenarioT;
+  viewerShipperId?: string;
 }) {
   const basis = container.shippers[0]?.basis ?? '';
 
@@ -81,7 +90,11 @@ function ContainerRows({
       {container.shippers.map(
         ({ shipper_id, pallets, baseline_cost, shared_cost, savings, fee, shipper_gain }) => (
           <TableRow key={shipper_id}>
-            <TableCell>{getShipperName(scenario, shipper_id)}</TableCell>
+            <TableCell>
+              {!viewerShipperId || shipper_id === viewerShipperId
+                ? getShipperName(scenario, shipper_id)
+                : OTHER_SHIPPER_LABEL}
+            </TableCell>
             <TableCell className="text-right num">{pallets}</TableCell>
             <TableCell className="text-right num text-muted-foreground">
               {formatManwon(baseline_cost)}
