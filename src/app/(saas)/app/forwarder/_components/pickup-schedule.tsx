@@ -32,6 +32,16 @@ export function PickupSchedule({ session }: { session: ForwarderPlanSessionT }) 
       })
     ),
   ];
+  const cargoGroupLabel = (cargoGroup: string) =>
+    cargoGroup
+      .split('+')
+      .map(
+        productId =>
+          CARGO_GROUP_LABEL[productId] ??
+          scenario.products.find(({ id }) => id === productId)?.name ??
+          productId
+      )
+      .join(' · ');
   const voyageOf = (voyageId: string) => scenario.voyages.find(({ id }) => id === voyageId);
   const truckRoutes = routes.flatMap(({ voyage_id, pickup }) =>
     pickup.routes.map(route => ({ voyageId: voyage_id, route }))
@@ -66,9 +76,7 @@ export function PickupSchedule({ session }: { session: ForwarderPlanSessionT }) 
                   {route.truck_id} · {route.trip}회차
                 </h3>
                 {route.cargo_group && (
-                  <Badge variant="secondary">
-                    {CARGO_GROUP_LABEL[route.cargo_group] ?? route.cargo_group}
-                  </Badge>
+                  <Badge variant="secondary">{cargoGroupLabel(route.cargo_group)}</Badge>
                 )}
                 <span className="text-sm num text-muted-foreground">
                   {voyage ? `${voyage.vessel_name} · ` : ''}
