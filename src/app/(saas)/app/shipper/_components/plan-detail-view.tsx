@@ -3,6 +3,7 @@
 import { ArrowLeftIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -37,6 +38,7 @@ import type { ShipperOrderT } from '@/types/saas-shipper';
 export function PlanDetailView() {
   const planId = useSearchParams().get('plan_id') ?? '';
   const plan = useShipperPlan(planId);
+  const session = useMemo(() => plan.data && withLocatedPackhouses(plan.data), [plan.data]);
   const catalog = useShipperCatalog();
   const viewerShipperId = viewerShipperIdOf(catalog.data);
   const backLink = (
@@ -91,7 +93,7 @@ export function PlanDetailView() {
         />
       )}
 
-      {plan.data && catalog.data && (
+      {plan.data && session && catalog.data && (
         <>
           <div className="flex items-center gap-3">
             <Badge variant={plan.data.status === 'committed' ? 'default' : 'secondary'}>
@@ -104,10 +106,7 @@ export function PlanDetailView() {
           </div>
 
           <SectionErrorBoundary message="운송계획을 그리지 못했습니다." className="h-96">
-            <PlanDetail
-              session={withLocatedPackhouses(plan.data)}
-              viewerShipperId={viewerShipperId}
-            />
+            <PlanDetail session={session} viewerShipperId={viewerShipperId} />
           </SectionErrorBoundary>
 
           <SectionErrorBoundary message="실행 지시를 그리지 못했습니다." className="h-64">

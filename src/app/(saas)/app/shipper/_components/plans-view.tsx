@@ -4,6 +4,7 @@ import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { useShipperPlans } from '@/apis/saas/shipper';
+import { formatKstMonthDayTime } from '@/app/(saas)/app/shipper/_components/kst';
 import { PLAN_STATUS_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
 import { EmptyState, QueryError } from '@/app/(saas)/app/shipper/_components/query-state';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
@@ -90,7 +91,7 @@ export function PlansView() {
                       <span className="text-muted-foreground"> / {total_pallets}</span>
                     </TableCell>
                     <TableCell className="text-right num text-muted-foreground">
-                      {formatMonthDayTime(created_at)}
+                      {formatKstMonthDayTime(created_at)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Link
