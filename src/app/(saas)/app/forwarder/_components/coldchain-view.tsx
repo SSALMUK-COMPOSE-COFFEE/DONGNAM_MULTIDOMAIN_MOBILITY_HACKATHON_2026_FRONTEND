@@ -151,19 +151,39 @@ function PlanColdchain({ planId, containerParam }: PlanColdchainPropsT) {
       />
 
       <div className="grid grid-cols-[1fr_420px] gap-6">
-        {containerId ? (
-          <SectionErrorBoundary message="품온 정보를 그리지 못했습니다." className="h-96">
-            <ContainerTwin planId={planId} containerId={containerId} />
-          </SectionErrorBoundary>
-        ) : (
-          <Skeleton className="h-96" />
-        )}
+        <ContainerPanel planId={planId} containerId={containerId} isLoading={isLoading} />
         <div className="flex flex-col gap-3">
           <Badge className={cn('self-end', streamState.className)}>{streamState.label}</Badge>
           <AlertFeed alerts={stream.alerts} />
         </div>
       </div>
     </div>
+  );
+}
+
+type ContainerPanelPropsT = {
+  planId: string;
+  containerId: string | undefined;
+  isLoading: boolean;
+};
+
+function ContainerPanel({ planId, containerId, isLoading }: ContainerPanelPropsT) {
+  if (containerId) {
+    return (
+      <SectionErrorBoundary message="품온 정보를 그리지 못했습니다." className="h-96">
+        <ContainerTwin planId={planId} containerId={containerId} />
+      </SectionErrorBoundary>
+    );
+  }
+
+  if (isLoading) return <Skeleton className="h-96" />;
+
+  return (
+    <Card>
+      <CardContent className="py-10 text-center text-muted-foreground">
+        품온을 볼 컨테이너가 없습니다.
+      </CardContent>
+    </Card>
   );
 }
 
