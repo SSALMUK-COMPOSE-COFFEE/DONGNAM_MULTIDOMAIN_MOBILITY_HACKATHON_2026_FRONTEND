@@ -6,7 +6,7 @@ export type LotStatusT = PlatformLotT['status'];
 
 export type PlatformPlanRequestT = WithDefaultsT<
   SaasSchemaT<'PlatformPlanRequest'>,
-  'scenario_id' | 'use_learned_loss' | 'include_registered'
+  'scenario_id' | 'use_learned_loss' | 'include_registered' | 'auto_accept'
 >;
 
 export type ForwarderRefT = SaasSchemaT<'ForwarderRef'>;

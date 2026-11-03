@@ -30,3 +30,8 @@ export type ForwarderEmptyPickupT = SaasSchemaT<'EmptyPickup'>;
 export type ForwarderCutoffTimelineT = SaasSchemaT<'CutoffTimeline'>;
 
 export type ForwarderExecutionNumbersInputT = SaasSchemaT<'ExecutionNumbersInput'>;
+export type ForwarderVgmItemT = SaasSchemaT<'VgmItem'>;
+export type ForwarderGensetInstructionT = SaasSchemaT<'GensetInstruction'>;
+export type ForwarderDocumentActionT = NonNullable<
+  SaasSchemaT<'ExternalRequest'>['document_action']
+>;

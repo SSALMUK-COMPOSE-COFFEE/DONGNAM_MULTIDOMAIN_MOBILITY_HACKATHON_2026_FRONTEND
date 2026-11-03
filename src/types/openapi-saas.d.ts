@@ -1278,6 +1278,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/platform/plans/{plan_id}/add-lot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Registered Lot */
+        post: operations["add_registered_lot_test_api_saas_platform_plans__plan_id__add_lot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/saas/platform/plans/preview": {
         parameters: {
             query?: never;
@@ -1357,6 +1374,109 @@ export interface paths {
         get: operations["platform_business_years_test_api_saas_platform_business_years_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/shipper/plan-confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Shipper Confirmations */
+        get: operations["list_shipper_confirmations_test_api_saas_shipper_plan_confirmations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/shipper/plans/{plan_id}/confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Shipper Confirmation */
+        get: operations["read_shipper_confirmation_test_api_saas_shipper_plans__plan_id__confirmation_get"];
+        put?: never;
+        /** Decide Shipper Confirmation */
+        post: operations["decide_shipper_confirmation_test_api_saas_shipper_plans__plan_id__confirmation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/plan-confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Platform Attention */
+        get: operations["list_platform_attention_test_api_saas_platform_plan_confirmations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/plans/{plan_id}/confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Platform Confirmation */
+        get: operations["read_platform_confirmation_test_api_saas_platform_plans__plan_id__confirmation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/plans/{plan_id}/confirmation/auto-accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Auto Accept Confirmation */
+        post: operations["auto_accept_confirmation_test_api_saas_platform_plans__plan_id__confirmation_auto_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/plans/{plan_id}/confirmation/recompute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recompute Without Rejected */
+        post: operations["recompute_without_rejected_test_api_saas_platform_plans__plan_id__confirmation_recompute_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1803,7 +1923,7 @@ export interface components {
              */
             org_type: "platform" | "forwarder";
             /** Org Id */
-            org_id: string;
+            org_id?: string | null;
             /** User Id */
             user_id?: string | null;
         };
@@ -1827,6 +1947,13 @@ export interface components {
             lot: components["schemas"]["Lot"];
             /** Occurred At */
             occurred_at?: string | null;
+        };
+        /** AddLotRequest */
+        AddLotRequest: {
+            /** Lot Id */
+            lot_id: string;
+            /** Idempotency Key */
+            idempotency_key?: string | null;
         };
         /** AirHint */
         AirHint: {
@@ -2752,6 +2879,15 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** ConfirmationDecision */
+        ConfirmationDecision: {
+            /** Accept */
+            accept: boolean;
+            /** Reason */
+            reason?: string | null;
+            /** Shipper Id */
+            shipper_id?: string | null;
+        };
         /** CongestionCounts */
         CongestionCounts: {
             /** Total */
@@ -3660,6 +3796,8 @@ export interface components {
             mock_note: string;
             /** Containers */
             containers: components["schemas"]["ContainerExecution"][];
+            /** Genset Instructions */
+            genset_instructions?: components["schemas"]["GensetInstruction"][];
         };
         /** ExecutionNumbersInput */
         ExecutionNumbersInput: {
@@ -3788,6 +3926,12 @@ export interface components {
             };
             /** Text */
             text: string;
+            /** Document Action */
+            document_action?: ("si_vgm_correction" | "booking_change") | null;
+            /** Document Action Label */
+            document_action_label?: string | null;
+            /** Plain Text */
+            plain_text?: string | null;
             /**
              * Status
              * @default pending
@@ -3888,6 +4032,11 @@ export interface components {
             /** Plan Id */
             plan_id: string;
             forwarder: components["schemas"]["ForwarderRef"];
+            /**
+             * Before Shipper Confirmation
+             * @default false
+             */
+            before_shipper_confirmation: boolean;
         };
         /** ForwarderCancellation */
         ForwarderCancellation: {
@@ -4232,6 +4381,42 @@ export interface components {
             threshold_minutes: number;
             /** Reason */
             reason: string;
+            /**
+             * Gate Peak
+             * @default false
+             */
+            gate_peak: boolean;
+        };
+        /** GensetInstruction */
+        GensetInstruction: {
+            /** Key */
+            key: string;
+            /** Equipment */
+            equipment: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Container Ids */
+            container_ids: string[];
+            /** Container Nos */
+            container_nos: string[];
+            /** Truck Id */
+            truck_id: string | null;
+            /** Trip */
+            trip: number | null;
+            /** Lot Ids */
+            lot_ids: string[];
+            /** Window Start */
+            window_start: string | null;
+            /** Window End */
+            window_end: string | null;
+            /** Unpowered Minutes */
+            unpowered_minutes: number;
+            /** Threshold Minutes */
+            threshold_minutes: number;
+            /** Text */
+            text: string;
+            /** Plain Text */
+            plain_text: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -5513,6 +5698,58 @@ export interface components {
             /** Collection Reassigned */
             collection_reassigned?: components["schemas"]["CollectionReassignment"][];
         };
+        /** PlanConfirmation */
+        PlanConfirmation: {
+            /** Plan Id */
+            plan_id: string;
+            /** Round */
+            round: number;
+            /** Shipper Id */
+            shipper_id: string;
+            /** Shipper Org Id */
+            shipper_org_id: string;
+            /** Lot Ids */
+            lot_ids: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "accepted" | "rejected";
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Auto Accepted
+             * @default false
+             */
+            auto_accepted: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decided At */
+            decided_at?: string | null;
+        };
+        /** PlanConfirmationState */
+        PlanConfirmationState: {
+            /** Plan Id */
+            plan_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "committed" | "pending_confirmation" | "pending_shipper_confirmation";
+            /** Version */
+            version: number;
+            /** Round */
+            round: number;
+            /** Confirmations */
+            confirmations: components["schemas"]["PlanConfirmation"][];
+            /** Needs Replan */
+            needs_replan: boolean;
+            /** Replan Candidates */
+            replan_candidates: components["schemas"]["ReplanCandidate"][];
+        };
         /** PlanDiff */
         PlanDiff: {
             /** Moved Lots */
@@ -5601,7 +5838,7 @@ export interface components {
              * @default committed
              * @enum {string}
              */
-            status: "committed" | "pending_confirmation";
+            status: "committed" | "pending_confirmation" | "pending_shipper_confirmation";
             /**
              * Committed Version
              * @default 1
@@ -5631,7 +5868,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "committed" | "pending_confirmation";
+            status: "committed" | "pending_confirmation" | "pending_shipper_confirmation";
             /**
              * Created At
              * Format: date-time
@@ -5839,6 +6076,11 @@ export interface components {
              * @default false
              */
             include_registered: boolean;
+            /**
+             * Auto Accept
+             * @default false
+             */
+            auto_accept: boolean;
         };
         /** PlatformSettlement */
         PlatformSettlement: {
@@ -6289,6 +6531,11 @@ export interface components {
              * @default 415
              */
             pallet_kg: number;
+            /**
+             * Pallet Kg Assumed
+             * @default false
+             */
+            pallet_kg_assumed: boolean;
         };
         /** ProductBand */
         ProductBand: {
@@ -6430,6 +6677,21 @@ export interface components {
             door_open?: boolean | null;
             /** Stage */
             stage?: ("trucking" | "gate" | "terminal" | "vessel") | null;
+        };
+        /** RecomputeRequest */
+        RecomputeRequest: {
+            /** Shipper Ids */
+            shipper_ids?: string[];
+            /**
+             * Auto Accept
+             * @default false
+             */
+            auto_accept: boolean;
+        };
+        /** RecomputeResult */
+        RecomputeResult: {
+            plan: components["schemas"]["PlanSession"];
+            confirmation: components["schemas"]["PlanConfirmationState"];
         };
         /** ReduceEvent */
         ReduceEvent: {
@@ -6590,6 +6852,41 @@ export interface components {
             };
             /** Summary */
             summary: string;
+        };
+        /** ReplanCandidate */
+        ReplanCandidate: {
+            /** Id */
+            id: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "shipper_rejected" | "request_declined";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Lot Ids */
+            lot_ids?: string[];
+            /** Voyage Id */
+            voyage_id?: string | null;
+            /** Container Id */
+            container_id?: string | null;
+            /** Shipper Id */
+            shipper_id?: string | null;
+            /** Order Id */
+            order_id?: string | null;
+            /** Request Id */
+            request_id?: string | null;
+            /** Request Kind */
+            request_kind?: ("booking_amendment" | "booking_cancel" | "booking_new" | "reefer_plug" | "cy_entry" | "air_booking" | "air_cancel") | null;
+            /** Counterparty */
+            counterparty?: string | null;
+            /** Note */
+            note?: string | null;
+            /** Events */
+            events?: (components["schemas"]["CancelEvent"] | components["schemas"]["ReduceEvent"] | components["schemas"]["AirSwitchEvent"] | components["schemas"]["DelayEvent"] | components["schemas"]["AddLotEvent"])[];
         };
         /** ReplanResponse */
         ReplanResponse: {
@@ -7380,6 +7677,20 @@ export interface components {
             note?: string | null;
             /** Decided At */
             decided_at?: string | null;
+        };
+        /** ShipperConfirmationView */
+        ShipperConfirmationView: {
+            /** Plan Id */
+            plan_id: string;
+            /**
+             * Plan Status
+             * @enum {string}
+             */
+            plan_status: "committed" | "pending_confirmation" | "pending_shipper_confirmation";
+            /** Plan Version */
+            plan_version: number;
+            /** Confirmations */
+            confirmations: components["schemas"]["PlanConfirmation"][];
         };
         /** ShipperCost */
         ShipperCost: {
@@ -8432,6 +8743,17 @@ export interface components {
             /** Observed At */
             observed_at?: string | null;
         };
+        /** VgmItem */
+        VgmItem: {
+            /** Name */
+            name: string;
+            /** Kg */
+            kg: number;
+            /** Assumed */
+            assumed: boolean;
+            /** Source */
+            source: string;
+        };
         /** VgmWeight */
         VgmWeight: {
             /** Pallets */
@@ -8448,6 +8770,23 @@ export interface components {
             vgm_kg: number;
             /** Basis */
             basis: string;
+            /**
+             * Pallet Tare Kg
+             * @default 0
+             */
+            pallet_tare_kg: number;
+            /**
+             * Packaging Kg
+             * @default 0
+             */
+            packaging_kg: number;
+            /** Items */
+            items?: components["schemas"]["VgmItem"][];
+            /**
+             * Calculation
+             * @default
+             */
+            calculation: string;
         };
         /** Voyage */
         Voyage: {
@@ -11555,6 +11894,43 @@ export interface operations {
             };
         };
     };
+    add_registered_lot_test_api_saas_platform_plans__plan_id__add_lot_post: {
+        parameters: {
+            query?: {
+                llm?: boolean | null;
+            };
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddLotRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     preview_plan_test_api_saas_platform_plans_preview_post: {
         parameters: {
             query?: never;
@@ -11712,6 +12088,231 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BusinessYears"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_shipper_confirmations_test_api_saas_shipper_plan_confirmations_get: {
+        parameters: {
+            query?: {
+                status?: ("pending" | "accepted" | "rejected") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanConfirmation"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_shipper_confirmation_test_api_saas_shipper_plans__plan_id__confirmation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipperConfirmationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_shipper_confirmation_test_api_saas_shipper_plans__plan_id__confirmation_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmationDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipperConfirmationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_platform_attention_test_api_saas_platform_plan_confirmations_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanConfirmationState"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_platform_confirmation_test_api_saas_platform_plans__plan_id__confirmation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanConfirmationState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    auto_accept_confirmation_test_api_saas_platform_plans__plan_id__confirmation_auto_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanConfirmationState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recompute_without_rejected_test_api_saas_platform_plans__plan_id__confirmation_recompute_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecomputeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecomputeResult"];
                 };
             };
             /** @description Validation Error */

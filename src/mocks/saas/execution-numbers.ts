@@ -29,6 +29,36 @@ const DEFAULT_PALLET_KG = 415;
 const PALLET_TARE_KG = 25;
 const PACKAGING_KG = 35;
 const CONTAINER_TARE_KG = 4800;
+
+const ASSUMED_WEIGHT_SOURCE = '가정(목업)';
+
+const vgmBreakdown = (net: number, pallets: number, gross: number) => {
+  const palletTare = pallets * PALLET_TARE_KG;
+  const packaging = gross - net - palletTare;
+  const items = [
+    {
+      name: '화물 순중량',
+      kg: net,
+      assumed: false,
+      source: '품목 데이터 파렛트당 순중량(pallet_kg) × 로트별 파렛트',
+    },
+    { name: '파렛트', kg: palletTare, assumed: true, source: ASSUMED_WEIGHT_SOURCE },
+    { name: '포장', kg: packaging, assumed: true, source: ASSUMED_WEIGHT_SOURCE },
+    { name: '컨테이너 자중', kg: CONTAINER_TARE_KG, assumed: true, source: ASSUMED_WEIGHT_SOURCE },
+  ];
+  const marks = items
+    .map(item => `${item.name} ${item.kg.toLocaleString('en-US')}kg${item.assumed ? '(가정)' : ''}`)
+    .join(' + ');
+  const total = gross + CONTAINER_TARE_KG;
+
+  return {
+    pallet_tare_kg: palletTare,
+    packaging_kg: packaging,
+    items,
+    calculation: `VGM ${total.toLocaleString('en-US')}kg = ${marks}. 파렛트 ${pallets}개 × (파렛트 ${PALLET_TARE_KG}kg + 포장 ${PACKAGING_KG}kg)`,
+  };
+};
+
 const SI_LEAD_HOURS = 24;
 const VGM_LEAD_HOURS = 12;
 const HOUR_MS = 60 * 60 * 1000;
@@ -197,6 +227,7 @@ const buildCard = (session: PlanSessionT): ForwarderExecutionCardT => {
         seal_no_mock: value('seal_no') === null,
         entered_at: actual?.entered_at ?? null,
         weight: {
+          ...vgmBreakdown(Math.round(net), pallets, gross),
           pallets,
           net_kg: Math.round(net),
           pallet_packaging_kg: gross - Math.round(net),

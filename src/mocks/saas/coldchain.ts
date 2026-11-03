@@ -726,6 +726,7 @@ const gensetCandidates = (lots: LotPowerPlanT[]): GensetCandidateT[] => {
       unpowered_minutes: unpowered,
       threshold_minutes: PRE_ASSIGN_THRESHOLD_MINUTES,
       reason: `${first.truck_id} ${first.trip}회차 무전원 예상 ${unpowered}분(기준 ${PRE_ASSIGN_THRESHOLD_MINUTES}분).${peak ? ' 게이트 혼잡 시간대 도착' : ''}`,
+      gate_peak: peak,
     };
   });
 };
