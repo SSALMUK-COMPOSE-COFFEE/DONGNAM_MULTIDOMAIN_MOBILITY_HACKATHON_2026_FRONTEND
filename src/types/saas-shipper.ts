@@ -28,3 +28,25 @@ export type ShipperRequestAnswerT = SaasSchemaT<'RequestResultBody'>;
 export type ShipperOrderDecisionT = SaasSchemaT<'ShipperDecision'>;
 
 export type ShipperSettlementT = SaasSchemaT<'ShipperSettlementRow'>;
+
+export type ShipperProfileViewT = SaasSchemaT<'ShipperProfileView'>;
+export type ShipperProfileT = SaasSchemaT<'ShipperProfileOut'>;
+export type ShipperProfilePatchT = SaasSchemaT<'ShipperProfilePatch'>;
+export type ShipperProductOptionT = SaasSchemaT<'ProductOption'>;
+
+export type PackhouseT = SaasSchemaT<'PackhouseOut'>;
+export type PackhouseCreateT = SaasSchemaT<'PackhouseCreate'>;
+export type PackhousePatchT = SaasSchemaT<'PackhousePatch'>;
+
+export type SeasonCheckT = SaasSchemaT<'SeasonCheck'>;
+
+export type ChangeRequestCreateT = SaasSchemaT<'ChangeRequestCreate'>;
+export type ChangeRequestTypeT = ChangeRequestCreateT['type'];
+export type ShipperChangeRequestT = SaasSchemaT<'ShipperChangeRequest'>;
+export type ChangeRequestStatusT = ShipperChangeRequestT['status'];
+export type CancellationEstimateT = SaasSchemaT<'CancellationEstimate'>;
+export type ShipperChangeRequestListParamsT = SaasQueryT<'/test/api/saas/shipper/change-requests'>;
+
+export type ShipperNotificationT = SaasSchemaT<'Notification'>;
+export type ShipperNotificationKindT = ShipperNotificationT['kind'];
+export type ShipperNotificationListParamsT = SaasQueryT<'/test/api/saas/shipper/notifications'>;

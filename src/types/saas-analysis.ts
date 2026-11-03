@@ -55,3 +55,6 @@ export type ProvenanceCatalogT = {
   assets: ProvenanceAssetT[];
   limitations: string[];
 };
+
+export type WeatherUseT = SaasSchemaT<'WeatherUse'>;
+export type RemainingRiskVoyageT = SaasSchemaT<'RemainingRisk'>;

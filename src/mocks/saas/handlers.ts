@@ -554,7 +554,8 @@ const authHandlers = [
     if (csrf) return csrf;
 
     const body = (await request.json()) as SignupRequest;
-    if (!SIGNUP_ORG_TYPES.includes(body.org_type))
+    const { org_type: orgType, org_name: orgName } = body;
+    if (!orgType || !orgName || !SIGNUP_ORG_TYPES.includes(orgType))
       return fail(422, '가입할 수 없는 조직 종류입니다');
     if (body.email.endsWith(`@${DEMO_EMAIL_DOMAIN}`)) {
       return fail(422, '데모 주소로는 가입할 수 없습니다');
@@ -566,9 +567,9 @@ const authHandlers = [
 
     mockDb.lotSeq += 1;
     const org: MockOrgT = {
-      org_id: `${body.org_type}-mock-${mockDb.lotSeq}`,
-      org_type: body.org_type,
-      org_name: body.org_name,
+      org_id: `${orgType}-mock-${mockDb.lotSeq}`,
+      org_type: orgType,
+      org_name: orgName,
       shipper_ids: [],
       sandbox: false,
     };

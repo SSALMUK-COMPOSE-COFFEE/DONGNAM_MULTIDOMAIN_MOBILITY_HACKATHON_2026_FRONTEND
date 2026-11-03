@@ -640,6 +640,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/coldchain/containers/{container_id}/actions/{action_key}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Action */
+        post: operations["accept_action_test_api_coldchain_containers__container_id__actions__action_key__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/coldchain/containers/{container_id}/actions/{action_key}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Action */
+        post: operations["complete_action_test_api_coldchain_containers__container_id__actions__action_key__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/coldchain/containers/{container_id}/readings.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Readings */
+        get: operations["export_readings_test_api_coldchain_containers__container_id__readings_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/coldchain/containers/{container_id}/outages.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Outages */
+        get: operations["export_outages_test_api_coldchain_containers__container_id__outages_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/coldchain/plans/{plan_id}/power-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Power Plan */
+        get: operations["read_power_plan_test_api_coldchain_plans__plan_id__power_plan_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/coldchain/alerts": {
         parameters: {
             query?: never;
@@ -915,6 +1000,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/invitations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Invitation */
+        post: operations["accept_invitation_test_api_saas_invitations_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/me": {
         parameters: {
             query?: never;
@@ -1085,6 +1187,60 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/shipper/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Profile */
+        get: operations["read_profile_test_api_saas_shipper_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Profile */
+        patch: operations["update_profile_test_api_saas_shipper_profile_patch"];
+        trace?: never;
+    };
+    "/test/api/saas/shipper/packhouses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Packhouses */
+        get: operations["list_packhouses_test_api_saas_shipper_packhouses_get"];
+        put?: never;
+        /** Create Packhouse */
+        post: operations["create_packhouse_test_api_saas_shipper_packhouses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/shipper/packhouses/{packhouse_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Packhouse */
+        delete: operations["delete_packhouse_test_api_saas_shipper_packhouses__packhouse_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Packhouse */
+        patch: operations["update_packhouse_test_api_saas_shipper_packhouses__packhouse_id__patch"];
         trace?: never;
     };
     "/test/api/saas/platform/lots": {
@@ -1276,6 +1432,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/org/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Members */
+        get: operations["list_members_test_api_saas_org_members_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/org/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Org Invitations */
+        get: operations["list_org_invitations_test_api_saas_org_invitations_get"];
+        put?: never;
+        /** Create Org Invitation */
+        post: operations["create_org_invitation_test_api_saas_org_invitations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/org/invitations/{invitation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke Org Invitation */
+        delete: operations["revoke_org_invitation_test_api_saas_org_invitations__invitation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/saas/devices": {
         parameters: {
             query?: never;
@@ -1328,6 +1536,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/shipper/plans/{plan_id}/change-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Change Request */
+        post: operations["create_change_request_test_api_saas_shipper_plans__plan_id__change_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/shipper/change-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Shipper Requests */
+        get: operations["list_shipper_requests_test_api_saas_shipper_change_requests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/shipper/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Shipper Notifications */
+        get: operations["list_shipper_notifications_test_api_saas_shipper_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/change-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Platform Requests */
+        get: operations["list_platform_requests_test_api_saas_platform_change_requests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/change-requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Platform Request */
+        get: operations["read_platform_request_test_api_saas_platform_change_requests__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/change-requests/{request_id}/replan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replan Change Request */
+        post: operations["replan_change_request_test_api_saas_platform_change_requests__request_id__replan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/change-requests/{request_id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Change Request */
+        post: operations["apply_change_request_test_api_saas_platform_change_requests__request_id__apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/change-requests/{request_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Change Request */
+        post: operations["reject_change_request_test_api_saas_platform_change_requests__request_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/public/showcase": {
         parameters: {
             query?: never;
@@ -1345,10 +1689,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/ops/demo-contamination": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Demo Contamination */
+        get: operations["demo_contamination_test_api_ops_demo_contamination_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActionHandler */
+        ActionHandler: {
+            /**
+             * Org Type
+             * @enum {string}
+             */
+            org_type: "platform" | "forwarder";
+            /** Org Id */
+            org_id: string;
+            /** User Id */
+            user_id?: string | null;
+        };
+        /** ActionUpdateBody */
+        ActionUpdateBody: {
+            /** Note */
+            note?: string | null;
+        };
         /** ActiveOrgRequest */
         ActiveOrgRequest: {
             /** Org Id */
@@ -2020,6 +2398,32 @@ export interface components {
             /** Source */
             source: string;
         };
+        /** CancellationEstimate */
+        CancellationEstimate: {
+            /**
+             * Alternative Id
+             * @enum {string}
+             */
+            alternative_id: "pull_forward" | "next_voyage" | "sail_as_is";
+            /** Fee */
+            fee: number;
+            /** Fee Rate */
+            fee_rate: number;
+            /** Cancelled Pallets */
+            cancelled_pallets: number;
+            /** Refilled Pallets */
+            refilled_pallets: number;
+            /** Dead Pallets */
+            dead_pallets: number;
+            /** Min Fee */
+            min_fee: number;
+            /** Max Fee */
+            max_fee: number;
+            /** Rule */
+            rule: string;
+            /** Source */
+            source: string;
+        };
         /** CancellationTransfer */
         CancellationTransfer: {
             /** Shipper Id */
@@ -2030,6 +2434,49 @@ export interface components {
             share_increase: number;
             /** Amount */
             amount: number;
+        };
+        /** ChangeRequestApplied */
+        ChangeRequestApplied: {
+            change_request: components["schemas"]["PlatformChangeRequest"];
+            plan: components["schemas"]["PlanSession"];
+            /** Notifications */
+            notifications: components["schemas"]["Notification"][];
+        };
+        /** ChangeRequestApply */
+        ChangeRequestApply: {
+            /**
+             * Alternative Id
+             * @enum {string}
+             */
+            alternative_id: "pull_forward" | "next_voyage" | "sail_as_is";
+            /** Note */
+            note?: string | null;
+            /** Idempotency Key */
+            idempotency_key?: string | null;
+        };
+        /** ChangeRequestCreate */
+        ChangeRequestCreate: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "reduce" | "cancel" | "air_switch";
+            /** Lot Id */
+            lot_id: string;
+            /** New Pallets */
+            new_pallets?: number | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** ChangeRequestReject */
+        ChangeRequestReject: {
+            /** Note */
+            note?: string | null;
+        };
+        /** ChangeRequestReplan */
+        ChangeRequestReplan: {
+            change_request: components["schemas"]["PlatformChangeRequest"];
+            replan: components["schemas"]["ReplanResponse"];
         };
         /** ClassifiedVessel */
         ClassifiedVessel: {
@@ -2091,6 +2538,20 @@ export interface components {
             request?: components["schemas"]["RequestDraft"] | null;
             /** Created At */
             created_at?: string | null;
+            /**
+             * Status
+             * @default open
+             * @enum {string}
+             */
+            status: "open" | "accepted" | "done";
+            /** Note */
+            note?: string | null;
+            /** Accepted At */
+            accepted_at?: string | null;
+            accepted_by?: components["schemas"]["ActionHandler"] | null;
+            /** Done At */
+            done_at?: string | null;
+            done_by?: components["schemas"]["ActionHandler"] | null;
         };
         /** CollectionReassignment */
         CollectionReassignment: {
@@ -2184,6 +2645,13 @@ export interface components {
             effects: components["schemas"]["CongestionEffect"][];
             /** Note */
             note: string;
+            /**
+             * Proxy Indicator
+             * @default false
+             */
+            proxy_indicator: boolean;
+            /** Proxy Label */
+            proxy_label?: string | null;
         };
         /** Container */
         Container: {
@@ -2357,6 +2825,21 @@ export interface components {
              * @default false
              */
             pilot: boolean;
+        };
+        /** Contamination */
+        Contamination: {
+            /** Contaminated */
+            contaminated: boolean;
+            /** Seed Completed */
+            seed_completed: boolean;
+            /** Missing Orgs */
+            missing_orgs: string[];
+            /** Unexpected Sandbox Orgs */
+            unexpected_sandbox_orgs: string[];
+            /** Orgs */
+            orgs: components["schemas"]["OrgDrift"][];
+            /** Quality */
+            quality: components["schemas"]["QualityDrift"][];
         };
         /** CostBreakdown */
         CostBreakdown: {
@@ -2711,6 +3194,7 @@ export interface components {
             options: components["schemas"]["ForecastOptions"];
             history: components["schemas"]["HistoryInfo"];
             port_congestion: components["schemas"]["CongestionUse"];
+            weather: components["schemas"]["WeatherUse"];
             /** Voyages */
             voyages: components["schemas"]["VoyageForecast"][];
             /** At Risk Lot Ids */
@@ -2718,6 +3202,11 @@ export interface components {
             /** Triggered */
             triggered: boolean;
             event: components["schemas"]["DelayEvent"] | null;
+            /**
+             * Remaining Risk Voyages
+             * @default []
+             */
+            remaining_risk_voyages: components["schemas"]["RemainingRisk"][];
             /** Air Switch */
             air_switch: components["schemas"]["AirSwitchProposal"][];
             /** Air Lot Ids */
@@ -2984,6 +3473,7 @@ export interface components {
             air: components["schemas"]["AirHint"];
             /** Warnings */
             warnings: string[];
+            season?: components["schemas"]["SeasonCheck"] | null;
         };
         /** FixedLevel */
         FixedLevel: {
@@ -3031,7 +3521,7 @@ export interface components {
              * @default normal
              * @enum {string}
              */
-            weather: "normal" | "strong_wind" | "typhoon";
+            weather: "auto" | "normal" | "strong_wind" | "typhoon";
             /**
              * Congestion
              * @default auto
@@ -3380,6 +3870,33 @@ export interface components {
              */
             source: string;
         };
+        /** GensetCandidate */
+        GensetCandidate: {
+            /** Key */
+            key: string;
+            /** Equipment */
+            equipment: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Container Ids */
+            container_ids: string[];
+            /** Truck Id */
+            truck_id: string | null;
+            /** Trip */
+            trip: number | null;
+            /** Lot Ids */
+            lot_ids: string[];
+            /** Window Start */
+            window_start: string | null;
+            /** Window End */
+            window_end: string | null;
+            /** Unpowered Minutes */
+            unpowered_minutes: number;
+            /** Threshold Minutes */
+            threshold_minutes: number;
+            /** Reason */
+            reason: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -3434,6 +3951,13 @@ export interface components {
              * @default 해수부 선박입출항 출항 신고(부산항): 출항예정일시 대비 출항일시
              */
             source: string;
+            /**
+             * Own Observation Count
+             * @default 0
+             */
+            own_observation_count: number;
+            /** Own Observation Source */
+            own_observation_source?: string | null;
         };
         /** ImpactResult */
         ImpactResult: {
@@ -3531,6 +4055,78 @@ export interface components {
              * @default false
              */
             save: boolean;
+        };
+        /** Invitation */
+        Invitation: {
+            /** Invitation Id */
+            invitation_id: string;
+            /** Org Id */
+            org_id: string;
+            /** Role */
+            role: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "used" | "expired";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Used At */
+            used_at?: string | null;
+            used_by?: components["schemas"]["MemberRef"] | null;
+        };
+        /** InvitationAccept */
+        InvitationAccept: {
+            /** Code */
+            code: string;
+        };
+        /** InvitationCreate */
+        InvitationCreate: {
+            /**
+             * Role
+             * @default member
+             * @enum {string}
+             */
+            role: "admin" | "member";
+        };
+        /** InvitationCreated */
+        InvitationCreated: {
+            /** Invitation Id */
+            invitation_id: string;
+            /** Org Id */
+            org_id: string;
+            /** Role */
+            role: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "used" | "expired";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Used At */
+            used_at?: string | null;
+            used_by?: components["schemas"]["MemberRef"] | null;
+            /** Code */
+            code: string;
+            /** Org Name */
+            org_name: string;
         };
         /** LevelStat */
         LevelStat: {
@@ -3805,6 +4401,31 @@ export interface components {
             /** Status */
             status?: ("registered" | "planned" | "shipped" | "cancelled") | null;
         };
+        /** LotPowerPlan */
+        LotPowerPlan: {
+            /** Lot Id */
+            lot_id: string;
+            /** Shipper Id */
+            shipper_id: string;
+            /** Container Id */
+            container_id: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Truck Id */
+            truck_id: string | null;
+            /** Trip */
+            trip: number | null;
+            /** Gate Status */
+            gate_status: ("off_peak" | "avoided" | "peak") | null;
+            /** Segments */
+            segments: components["schemas"]["PowerSegment"][];
+            /** Unpowered Minutes */
+            unpowered_minutes: number;
+            /** Threshold Minutes */
+            threshold_minutes: number;
+            /** Exceeds */
+            exceeds: boolean;
+        };
         /** LotRisk */
         LotRisk: {
             /** Lot Id */
@@ -3919,6 +4540,13 @@ export interface components {
             id: string;
             /** Email */
             email: string;
+            /** Name */
+            name: string;
+        };
+        /** MemberRef */
+        MemberRef: {
+            /** User Id */
+            user_id: string;
             /** Name */
             name: string;
         };
@@ -4051,6 +4679,42 @@ export interface components {
             movement_count: number;
             /** Movements */
             movements: components["schemas"]["VesselMovement"][];
+        };
+        /** Notification */
+        Notification: {
+            /** Notification Id */
+            notification_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "order_confirmation_requested" | "order_notified" | "order_committed" | "change_request_applied" | "change_request_rejected" | "plan_confirmation_requested";
+            /** Channel */
+            channel: string;
+            /** Shipper Id */
+            shipper_id: string | null;
+            /** Plan Id */
+            plan_id: string | null;
+            /** Order Id */
+            order_id: string | null;
+            /** Change Request Id */
+            change_request_id: string | null;
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /** Link */
+            link: string;
+            /**
+             * Sent
+             * @default false
+             */
+            sent: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** Observation */
         Observation: {
@@ -4212,6 +4876,47 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** OrgDrift */
+        OrgDrift: {
+            /** Org Id */
+            org_id: string;
+            /** Org Type */
+            org_type: string;
+            /** Sandbox */
+            sandbox: boolean;
+            /** Seeded */
+            seeded: boolean;
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Baseline */
+            baseline: {
+                [key: string]: number;
+            };
+            /** Drift */
+            drift: {
+                [key: string]: number;
+            };
+            /** Non Demo Members */
+            non_demo_members: number;
+        };
+        /** OrgMember */
+        OrgMember: {
+            /** User Id */
+            user_id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** Role */
+            role: string;
+            /**
+             * Joined At
+             * Format: date-time
+             */
+            joined_at: string;
+        };
         /** OrgMembership */
         OrgMembership: {
             /** Org Id */
@@ -4271,6 +4976,47 @@ export interface components {
             lat: number;
             /** Lon */
             lon: number;
+        };
+        /** PackhouseCreate */
+        PackhouseCreate: {
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+            /** Product Ids */
+            product_ids?: string[];
+        };
+        /** PackhouseOut */
+        PackhouseOut: {
+            /** Packhouse Id */
+            packhouse_id: string;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+            /** Source */
+            source: string;
+            /** In Use */
+            in_use: boolean;
+        };
+        /** PackhousePatch */
+        PackhousePatch: {
+            /** Name */
+            name?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lon */
+            lon?: number | null;
         };
         /** PalletTariff */
         PalletTariff: {
@@ -4533,6 +5279,60 @@ export interface components {
             totals: {
                 [key: string]: number;
             };
+        };
+        /** PlatformChangeRequest */
+        PlatformChangeRequest: {
+            /** Request Id */
+            request_id: string;
+            /** Plan Id */
+            plan_id: string;
+            /** Lot Id */
+            lot_id: string;
+            /** Shipper Id */
+            shipper_id: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "reduce" | "cancel" | "air_switch";
+            /** New Pallets */
+            new_pallets: number | null;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "applied" | "rejected";
+            cancellation_estimate: components["schemas"]["CancellationEstimate"] | null;
+            /** Alternative Id */
+            alternative_id: ("pull_forward" | "next_voyage" | "sail_as_is") | null;
+            /** Order Id */
+            order_id: string | null;
+            /** Order Status */
+            order_status: ("proposed" | "shipper_confirmed" | "forwarder_confirmed" | "executed" | "rejected" | "expired") | null;
+            /** Decision Note */
+            decision_note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Decided At */
+            decided_at: string | null;
+            /** Shipper Org Id */
+            shipper_org_id: string;
+            /** Shipper Org Name */
+            shipper_org_name: string;
+            /** Event */
+            event: components["schemas"]["CancelEvent"] | components["schemas"]["ReduceEvent"] | components["schemas"]["AirSwitchEvent"] | components["schemas"]["DelayEvent"] | components["schemas"]["AddLotEvent"];
+            /** Replan Id */
+            replan_id: string | null;
         };
         /** PlatformLot */
         PlatformLot: {
@@ -4975,6 +5775,39 @@ export interface components {
             /** Positions */
             positions: components["schemas"]["VesselPosition"][];
         };
+        /** PowerPlan */
+        PowerPlan: {
+            /** Plan Id */
+            plan_id: string;
+            /** Lots */
+            lots: components["schemas"]["LotPowerPlan"][];
+            /** Candidates */
+            candidates: components["schemas"]["GensetCandidate"][];
+            /** Params */
+            params: {
+                [key: string]: components["schemas"]["Quantity"];
+            };
+            /** Rule */
+            rule: string;
+        };
+        /** PowerSegment */
+        PowerSegment: {
+            /**
+             * Stage
+             * @enum {string}
+             */
+            stage: "trucking" | "gate" | "plug";
+            /** Start */
+            start: string | null;
+            /** End */
+            end: string | null;
+            /** Minutes */
+            minutes: number;
+            /** Powered */
+            powered: boolean;
+            /** Basis */
+            basis: string;
+        };
         /** PresetInfo */
         PresetInfo: {
             /**
@@ -5044,6 +5877,22 @@ export interface components {
             max_sea_loss_rate: components["schemas"]["Quantity"];
             early_harvest_loss_rate_per_day: components["schemas"]["Quantity"];
             air_loss_rate: components["schemas"]["Quantity"];
+        };
+        /** ProductOption */
+        ProductOption: {
+            /** Product Id */
+            product_id: string;
+            /** Name */
+            name: string;
+        };
+        /** QualityDrift */
+        QualityDrift: {
+            /** Scope */
+            scope: string;
+            /** Seed Rows */
+            seed_rows: number;
+            /** Added Rows */
+            added_rows: number;
         };
         /** QualitySettlement */
         QualitySettlement: {
@@ -5231,6 +6080,29 @@ export interface components {
              */
             updated_at: string;
         };
+        /** RemainingRisk */
+        RemainingRisk: {
+            /** Voyage Id */
+            voyage_id: string;
+            /** Vessel Name */
+            vessel_name: string;
+            /**
+             * Planned Etd
+             * Format: date-time
+             */
+            planned_etd: string;
+            /**
+             * Predicted Etd
+             * Format: date-time
+             */
+            predicted_etd: string;
+            /** Delay Hours */
+            delay_hours: number;
+            /** At Risk Lot Ids */
+            at_risk_lot_ids: string[];
+            /** At Risk Pallets */
+            at_risk_pallets: number;
+        };
         /** ReplanBenchmark */
         ReplanBenchmark: {
             /** Event */
@@ -5364,6 +6236,28 @@ export interface components {
             cleared: number;
             /** Seeded */
             seeded: number;
+        };
+        /** ResidualRisk */
+        ResidualRisk: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "heat_accumulation" | "temperature_swing" | "door_open" | "sensor_gap";
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "info" | "warning";
+            /** Title */
+            title: string;
+            /** Value */
+            value: number;
+            /** Unit */
+            unit: string;
+            threshold: components["schemas"]["Quantity"];
+            /** Message */
+            message: string;
         };
         /** Resolved */
         Resolved: {
@@ -5503,6 +6397,8 @@ export interface components {
             observed_etd: string;
             /** Delta Hours */
             delta_hours: number;
+            /** Matched By */
+            matched_by?: ("call_sign" | "vessel_name") | null;
             /**
              * Source
              * @default 해수부 선박입출항
@@ -5596,6 +6492,19 @@ export interface components {
             cost?: components["schemas"]["CostBreakdown"] | null;
             /** Reason */
             reason?: string | null;
+        };
+        /** SeasonCheck */
+        SeasonCheck: {
+            /** Product Id */
+            product_id: string;
+            /** Label */
+            label: string;
+            /** Months */
+            months: number[];
+            /** In Season */
+            in_season: boolean;
+            /** Source */
+            source: string;
         };
         /** SeasonLine */
         SeasonLine: {
@@ -5863,6 +6772,52 @@ export interface components {
             /** Packhouse Id */
             packhouse_id: string;
         };
+        /** ShipperChangeRequest */
+        ShipperChangeRequest: {
+            /** Request Id */
+            request_id: string;
+            /** Plan Id */
+            plan_id: string;
+            /** Lot Id */
+            lot_id: string;
+            /** Shipper Id */
+            shipper_id: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "reduce" | "cancel" | "air_switch";
+            /** New Pallets */
+            new_pallets: number | null;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "applied" | "rejected";
+            cancellation_estimate: components["schemas"]["CancellationEstimate"] | null;
+            /** Alternative Id */
+            alternative_id: ("pull_forward" | "next_voyage" | "sail_as_is") | null;
+            /** Order Id */
+            order_id: string | null;
+            /** Order Status */
+            order_status: ("proposed" | "shipper_confirmed" | "forwarder_confirmed" | "executed" | "rejected" | "expired") | null;
+            /** Decision Note */
+            decision_note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Decided At */
+            decided_at: string | null;
+        };
         /** ShipperConfirmation */
         ShipperConfirmation: {
             /** Shipper Id */
@@ -6080,6 +7035,44 @@ export interface components {
             my_pallets: number;
             /** Total Pallets */
             total_pallets: number;
+        };
+        /** ShipperProfileOut */
+        ShipperProfileOut: {
+            /** Shipper Id */
+            shipper_id: string;
+            /** Name */
+            name: string;
+            /** Packhouse Id */
+            packhouse_id: string;
+            /** Product Ids */
+            product_ids: string[];
+            /** Source */
+            source: string;
+        };
+        /** ShipperProfilePatch */
+        ShipperProfilePatch: {
+            /** Name */
+            name?: string | null;
+            /** Packhouse Id */
+            packhouse_id?: string | null;
+            /** Product Ids */
+            product_ids?: string[] | null;
+        };
+        /** ShipperProfileView */
+        ShipperProfileView: {
+            /** Org Id */
+            org_id: string;
+            /** Org Name */
+            org_name: string;
+            /** Sandbox */
+            sandbox: boolean;
+            /** Ready */
+            ready: boolean;
+            profile: components["schemas"]["ShipperProfileOut"] | null;
+            /** Packhouses */
+            packhouses: components["schemas"]["PackhouseOut"][];
+            /** Product Options */
+            product_options: components["schemas"]["ProductOption"][];
         };
         /** ShipperSettlementRow */
         ShipperSettlementRow: {
@@ -6337,12 +7330,11 @@ export interface components {
             /** Name */
             name: string;
             /** Org Name */
-            org_name: string;
-            /**
-             * Org Type
-             * @enum {string}
-             */
-            org_type: "shipper" | "forwarder";
+            org_name?: string | null;
+            /** Org Type */
+            org_type?: ("shipper" | "forwarder") | null;
+            /** Invite Code */
+            invite_code?: string | null;
         };
         /** SimulationRequest */
         SimulationRequest: {
@@ -6787,6 +7779,8 @@ export interface components {
              * @default true
              */
             has_data: boolean;
+            /** Residual Risks */
+            residual_risks?: components["schemas"]["ResidualRisk"][];
         };
         /** TwinSummary */
         TwinSummary: {
@@ -6947,6 +7941,8 @@ export interface components {
             transit_days: number;
             /** Original Etd */
             original_etd?: string | null;
+            /** Call Sign */
+            call_sign?: string | null;
         };
         /** VoyageEconomics */
         VoyageEconomics: {
@@ -7043,6 +8039,49 @@ export interface components {
             dropped_stops?: {
                 [key: string]: string;
             };
+        };
+        /** WeatherUse */
+        WeatherUse: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "auto" | "manual" | "preset";
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "normal" | "strong_wind" | "typhoon";
+            /** Source */
+            source?: ("live" | "snapshot" | "unavailable") | null;
+            /** Issued At */
+            issued_at?: string | null;
+            /** Warning Checked At */
+            warning_checked_at?: string | null;
+            /** Grid */
+            grid?: string | null;
+            /** Covered */
+            covered?: boolean | null;
+            /** Horizon End */
+            horizon_end?: string | null;
+            /** Max Wind Speed Ms */
+            max_wind_speed_ms?: number | null;
+            /** Max Wave Height M */
+            max_wave_height_m?: number | null;
+            /**
+             * Active Warnings
+             * @default []
+             */
+            active_warnings: string[];
+            /**
+             * Reasons
+             * @default []
+             */
+            reasons: string[];
+            /** Fallback Reason */
+            fallback_reason?: string | null;
+            /** Note */
+            note: string;
         };
         /** Assumption */
         freshswitch_backend__analysis__models__Assumption: {
@@ -8472,6 +9511,179 @@ export interface operations {
             };
         };
     };
+    accept_action_test_api_coldchain_containers__container_id__actions__action_key__accept_post: {
+        parameters: {
+            query?: {
+                plan_id?: string | null;
+            };
+            header?: never;
+            path: {
+                container_id: string;
+                action_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ActionUpdateBody"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColdchainAction"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_action_test_api_coldchain_containers__container_id__actions__action_key__complete_post: {
+        parameters: {
+            query?: {
+                plan_id?: string | null;
+            };
+            header?: never;
+            path: {
+                container_id: string;
+                action_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ActionUpdateBody"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColdchainAction"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_readings_test_api_coldchain_containers__container_id__readings_csv_get: {
+        parameters: {
+            query?: {
+                plan_id?: string | null;
+            };
+            header?: never;
+            path: {
+                container_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_outages_test_api_coldchain_containers__container_id__outages_csv_get: {
+        parameters: {
+            query?: {
+                plan_id?: string | null;
+            };
+            header?: never;
+            path: {
+                container_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_power_plan_test_api_coldchain_plans__plan_id__power_plan_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PowerPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_alerts_test_api_coldchain_alerts_get: {
         parameters: {
             query?: {
@@ -9047,6 +10259,39 @@ export interface operations {
             };
         };
     };
+    accept_invitation_test_api_saas_invitations_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationAccept"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_me_test_api_me_get: {
         parameters: {
             query?: never;
@@ -9409,6 +10654,176 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ShipperSettlementRow"][];
+                };
+            };
+        };
+    };
+    read_profile_test_api_saas_shipper_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipperProfileView"];
+                };
+            };
+        };
+    };
+    update_profile_test_api_saas_shipper_profile_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipperProfilePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipperProfileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_packhouses_test_api_saas_shipper_packhouses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackhouseOut"][];
+                };
+            };
+        };
+    };
+    create_packhouse_test_api_saas_shipper_packhouses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackhouseCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackhouseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_packhouse_test_api_saas_shipper_packhouses__packhouse_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                packhouse_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_packhouse_test_api_saas_shipper_packhouses__packhouse_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                packhouse_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackhousePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackhouseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -9841,6 +11256,108 @@ export interface operations {
             };
         };
     };
+    list_members_test_api_saas_org_members_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgMember"][];
+                };
+            };
+        };
+    };
+    list_org_invitations_test_api_saas_org_invitations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Invitation"][];
+                };
+            };
+        };
+    };
+    create_org_invitation_test_api_saas_org_invitations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_org_invitation_test_api_saas_org_invitations__invitation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invitation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_devices_test_api_saas_devices_get: {
         parameters: {
             query?: never;
@@ -9961,6 +11478,276 @@ export interface operations {
             };
         };
     };
+    create_change_request_test_api_saas_shipper_plans__plan_id__change_requests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequestCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipperChangeRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_shipper_requests_test_api_saas_shipper_change_requests_get: {
+        parameters: {
+            query?: {
+                status?: ("open" | "applied" | "rejected") | null;
+                plan_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipperChangeRequest"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_shipper_notifications_test_api_saas_shipper_notifications_get: {
+        parameters: {
+            query?: {
+                plan_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Notification"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_platform_requests_test_api_saas_platform_change_requests_get: {
+        parameters: {
+            query?: {
+                status?: ("open" | "applied" | "rejected") | null;
+                plan_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformChangeRequest"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_platform_request_test_api_saas_platform_change_requests__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformChangeRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replan_change_request_test_api_saas_platform_change_requests__request_id__replan_post: {
+        parameters: {
+            query?: {
+                llm?: boolean | null;
+            };
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeRequestReplan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_change_request_test_api_saas_platform_change_requests__request_id__apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequestApply"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeRequestApplied"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_change_request_test_api_saas_platform_change_requests__request_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequestReject"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformChangeRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_showcase_test_api_public_showcase_get: {
         parameters: {
             query?: never;
@@ -9977,6 +11764,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Showcase"];
+                };
+            };
+        };
+    };
+    demo_contamination_test_api_ops_demo_contamination_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contamination"];
                 };
             };
         };

@@ -1,7 +1,7 @@
 import type { SaasSchemaT } from '@/types/api-saas';
 
 export type OrgType = SaasSchemaT<'DemoLoginRequest'>['org_type'];
-export type SignupOrgType = SaasSchemaT<'SignupRequest'>['org_type'];
+export type SignupOrgType = NonNullable<SaasSchemaT<'SignupRequest'>['org_type']>;
 
 export type MeUser = SaasSchemaT<'MeUser'>;
 
@@ -19,3 +19,13 @@ export type LoginRequest = SaasSchemaT<'LoginRequest'>;
 export type SignupRequest = SaasSchemaT<'SignupRequest'>;
 
 export type DemoLoginRequest = SaasSchemaT<'DemoLoginRequest'>;
+
+export type ActiveOrgRequest = SaasSchemaT<'ActiveOrgRequest'>;
+
+export type OrgMember = SaasSchemaT<'OrgMember'>;
+
+export type InvitationCreate = SaasSchemaT<'InvitationCreate'>;
+export type Invitation = SaasSchemaT<'Invitation'>;
+export type InvitationCreated = SaasSchemaT<'InvitationCreated'>;
+export type InvitationAccept = SaasSchemaT<'InvitationAccept'>;
+export type InvitationStatus = Invitation['status'];

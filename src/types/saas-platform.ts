@@ -1,5 +1,5 @@
 import type { BindingRequestT } from '@/types/api';
-import type { SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
+import type { SaasQueryT, SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
 
 export type PlatformLotT = SaasSchemaT<'PlatformLot'>;
 export type LotStatusT = PlatformLotT['status'];
@@ -35,3 +35,20 @@ export type DeviceRequestT = SaasSchemaT<'DeviceRequest'>;
 export type TwinSummaryT = SaasSchemaT<'TwinSummary'>;
 
 export type PlanPreviewT = SaasSchemaT<'PlanPreview'>;
+
+export type PlatformChangeRequestT = SaasSchemaT<'PlatformChangeRequest'>;
+export type PlatformChangeRequestListParamsT =
+  SaasQueryT<'/test/api/saas/platform/change-requests'>;
+export type ChangeRequestReplanT = SaasSchemaT<'ChangeRequestReplan'>;
+export type ChangeRequestApplyT = SaasSchemaT<'ChangeRequestApply'>;
+export type ChangeRequestAppliedT = SaasSchemaT<'ChangeRequestApplied'>;
+export type ChangeRequestRejectT = SaasSchemaT<'ChangeRequestReject'>;
+
+export type ColdchainActionHandlerT = SaasSchemaT<'ActionHandler'>;
+export type ColdchainActionUpdateT = SaasSchemaT<'ActionUpdateBody'>;
+export type ColdchainResidualRiskT = SaasSchemaT<'ResidualRisk'>;
+
+export type PowerPlanT = SaasSchemaT<'PowerPlan'>;
+export type LotPowerPlanT = SaasSchemaT<'LotPowerPlan'>;
+export type PowerSegmentT = SaasSchemaT<'PowerSegment'>;
+export type GensetCandidateT = SaasSchemaT<'GensetCandidate'>;
