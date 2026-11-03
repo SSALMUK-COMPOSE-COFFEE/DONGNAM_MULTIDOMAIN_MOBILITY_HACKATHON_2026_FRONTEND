@@ -18,7 +18,16 @@ export const getSaasQueryClient = () => boundQueryClient;
 
 export const configureSaasQueryClient = (queryClient: QueryClient) => {
   queryClient.setQueryDefaults(orgKeys.all, { retry: saasRetry });
-  boundQueryClient = queryClient;
 
   return queryClient;
+};
+
+export const bindSaasQueryClient = (queryClient: QueryClient) => {
+  if (typeof window === 'undefined') return () => {};
+
+  boundQueryClient = queryClient;
+
+  return () => {
+    if (boundQueryClient === queryClient) boundQueryClient = null;
+  };
 };

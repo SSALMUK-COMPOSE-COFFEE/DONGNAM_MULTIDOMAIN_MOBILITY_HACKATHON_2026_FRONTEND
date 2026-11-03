@@ -36,12 +36,3 @@ export type SignupRequest = {
 export type DemoLoginRequest = {
   org_type: OrgType;
 };
-
-export type OrgTypeT = OrgType;
-export type SignupOrgTypeT = SignupOrgType;
-export type MeUserT = MeUser;
-export type MembershipT = Membership;
-export type MeT = Me;
-export type LoginRequestT = LoginRequest;
-export type SignupRequestT = SignupRequest;
-export type DemoLoginRequestT = DemoLoginRequest;

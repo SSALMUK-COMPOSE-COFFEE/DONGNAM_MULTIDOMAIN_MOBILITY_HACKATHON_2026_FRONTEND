@@ -111,16 +111,16 @@ export const useLogout = () => {
   });
 };
 
-export const useSwitchOrg = () => {
+export const useSwitchOrg = (boundOrgId?: string) => {
   const queryClient = useQueryClient();
 
   return useCallback(
-    (orgId: string) => {
-      if (getActiveOrgId() === orgId) return;
+    (orgId: string | undefined = boundOrgId) => {
+      if (!orgId || getActiveOrgId() === orgId) return;
 
       useActiveOrgStore.getState().setOrgId(orgId);
       queryClient.removeQueries({ queryKey: orgKeys.all });
     },
-    [queryClient]
+    [queryClient, boundOrgId]
   );
 };
