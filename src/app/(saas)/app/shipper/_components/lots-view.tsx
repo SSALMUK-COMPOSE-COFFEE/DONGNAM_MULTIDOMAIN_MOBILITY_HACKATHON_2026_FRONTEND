@@ -15,7 +15,7 @@ import {
   QueryError,
 } from '@/app/(saas)/app/shipper/_components/query-state';
 import { ShipperLotForm } from '@/app/(saas)/app/shipper/_components/shipper-lot-form';
-import { SHIPPER_ONBOARDING_PATH } from '@/app/(saas)/app/shipper/onboarding/_components/onboarding-path';
+import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import type { ShipperLotPreviewT } from '@/types/saas-shipper';
 
@@ -71,7 +71,7 @@ export function LotsView() {
             <EmptyState
               title="먼저 선과장을 등록하세요"
               description="출하를 모으는 선과장의 이름·주소·위치·취급 품목을 알려주시면 바로 출하를 등록할 수 있어요."
-              action={{ href: SHIPPER_ONBOARDING_PATH, label: '선과장 등록하기' }}
+              action={{ href: SHIPPER_PATHS.ONBOARDING, label: '선과장 등록하기' }}
             />
           </div>
         )}

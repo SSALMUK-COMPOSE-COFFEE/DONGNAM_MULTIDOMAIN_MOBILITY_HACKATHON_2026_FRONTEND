@@ -56,7 +56,6 @@ import {
 import { useNowMinute } from '@/app/(saas)/app/shipper/_components/use-now';
 import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
 import { UNASSIGNED_PLACEHOLDER } from '@/app/(saas)/app/shipper/_components/vessel-label';
-import { SHIPPER_ONBOARDING_PATH } from '@/app/(saas)/app/shipper/onboarding/_components/onboarding-path';
 import { type StepItemT, Steps } from '@/components/map-hero';
 import { MapLinkProvider } from '@/components/map-link';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
@@ -283,7 +282,7 @@ function OnboardingCallout() {
       <div className="m2-sub mb-3">
         출하를 모으는 선과장의 이름·주소·위치·취급 품목을 알려주시면 바로 출하를 등록할 수 있어요.
       </div>
-      <Link href={SHIPPER_ONBOARDING_PATH} className="m2-btn m2-btn-pri">
+      <Link href={SHIPPER_PATHS.ONBOARDING} className="m2-btn m2-btn-pri">
         선과장 등록하기
         <ArrowRightIcon size={14} aria-hidden />
       </Link>

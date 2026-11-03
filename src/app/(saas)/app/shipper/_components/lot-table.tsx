@@ -26,7 +26,7 @@ import {
   errorDetail,
 } from '@/app/(saas)/app/shipper/_components/query-state';
 import { fmtDay, fmtMonthDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
-import { SHIPPER_ONBOARDING_PATH } from '@/app/(saas)/app/shipper/onboarding/_components/onboarding-path';
+import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -154,7 +154,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           title={filter === 'all' ? '등록한 출하가 없습니다' : '이 상태의 출하가 없습니다'}
           description={emptyDescription()}
           {...(filter === 'all' && needsPackhouse
-            ? { action: { href: SHIPPER_ONBOARDING_PATH, label: '선과장 등록하기' } }
+            ? { action: { href: SHIPPER_PATHS.ONBOARDING, label: '선과장 등록하기' } }
             : {})}
         />
       )}
