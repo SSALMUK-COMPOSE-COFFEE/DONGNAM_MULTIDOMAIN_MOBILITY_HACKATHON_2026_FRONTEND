@@ -1,19 +1,25 @@
 import { HttpResponse, delay, http, sse } from 'msw';
 
 import { API_BASE_URL } from '@/consts/api';
-import {
-  BASE_PATH,
-  SAAS_API_BASE,
-  SAAS_ENDPOINTS,
-  SAAS_HEADERS,
-  SAAS_REQUESTED_WITH,
-} from '@/consts/api-saas';
+import { BASE_PATH, SAAS_ENDPOINTS } from '@/consts/api-saas';
 import { DEMO_EMAIL_DOMAIN } from '@/consts/sandbox-saas';
 import alertsFixture from '@/mocks/fixtures/alerts.json';
 import intakeStrawberryFixture from '@/mocks/fixtures/intake-strawberry.json';
 import planSessionFixture from '@/mocks/fixtures/plan-session.json';
 import twinFixture from '@/mocks/fixtures/twin.json';
+import {
+  api,
+  authenticate,
+  authorize,
+  canReadPlan,
+  csrfFailure,
+  fail,
+  isSaasRequest,
+  planIds,
+  sessionMe,
+} from '@/mocks/saas/access';
 import { createAnonymizer } from '@/mocks/saas/anonymize';
+import { changeRequestHandlers } from '@/mocks/saas/change-requests';
 import {
   demoConfirm,
   demoCreatePlan,
@@ -32,14 +38,9 @@ import provenanceFixture from '@/mocks/saas/fixtures/provenance.json';
 import scheduleCheckFixture from '@/mocks/saas/fixtures/schedule-check.json';
 import settlementPreviewFixture from '@/mocks/saas/fixtures/settlement-preview.json';
 import ulsanCongestionFixture from '@/mocks/saas/fixtures/ulsan-congestion.json';
-import {
-  MOCK_ORGS,
-  type MockOrgT,
-  PLATFORM_ORG_ID,
-  findOrg,
-  firstOrgOfType,
-  meOf,
-} from '@/mocks/saas/orgs';
+import { orgMemberHandlers, redeemInvitation } from '@/mocks/saas/org-members';
+import { MOCK_ORGS, type MockOrgT, findOrg, firstOrgOfType } from '@/mocks/saas/orgs';
+import { shipperProfileHandlers } from '@/mocks/saas/shipper-profile';
 import {
   type MockArrivalT,
   type MockBindingT,
@@ -65,14 +66,7 @@ import type {
   PlanSessionT,
   TwinStateT,
 } from '@/types/api';
-import type {
-  DemoLoginRequest,
-  LoginRequest,
-  Me,
-  OrgType,
-  SignupOrgType,
-  SignupRequest,
-} from '@/types/saas';
+import type { DemoLoginRequest, LoginRequest, SignupOrgType, SignupRequest } from '@/types/saas';
 import type {
   AirSeaComparisonT,
   ArrivalRequestT,
@@ -86,12 +80,11 @@ import type {
   ProvenanceCatalogT,
   ScheduleCheckResponseT,
   SettlementPreviewT,
+  WeatherUseT,
 } from '@/types/saas-analysis';
 import type { PlanPreviewT } from '@/types/saas-platform';
 import type { ShowcaseT } from '@/types/saas-public';
 import type { SandboxResetT } from '@/types/saas-sandbox';
-
-const api = (path: string) => `${SAAS_API_BASE}${path}`;
 
 const MONEY_TOTALS = [
   'total_baseline_cost',
@@ -116,45 +109,11 @@ const twin = twinFixture as unknown as TwinStateT;
 const previewSession = planSessionFixture as unknown as PlanSessionT;
 const alerts = alertsFixture.alerts as unknown as AlertT[];
 
-type PrincipalT = { org: MockOrgT; me: Me };
+const startSession = (org: MockOrgT, email: string, name: string, role?: string) => {
+  const session = { org, email, name, role };
+  writeSession(session);
 
-const fail = (status: number, detail: string) => HttpResponse.json({ detail }, { status });
-
-const isSaasRequest = (request: Request) =>
-  request.headers.get(SAAS_HEADERS.REQUESTED_WITH) === SAAS_REQUESTED_WITH;
-
-const csrfFailure = (request: Request) =>
-  request.method !== 'GET' && !isSaasRequest(request) ? fail(403, 'CSRF 헤더가 필요합니다') : null;
-
-const authenticate = (request: Request): PrincipalT | Response => {
-  const session = readSession();
-  if (!session) return fail(401, '로그인이 필요합니다');
-
-  const requestedOrg = request.headers.get(SAAS_HEADERS.ORG_ID);
-  if (requestedOrg && requestedOrg !== session.org.org_id) {
-    return fail(403, '이 조직에 속해 있지 않습니다');
-  }
-
-  return { org: session.org, me: meOf(session.org, session.email, session.name) };
-};
-
-const authorize = (request: Request, ...roles: OrgType[]): PrincipalT | Response => {
-  const csrf = csrfFailure(request);
-  if (csrf) return csrf;
-
-  const principal = authenticate(request);
-  if (principal instanceof Response) return principal;
-  if (roles.length && !roles.includes(principal.org.org_type)) {
-    return fail(403, '이 역할로는 접근할 수 없습니다');
-  }
-
-  return principal;
-};
-
-const startSession = (org: MockOrgT, email: string, name: string) => {
-  writeSession({ org, email, name });
-
-  return HttpResponse.json(meOf(org, email, name));
+  return HttpResponse.json(sessionMe(session));
 };
 
 const firstVoyage = (session: PlanSessionT) => {
@@ -170,8 +129,6 @@ const firstVoyage = (session: PlanSessionT) => {
 
 const totalPallets = (session: PlanSessionT) =>
   session.plan.assignments.reduce((sum, assignment) => sum + assignment.pallets, 0);
-
-const planIds = () => [...mockDb.planCreatedAt.keys()];
 
 const forwarderRef = (planId: string) => {
   const org = findOrg(mockDb.forwarders.get(planId));
@@ -273,21 +230,6 @@ const ownLotIds = (session: PlanSessionT, org: MockOrgT) => {
   const own = new Set(org.shipper_ids);
 
   return session.scenario.lots.filter(lot => own.has(lot.shipper_id)).map(lot => lot.id);
-};
-
-const shipperCanRead = (planId: string, org: MockOrgT) => {
-  const lots = mockDb.planLots.get(planId);
-  if (!lots) return false;
-
-  return mockDb.lots.some(lot => lots.has(lot.id) && org.shipper_ids.includes(lot.shipper_id));
-};
-
-const canReadPlan = (planId: string, org: MockOrgT) => {
-  if (!mockDb.planCreatedAt.has(planId)) return false;
-  if (org.org_type === 'platform') return org.org_id === PLATFORM_ORG_ID;
-  if (org.org_type === 'forwarder') return mockDb.forwarders.get(planId) === org.org_id;
-
-  return shipperCanRead(planId, org);
 };
 
 const THIRD_PARTY_ROLES: readonly string[] = ['carrier', 'terminal', 'airline'];
@@ -510,6 +452,26 @@ const streamOverlapsDemo = () => {
   return new URL(API_BASE_URL, window.location.origin).origin === window.location.origin;
 };
 
+const signupWithInvitation = (body: SignupRequest) => {
+  if (body.email.endsWith(`@${DEMO_EMAIL_DOMAIN}`)) {
+    return fail(422, '데모 주소로는 가입할 수 없습니다');
+  }
+  if (findAccount(body.email)) return fail(409, '이미 가입된 이메일입니다');
+
+  const redeemed = redeemInvitation(body.invite_code ?? '', body);
+  if (redeemed instanceof Response) return redeemed;
+
+  saveAccount({
+    org: redeemed.org,
+    email: body.email,
+    name: body.name,
+    password: body.password,
+    role: redeemed.role,
+  });
+
+  return startSession(redeemed.org, body.email, body.name, redeemed.role);
+};
+
 const authHandlers = [
   http.get(api(SAAS_ENDPOINTS.ME), ({ request }) => {
     const principal = authenticate(request);
@@ -528,7 +490,7 @@ const authHandlers = [
       if (account.password !== password)
         return fail(401, '이메일 또는 비밀번호가 올바르지 않습니다');
 
-      return startSession(account.org, email, account.name);
+      return startSession(account.org, email, account.name, account.role);
     }
 
     return fail(401, '이메일 또는 비밀번호가 올바르지 않습니다');
@@ -556,6 +518,8 @@ const authHandlers = [
     if (csrf) return csrf;
 
     const body = (await request.json()) as SignupRequest;
+    if (body.invite_code) return signupWithInvitation(body);
+
     const { org_type: orgType, org_name: orgName } = body;
     if (!orgType || !orgName || !SIGNUP_ORG_TYPES.includes(orgType))
       return fail(422, '가입할 수 없는 조직 종류입니다');
@@ -1271,6 +1235,40 @@ const recordArrival = (
   };
 };
 
+const weatherUseOf = (body: DelayForecastRequestT | null): WeatherUseT => {
+  const preset = body?.preset === 'typhoon';
+  const weather = body?.weather ?? 'auto';
+  const manualLevel = weather === 'auto' ? 'normal' : weather;
+  const level = preset ? 'typhoon' : manualLevel;
+
+  if (preset || weather !== 'auto') {
+    return {
+      mode: preset ? 'preset' : 'manual',
+      level,
+      active_warnings: [],
+      reasons: [preset ? '태풍 프리셋을 골랐습니다' : '기상 수준을 직접 골랐습니다'],
+      note: '직접 고른 기상 수준으로 지연을 예측했습니다',
+    };
+  }
+
+  return {
+    mode: 'auto',
+    level,
+    source: 'snapshot',
+    issued_at: nowIso(),
+    warning_checked_at: nowIso(),
+    grid: '부산 남구(98,75)',
+    covered: true,
+    horizon_end: null,
+    max_wind_speed_ms: 6.2,
+    max_wave_height_m: 1.1,
+    active_warnings: [],
+    reasons: ['출항 전 예보 구간 최대 풍속 6.2m/s, 파고 1.1m로 강풍 기준 미만입니다'],
+    fallback_reason: null,
+    note: '목업 예보 스냅샷 기준 자동 판정(예시)',
+  };
+};
+
 const analysisHandlers = [
   http.post(api('/analysis/fuel-shock'), async ({ request }) => {
     if (!isSaasRequest(request)) return;
@@ -1342,12 +1340,17 @@ const analysisHandlers = [
     const typhoon = body?.preset === 'typhoon' || body?.weather === 'typhoon';
     await delay(600);
 
-    return HttpResponse.json(
-      forPlan<DelayForecastResponseT>(
-        typhoon ? delayForecastTyphoonFixture : delayForecastNormalFixture,
-        planId
-      )
+    const forecast = forPlan<DelayForecastResponseT>(
+      typhoon ? delayForecastTyphoonFixture : delayForecastNormalFixture,
+      planId
     );
+
+    return HttpResponse.json({
+      ...forecast,
+      options: { ...forecast.options, weather: body?.weather ?? forecast.options.weather },
+      weather: forecast.weather ?? weatherUseOf(body),
+      remaining_risk_voyages: forecast.remaining_risk_voyages ?? [],
+    });
   }),
 
   http.post(api('/plans/:planId/schedule-check'), async ({ request, params }) => {
@@ -1465,6 +1468,9 @@ export const saasHandlers = [
   ...deviceHandlers,
   ...analysisHandlers,
   ...sandboxHandlers,
+  ...changeRequestHandlers,
+  ...shipperProfileHandlers,
+  ...orgMemberHandlers,
   ...coldchainHandlers,
   ...streamHandlers,
 ];

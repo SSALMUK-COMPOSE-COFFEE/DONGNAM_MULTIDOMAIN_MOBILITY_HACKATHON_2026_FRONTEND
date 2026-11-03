@@ -1,7 +1,7 @@
 import { getResponse } from 'msw';
 
 import { handlers as demoHandlers } from '@/mocks/handlers';
-import type { ExecutionOrderT, PlanSessionT } from '@/types/api';
+import type { ExecutionOrderT, PlanEventT, PlanSessionT, ReplanResponseT } from '@/types/api';
 
 const BRIDGE_ORIGIN = 'http://saas-mock.local';
 
@@ -38,3 +38,9 @@ export const demoConfirm = (
     `/api/plans/${encodeURIComponent(planId)}/orders/${encodeURIComponent(orderId)}/confirm`,
     body
   );
+
+export const demoReplan = (planId: string, event: PlanEventT) =>
+  callDemo<ReplanResponseT>('POST', `/api/plans/${encodeURIComponent(planId)}/events`, { event });
+
+export const demoApply = (planId: string, body: { alternative_id: string; replan_id: string }) =>
+  callDemo<PlanSessionT>('POST', `/api/plans/${encodeURIComponent(planId)}/apply`, body);

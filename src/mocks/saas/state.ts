@@ -50,10 +50,11 @@ export type MockArrivalT = {
   excess_loss_value: number;
 };
 
-type MockSessionT = {
+export type MockSessionT = {
   org: MockOrgT;
   email: string;
   name: string;
+  role?: string;
 };
 
 type MockRequestAnswerT = {
@@ -66,7 +67,7 @@ const SESSION_STORAGE_KEY = 'fs.saas.mock.session';
 const ACCOUNTS_STORAGE_KEY = 'fs.saas.mock.accounts';
 
 const initialSession = planSessionFixture as unknown as PlanSessionT;
-const SEEDED_AT = initialSession.created_at;
+export const SEEDED_AT = initialSession.created_at;
 
 const packhouseOf = (shipperId: string) =>
   initialSession.scenario.shippers.find(shipper => shipper.id === shipperId)?.packhouse_id ?? null;
@@ -159,7 +160,16 @@ const seedDb = () => ({
 
 export const mockDb = seedDb();
 
-export const resetMockDb = () => Object.assign(mockDb, seedDb());
+const resetListeners: (() => void)[] = [];
+
+export const onMockReset = (listener: () => void) => {
+  resetListeners.push(listener);
+};
+
+export const resetMockDb = () => {
+  Object.assign(mockDb, seedDb());
+  resetListeners.forEach(listener => listener());
+};
 
 export const nowIso = () => new Date().toISOString();
 
@@ -223,3 +233,18 @@ export const saveAccount = (account: MockAccountT) => {
 };
 
 export const answerKey = (orderId: string, requestId: string) => `${orderId}:${requestId}`;
+
+export const listAccounts = () => readAccounts();
+
+export const moveSessionOrg = (org: MockOrgT) => {
+  const session = readSession();
+  if (!session) return;
+
+  const index = MOCK_ORGS.findIndex(item => item.org_id === org.org_id);
+  if (index < 0) MOCK_ORGS.push(org);
+  else MOCK_ORGS[index] = org;
+
+  writeSession({ ...session, org });
+  const account = findAccount(session.email);
+  if (account) saveAccount({ ...account, org });
+};
