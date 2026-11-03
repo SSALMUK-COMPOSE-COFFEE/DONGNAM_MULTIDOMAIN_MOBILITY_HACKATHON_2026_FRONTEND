@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import { useBindDevice, usePlatformPlan, usePlatformPlans } from '@/apis/saas/platform';
-import { planOptionLabel } from '@/app/(saas)/app/platform/_components/plan-label';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { BindingStageT, DeviceT } from '@/types/saas-platform';
+import { planOptionLabel } from '@/utils/plan-label';
 
 const STAGES: { value: BindingStageT; label: string }[] = [
   { value: 'trucking', label: '집하 트럭' },

@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/table';
 import type { ForwarderOrderT } from '@/types/saas-forwarder';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 export function PlansView() {
   const plans = useForwarderPlans();
@@ -98,7 +99,7 @@ export function PlansView() {
                 return (
                   <TableRow key={plan.plan_id}>
                     <TableCell className="font-bold text-navy">
-                      {plan.vessel ?? '선박 미정'}
+                      {plan.vessel ?? NO_VESSEL_LABEL}
                     </TableCell>
                     <TableCell className="num">{formatKstMonthDayTime(plan.departure)}</TableCell>
                     <TableCell>

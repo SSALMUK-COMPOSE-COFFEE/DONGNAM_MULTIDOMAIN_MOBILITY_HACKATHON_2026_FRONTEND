@@ -1,6 +1,6 @@
 'use client';
 
-import { useDeleteDevice, useDevices } from '@/apis/saas/platform';
+import { useDeleteDevice, useDevices, usePlatformPlans } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { BindDeviceDialog } from '@/app/(saas)/app/platform/devices/_components/bind-device-dialog';
@@ -28,9 +28,12 @@ import {
 } from '@/components/ui/table';
 import type { DeviceT } from '@/types/saas-platform';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { planOptionLabel } from '@/utils/plan-label';
 
 export function DeviceListCard() {
   const { data: devices, isPending, isError, error, refetch, isFetching } = useDevices();
+  const { data: plans } = usePlatformPlans();
+  const planLabels = new Map(plans?.map(plan => [plan.plan_id, planOptionLabel(plan)]));
 
   return (
     <Card>
@@ -67,7 +70,7 @@ export function DeviceListCard() {
             </TableHeader>
             <TableBody>
               {devices.map(device => (
-                <DeviceRow key={device.device_id} device={device} />
+                <DeviceRow key={device.device_id} device={device} planLabels={planLabels} />
               ))}
             </TableBody>
           </Table>
@@ -77,7 +80,7 @@ export function DeviceListCard() {
   );
 }
 
-function DeviceRow({ device }: { device: DeviceT }) {
+function DeviceRow({ device, planLabels }: { device: DeviceT; planLabels: Map<string, string> }) {
   const remove = useDeleteDevice();
   const { binding } = device;
 
@@ -90,7 +93,7 @@ function DeviceRow({ device }: { device: DeviceT }) {
           <span>
             <span className="font-bold">{binding.container_id}</span>
             <span className="ml-1 text-sm text-muted-foreground">
-              {binding.plan_id ?? '계획 없음'}
+              {binding.plan_id ? (planLabels.get(binding.plan_id) ?? binding.plan_id) : '계획 없음'}
             </span>
           </span>
         ) : (

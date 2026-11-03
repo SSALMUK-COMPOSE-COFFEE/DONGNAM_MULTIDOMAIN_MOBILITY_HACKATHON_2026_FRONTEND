@@ -6,7 +6,6 @@ import { Fragment } from 'react';
 import { usePlatformSettlements } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
-import { NO_VESSEL_LABEL } from '@/app/(saas)/app/platform/_components/plan-label';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { StatTile } from '@/app/(saas)/app/platform/_components/stat-tile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +21,7 @@ import {
 import type { PlatformSettlementT } from '@/types/saas-platform';
 import { formatManwon } from '@/utils/format';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 const sumBy = (rows: PlatformSettlementT[], pick: (row: PlatformSettlementT) => number) =>
   rows.reduce((total, row) => total + pick(row), 0);

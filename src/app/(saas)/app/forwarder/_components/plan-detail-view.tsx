@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ForwarderPlanSessionT } from '@/types/saas-forwarder';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 const firstVoyage = ({ plan, scenario }: ForwarderPlanSessionT) => {
   const used = new Set(
@@ -109,7 +110,7 @@ export function PlanDetailView() {
 
       <div className="flex flex-wrap items-center gap-6 rounded-3xl bg-navy px-10 py-7 text-white">
         <p className="text-3xl font-bold">
-          {voyage?.vessel_name ?? '선박 미정'}
+          {voyage?.vessel_name ?? NO_VESSEL_LABEL}
           <span className="mx-4">·</span>
           출항 <span className="num text-cyan">{formatKstMonthDayTime(voyage?.etd)}</span>
           <span className="mx-4">·</span>

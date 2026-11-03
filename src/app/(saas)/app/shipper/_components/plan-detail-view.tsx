@@ -34,6 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { UseConfirmOrderOptionsT } from '@/hooks/useConfirmOrder';
 import type { ShipperOrderT } from '@/types/saas-shipper';
+import { planSessionLabel } from '@/utils/plan-label';
 
 export function PlanDetailView() {
   const planId = useSearchParams().get('plan_id') ?? '';
@@ -100,7 +101,7 @@ export function PlanDetailView() {
               {PLAN_STATUS_LABEL[plan.data.status]}
             </Badge>
             <span className="text-sm num text-muted-foreground">
-              {plan.data.plan_id} · v{plan.data.version}
+              {planSessionLabel(plan.data)} · v{plan.data.version}
             </span>
             <span className="text-sm text-muted-foreground">다른 화주는 익명으로 보입니다</span>
           </div>

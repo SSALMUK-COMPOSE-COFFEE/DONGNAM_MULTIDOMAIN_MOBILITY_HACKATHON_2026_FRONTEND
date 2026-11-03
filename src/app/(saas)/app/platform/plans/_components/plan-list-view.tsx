@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePlatformPlans } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
-import { NO_VESSEL_LABEL } from '@/app/(saas)/app/platform/_components/plan-label';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 export function PlanListView() {
   const { data: plans, isPending, isError, error, refetch, isFetching } = usePlatformPlans();

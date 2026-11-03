@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { ShipperCatalogT, ShipperLotT, ShipperPlanItemT } from '@/types/saas-shipper';
 import { formatMonthDay } from '@/utils/format';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 import { getProductName } from '@/utils/scenario';
 
 const RECENT_LOT_COUNT = 5;
@@ -147,7 +148,7 @@ function NextPlanCard({
         {next && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <p className="text-2xl font-black text-navy">{next.vessel ?? '선박 미정'}</p>
+              <p className="text-2xl font-black text-navy">{next.vessel ?? NO_VESSEL_LABEL}</p>
               <Badge variant={next.status === 'committed' ? 'default' : 'secondary'}>
                 {PLAN_STATUS_LABEL[next.status]}
               </Badge>

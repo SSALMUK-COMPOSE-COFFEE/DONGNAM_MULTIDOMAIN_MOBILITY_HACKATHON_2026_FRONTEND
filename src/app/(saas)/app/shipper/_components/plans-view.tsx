@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 export function PlansView() {
   const plans = useShipperPlans();
@@ -75,7 +76,9 @@ export function PlansView() {
                   created_at,
                 }) => (
                   <TableRow key={plan_id}>
-                    <TableCell className="font-bold text-navy">{vessel ?? '선박 미정'}</TableCell>
+                    <TableCell className="font-bold text-navy">
+                      {vessel ?? NO_VESSEL_LABEL}
+                    </TableCell>
                     <TableCell className="text-right num">
                       {formatKstMonthDayTime(departure)}
                     </TableCell>

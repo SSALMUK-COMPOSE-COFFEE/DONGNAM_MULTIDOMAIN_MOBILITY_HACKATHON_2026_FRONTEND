@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatSignedManwon } from '@/utils/format';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 export function RequestsView() {
   const {
@@ -88,7 +89,7 @@ export function RequestsView() {
                 <li key={order.order_id} className="flex items-center gap-4 rounded-xl border p-4">
                   <div className="flex flex-1 flex-col gap-1">
                     <p className="font-bold text-navy">
-                      {plan.vessel ?? '선박 미정'}
+                      {plan.vessel ?? NO_VESSEL_LABEL}
                       <span className="ml-2 text-sm font-medium num text-muted-foreground">
                         출항 {formatKstMonthDayTime(plan.departure)}
                       </span>

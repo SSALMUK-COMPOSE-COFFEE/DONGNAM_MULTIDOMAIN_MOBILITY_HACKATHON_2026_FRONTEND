@@ -21,6 +21,7 @@ import {
 import type { ShipperSettlementT } from '@/types/saas-shipper';
 import { formatManwon } from '@/utils/format';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 const BASIS_LABEL: Record<ShipperSettlementT['basis'], string> = {
   tariff: '정산표 단가',
@@ -106,7 +107,7 @@ export function SettlementsView() {
               {rows.map(row => (
                 <TableRow key={`${row.plan_id}:${row.shipper_id}`}>
                   <TableCell>
-                    <p className="font-bold text-navy">{row.vessel ?? '선박 미정'}</p>
+                    <p className="font-bold text-navy">{row.vessel ?? NO_VESSEL_LABEL}</p>
                     <p className="text-sm num text-muted-foreground">
                       출항 {formatKstMonthDayTime(row.departure)} · v{row.version}
                     </p>

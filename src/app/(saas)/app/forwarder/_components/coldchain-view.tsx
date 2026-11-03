@@ -29,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { ForwarderStreamStateT, ForwarderTwinSummaryT } from '@/types/saas-forwarder';
 import { formatPercent } from '@/utils/format';
 import { formatKstMonthDayTime } from '@/utils/kst';
+import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 const TWIN_STATUS: Record<ForwarderTwinSummaryT['status'], { label: string; className: string }> = {
   no_data: { label: '측정값 없음', className: 'bg-slate' },
@@ -95,7 +96,7 @@ export function ColdchainView() {
           <SelectContent>
             {plans.data.map(({ plan_id, vessel, departure }) => (
               <SelectItem key={plan_id} value={plan_id}>
-                {vessel ?? '선박 미정'} · 출항 {formatKstMonthDayTime(departure)}
+                {vessel ?? NO_VESSEL_LABEL} · 출항 {formatKstMonthDayTime(departure)}
               </SelectItem>
             ))}
           </SelectContent>
