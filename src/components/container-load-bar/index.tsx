@@ -1,12 +1,16 @@
 import { PalletBar, type PalletSegmentT } from '@/components/pallet-bar';
 import type { ContainerLoadT, PlanT, ScenarioT } from '@/types/api';
-import { getPortName, getProductName, getShipperShortName } from '@/utils/scenario';
+import {
+  getOtherShipperLabel,
+  getPortName,
+  getProductName,
+  getShipperShortName,
+} from '@/utils/scenario';
 
 /** 화주 색. 딸기는 파랑 계열, SO2 처리 포도는 보라 계열 */
 const SHIPPER_COLORS = ['bg-navy', 'bg-brand', 'bg-cyan'];
 const SO2_SHIPPER_COLORS = ['bg-grape', 'bg-grape-soft'];
 const OTHER_SHIPPERS_KEY = 'other-shippers';
-const OTHER_SHIPPERS_LABEL = '다른 화주';
 const OTHER_SHIPPERS_COLOR = 'bg-slate';
 
 type ContainerLoadBarPropsT = {
@@ -54,7 +58,7 @@ export function ContainerLoadBar({
     colorClassName: getShipperColor(scenario, shipperId, isSo2),
   }));
   const segments = viewerShipperId
-    ? anonymizeSegments(shipperSegments, viewerShipperId)
+    ? anonymizeSegments(shipperSegments, viewerShipperId, scenario)
     : shipperSegments;
 
   return (
@@ -91,21 +95,27 @@ export const getShipperColor = (scenario: ScenarioT, shipperId: string, isSo2: b
   return colors[index % colors.length];
 };
 
-const anonymizeSegments = (segments: PalletSegmentT[], viewerShipperId: string) => {
+const anonymizeSegments = (
+  segments: PalletSegmentT[],
+  viewerShipperId: string,
+  scenario: ScenarioT
+) => {
   const own = segments.filter(({ key }) => key === viewerShipperId);
-  const otherPallets = segments
+  const palletsByLabel = new Map<string, number>();
+  segments
     .filter(({ key }) => key !== viewerShipperId)
-    .reduce((sum, { pallets }) => sum + pallets, 0);
+    .forEach(({ key, pallets }) => {
+      const label = getOtherShipperLabel(scenario, key);
+      palletsByLabel.set(label, (palletsByLabel.get(label) ?? 0) + pallets);
+    });
 
-  return otherPallets > 0
-    ? [
-        ...own,
-        {
-          key: OTHER_SHIPPERS_KEY,
-          label: OTHER_SHIPPERS_LABEL,
-          pallets: otherPallets,
-          colorClassName: OTHER_SHIPPERS_COLOR,
-        },
-      ]
-    : own;
+  return [
+    ...own,
+    ...[...palletsByLabel].map(([label, pallets]) => ({
+      key: `${OTHER_SHIPPERS_KEY}:${label}`,
+      label,
+      pallets,
+      colorClassName: OTHER_SHIPPERS_COLOR,
+    })),
+  ];
 };

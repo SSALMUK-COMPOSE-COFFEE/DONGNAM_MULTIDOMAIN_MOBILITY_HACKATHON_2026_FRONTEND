@@ -3,9 +3,8 @@ import { PlaneIcon } from 'lucide-react';
 
 import { getShipperColor } from '@/components/container-load-bar';
 import type { PlanT, ScenarioT } from '@/types/api';
-import { getProductName, getShipperShortName } from '@/utils/scenario';
+import { getOtherShipperLabel, getProductName, getShipperShortName } from '@/utils/scenario';
 
-const OTHER_SHIPPER_LABEL = '다른 화주';
 const OTHER_SHIPPER_COLOR = 'bg-slate';
 
 type AirLotsPropsT = {
@@ -50,7 +49,9 @@ export function AirLots({ plan, scenario, viewerShipperId }: AirLotsPropsT) {
                 )}
               />
               <span className="font-bold">
-                {isOwn ? getShipperShortName(scenario, shipper_id) : OTHER_SHIPPER_LABEL}
+                {isOwn
+                  ? getShipperShortName(scenario, shipper_id)
+                  : getOtherShipperLabel(scenario, shipper_id)}
               </span>
               <span>{getProductName(scenario, product_id)}</span>
               <span className="num">{pallets}파렛트</span>

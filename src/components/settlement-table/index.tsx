@@ -9,15 +9,13 @@ import {
 } from '@/components/ui/table';
 import type { ContainerSettlementT, ScenarioT, SettlementT } from '@/types/api';
 import { formatManwon } from '@/utils/format';
-import { getShipperName } from '@/utils/scenario';
+import { getOtherShipperLabel, getShipperName } from '@/utils/scenario';
 
 /** 정산 근거. 딸기는 팀 확정 정산표 단가, 포도는 최적화 운영비 기준이다 */
 const BASIS_LABEL: Record<string, string> = {
   tariff: '정산표 단가',
   operational: '운영비 기준',
 };
-const OTHER_SHIPPER_LABEL = '다른 화주';
-
 type SettlementTablePropsT = {
   containerSettlements: ContainerSettlementT[];
   scenario: ScenarioT;
@@ -128,7 +126,7 @@ function ContainerRows({
             <TableCell>
               {!viewerShipperId || shipper_id === viewerShipperId
                 ? getShipperName(scenario, shipper_id)
-                : OTHER_SHIPPER_LABEL}
+                : getOtherShipperLabel(scenario, shipper_id)}
             </TableCell>
             <TableCell className="text-right num">{pallets}</TableCell>
             <TableCell className="text-right num text-muted-foreground">
@@ -186,7 +184,7 @@ function AirRows({
             <TableCell>
               {!viewerShipperId || shipper_id === viewerShipperId
                 ? getShipperName(scenario, shipper_id)
-                : OTHER_SHIPPER_LABEL}
+                : getOtherShipperLabel(scenario, shipper_id)}
             </TableCell>
             <TableCell className="text-right num">{pallets}</TableCell>
             <TableCell className="text-right num text-muted-foreground">

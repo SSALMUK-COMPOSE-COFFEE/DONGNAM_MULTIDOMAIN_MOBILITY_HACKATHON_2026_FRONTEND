@@ -1,16 +1,8 @@
 import type { ScenarioT } from '@/types/api';
 
-const label = (index: number) => {
-  let letters = '';
-  let rest = index + 1;
-  while (rest > 0) {
-    const remainder = (rest - 1) % 26;
-    letters = String.fromCharCode(65 + remainder) + letters;
-    rest = Math.floor((rest - 1) / 26);
-  }
+const OTHER_SHIPPER_LABEL = '다른 화주';
 
-  return letters;
-};
+const label = (index: number) => String(index + 1);
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -49,10 +41,10 @@ export const createAnonymizer = (scenario: ScenarioT, ownShipperIds: readonly st
 
       const shipper = shippers.get(shipperId);
       if (shipper) {
-        tokens.set(shipper.name, `화주 ${letter}`);
+        tokens.set(shipper.name, `${OTHER_SHIPPER_LABEL} ${letter}`);
         const short = shortName(shipper.name);
         if (short.length >= 2 && !ownShorts.has(short) && !tokens.has(short)) {
-          tokens.set(short, `화주 ${letter}`);
+          tokens.set(short, `${OTHER_SHIPPER_LABEL} ${letter}`);
         }
 
         if (!ownPackhouses.has(shipper.packhouse_id)) {
@@ -60,7 +52,7 @@ export const createAnonymizer = (scenario: ScenarioT, ownShipperIds: readonly st
           tokens.set(shipper.packhouse_id, anonId);
           hiddenPackhouses.add(anonId);
           const packhouse = packhouses.get(shipper.packhouse_id);
-          if (packhouse) tokens.set(packhouse.name, `화주 ${letter} 선과장`);
+          if (packhouse) tokens.set(packhouse.name, `${OTHER_SHIPPER_LABEL} ${letter} 선과장`);
         }
       }
 
