@@ -299,5 +299,11 @@ function ContainerTwin({ planId, containerId }: { planId: string; containerId: s
     );
   }
 
-  return <SensorStatusCard containerId={containerId} twin={twin.data} />;
+  return (
+    <SensorStatusCard
+      containerId={containerId}
+      twin={twin.data}
+      emptyText="기기를 연결하면 측정값이 들어옵니다."
+    />
+  );
 }

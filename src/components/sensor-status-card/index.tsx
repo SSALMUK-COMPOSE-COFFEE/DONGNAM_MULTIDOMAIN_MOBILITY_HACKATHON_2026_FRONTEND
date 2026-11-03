@@ -14,13 +14,20 @@ const STATUS_BADGE: Record<TwinStateT['status'], { label: string; className: str
   critical: { label: '위험', className: 'bg-berry' },
 };
 
+const DEFAULT_EMPTY_TEXT = '시뮬레이션을 시작하면 품온과 전원, 손실이 1초마다 바뀝니다.';
+
 type SensorStatusCardPropsT = {
   containerId: string;
   twin: TwinStateT | null;
+  emptyText?: string;
 };
 
 /** 지금 품온·전원과 누적 단전, 측정 타임라인 */
-export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) {
+export function SensorStatusCard({
+  containerId,
+  twin,
+  emptyText = DEFAULT_EMPTY_TEXT,
+}: SensorStatusCardPropsT) {
   const current = twin?.current;
   const status = STATUS_BADGE[twin?.status ?? 'no_data'];
 
@@ -86,9 +93,7 @@ export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) 
             />
           </div>
         ) : (
-          <p className="text-muted-foreground">
-            시뮬레이션을 시작하면 품온과 전원, 손실이 1초마다 바뀝니다.
-          </p>
+          <p className="text-muted-foreground">{emptyText}</p>
         )}
       </CardContent>
     </Card>

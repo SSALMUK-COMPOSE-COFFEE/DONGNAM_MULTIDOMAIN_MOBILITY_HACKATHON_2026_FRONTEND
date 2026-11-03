@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useIsSandbox } from '@/apis/saas/auth';
 import {
   type AlertStreamStatusT,
   usePlanContainerTwin,
@@ -12,6 +13,7 @@ import {
   usePlatformAlertStream,
   usePlatformPlan,
   usePlatformPlans,
+  usePlatformSimulation,
 } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
@@ -35,6 +37,7 @@ import { formatPercent } from '@/utils/format';
 import { planOptionLabel } from '@/utils/plan-label';
 
 const PLAN_QUERY = 'plan';
+const SAAS_EMPTY_TEXT = '기기를 연결하면 측정값이 들어옵니다.';
 
 const STATUS_STYLE: Record<TwinSummaryT['status'], { label: string; className: string }> = {
   no_data: { label: '측정값 없음', className: 'bg-slate' },
@@ -114,6 +117,8 @@ function PlanColdchain({ planId }: { planId: string }) {
   const summariesQuery = usePlanContainers(planId);
   const [openedAt] = useState(() => new Date().toISOString());
   const [pickedContainerId, setPickedContainerId] = useState('');
+  const isSandbox = useIsSandbox();
+  const simulation = usePlatformSimulation(planId);
 
   const streamPlanId = planQuery.isSuccess ? planId : '';
   const { alerts, status, reconnect } = usePlatformAlertStream(streamPlanId, (alert: AlertT) => {
@@ -190,6 +195,16 @@ function PlanColdchain({ planId }: { planId: string }) {
                     다시 연결
                   </Button>
                 )}
+                {isSandbox && (
+                  <Button
+                    size="sm"
+                    className="ml-auto"
+                    disabled={simulation.isPending}
+                    onClick={() => simulation.mutate(containerId)}
+                  >
+                    시뮬레이션 실행
+                  </Button>
+                )}
               </div>
               <AlertFeed alerts={alerts.filter(alert => alert.container_id === containerId)} />
             </div>
@@ -257,7 +272,7 @@ function ContainerTwin({ planId, containerId }: { planId: string; containerId: s
       {twinQuery.isPending ? (
         <Skeleton className="h-96" />
       ) : (
-        <SensorStatusCard containerId={containerId} twin={twin} />
+        <SensorStatusCard containerId={containerId} twin={twin} emptyText={SAAS_EMPTY_TEXT} />
       )}
       {twin ? (
         <ActionList actions={twin.actions} />
