@@ -17,7 +17,12 @@ import {
   useColdchainTwin,
 } from '@/apis/saas/coldchain';
 import type { AlertStreamStatusT } from '@/apis/saas/platform';
-import { useShipperCatalog, useShipperPlan, useShipperPlans } from '@/apis/saas/shipper';
+import {
+  useShipperCatalog,
+  useShipperLots,
+  useShipperPlan,
+  useShipperPlans,
+} from '@/apis/saas/shipper';
 import {
   NO_READING_TEXT,
   TWIN_STATUS,
@@ -27,6 +32,7 @@ import {
 import { ColdchainActionList } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-action-list';
 import { ColdchainCsvButtons } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-csv-buttons';
 import { ColdchainResidualRisks } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-residual-risks';
+import { lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { buildMyPlan, ownScopeOf } from '@/app/(saas)/app/shipper/_components/my-plan';
 import {
   CardSkeleton,
@@ -419,6 +425,12 @@ type MyLotLossPropsT = {
 
 function MyLotLoss({ loss, preview, ownLotIds }: MyLotLossPropsT) {
   const lots = loss.lots ?? [];
+  const shipperLots = useShipperLots();
+  const catalog = useShipperCatalog();
+  const labels = useMemo(
+    () => lotLabelMap(shipperLots.data, catalog.data ?? null),
+    [shipperLots.data, catalog.data]
+  );
   const previewLots = (preview?.lots ?? []).filter(lot => ownLotIds.has(lot.lot_id));
   const refundChange = previewLots.length
     ? previewLots.reduce((sum, lot) => sum + lot.refund_change, 0)
@@ -453,7 +465,7 @@ function MyLotLoss({ loss, preview, ownLotIds }: MyLotLossPropsT) {
           <tbody>
             {lots.map(lot => (
               <tr key={lot.lot_id}>
-                <td className="m2-mono">{lot.lot_id}</td>
+                <td title={lot.lot_id}>{labels.get(lot.lot_id) ?? '내 출하'}</td>
                 <td className="m2-num text-right">{lot.pallets}</td>
                 <td className="m2-num text-right">
                   {formatPercent(lot.planned_loss_rate)} → {formatPercent(lot.predicted_loss_rate)}

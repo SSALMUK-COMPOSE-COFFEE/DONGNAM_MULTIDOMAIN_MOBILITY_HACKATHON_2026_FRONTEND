@@ -5,13 +5,19 @@ import type { ReactNode } from 'react';
 
 import {
   ColdchainChart,
+  type ColdchainEventLevelT,
   type ColdchainEventT,
-  EVENT_COLOR,
 } from '@/app/(saas)/app/forwarder/_components/coldchain-chart';
 import { formatMinutes, hourMinute } from '@/app/(saas)/app/forwarder/_components/format';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import type { ForwarderTwinStateT, ForwarderTwinSummaryT } from '@/types/saas-forwarder';
 import { formatPercent } from '@/utils/format';
+
+const MARKER_COLOR: Record<ColdchainEventLevelT, string> = {
+  info: 'var(--color-m2-ok-ink)',
+  warning: 'var(--color-m2-warn-ink)',
+  critical: 'var(--color-m2-berry-ink)',
+};
 
 export const TWIN_STATUS: Record<
   ForwarderTwinSummaryT['status'],
@@ -192,7 +198,7 @@ export function EventLog({ events }: { events: ColdchainEventT[] }) {
         <li key={event.key} className="flex min-w-0 items-center gap-2">
           <span
             className="grid size-4 flex-none place-items-center rounded-[4px] text-[10px] font-bold text-white"
-            style={{ background: EVENT_COLOR[event.level] }}
+            style={{ background: MARKER_COLOR[event.level] }}
           >
             {index + 1}
           </span>

@@ -263,7 +263,10 @@ test('목업 모드에서 세 역할이 같은 컨테이너의 콜드체인을 �
     const main = page.getByRole('main').first();
     await expect(main.getByRole('heading', { name: '내 화물 상태' })).toBeVisible();
     await expect(main.getByRole('heading', { name: 'CA-01 품온 · 전원' })).toBeVisible();
-    await expect(main.getByRole('cell', { name: 'lot-jinju-sb-1' })).toBeVisible();
+    await expect(main.locator('td[title="lot-jinju-sb-1"]')).toHaveText(
+      /^딸기 \d{2}\/\d{2} · \d+파렛트$/
+    );
+    await expect(main).not.toContainText('lot-jinju-sb-1');
     await expect(main).not.toContainText('lot-sancheong-sb-1');
     await expect(main).not.toContainText('lot-miryang-sb-1');
     await expect(main.getByRole('button', { name: /조치 (수락|완료)$/ })).toHaveCount(0);
