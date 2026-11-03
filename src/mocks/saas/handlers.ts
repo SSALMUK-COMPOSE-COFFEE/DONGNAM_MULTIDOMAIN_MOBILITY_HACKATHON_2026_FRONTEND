@@ -254,16 +254,18 @@ const showcaseOf = (session: PlanSessionT): ShowcaseT => {
       destination,
       transit_days,
     })),
-    routes: trucks.map(({ voyageId, truck }) => ({
-      voyage_id: voyageId,
-      truck_id: truck.truck_id,
-      trip: truck.trip,
-      cargo_group: truck.cargo_group ?? null,
-      load_pallets: truck.load_pallets,
-      stops: [...truck.stops]
-        .sort((a, b) => a.sequence - b.sequence)
-        .map(stop => stop.packhouse_id),
-    })),
+    routes: trucks.map(({ voyageId, truck }) => {
+      const stops = [...truck.stops].sort((a, b) => a.sequence - b.sequence);
+      return {
+        voyage_id: voyageId,
+        truck_id: truck.truck_id,
+        trip: truck.trip,
+        cargo_group: truck.cargo_group ?? null,
+        load_pallets: truck.load_pallets,
+        stops: stops.map(stop => stop.packhouse_id),
+        stop_pallets: stops.map(stop => stop.pallets),
+      };
+    }),
   };
 };
 

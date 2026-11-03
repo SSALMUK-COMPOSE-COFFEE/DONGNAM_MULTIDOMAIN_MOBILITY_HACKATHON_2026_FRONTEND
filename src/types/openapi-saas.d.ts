@@ -2121,6 +2121,17 @@ export interface components {
              * @default 0
              */
             pull_forward_days: number;
+            reason?: components["schemas"]["AssignmentReason"] | null;
+        };
+        /** AssignmentReason */
+        AssignmentReason: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "fixed" | "capacity_or_cost" | "destination_mismatch" | "over_capacity" | "ca_unsupported" | "sea_deadline_miss" | "sea_sell_by_miss" | "sea_shelf_life_miss" | "sea_forbidden" | "pickup_cutoff_miss" | "air_not_allowed" | "air_forbidden" | "air_sell_by_miss" | "air_shelf_life_miss" | "no_feasible_mode" | "no_solution" | "other";
+            /** Message */
+            message: string;
         };
         /** AutomaticAction */
         AutomaticAction: {
@@ -4017,6 +4028,7 @@ export interface components {
             /** Next Step */
             next_step: string;
             registered?: components["schemas"]["RegisteredLot"] | null;
+            savings_estimate?: components["schemas"]["SavingsEstimate"] | null;
         };
         /** IntakeRequest */
         IntakeRequest: {
@@ -6339,6 +6351,48 @@ export interface components {
              */
             reset_at: string;
         };
+        /** SavingsEstimate */
+        SavingsEstimate: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "sea" | "air";
+            /** Container Id */
+            container_id?: string | null;
+            /** Voyage Id */
+            voyage_id?: string | null;
+            /** Pallets */
+            pallets: number;
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "tariff" | "operational";
+            /**
+             * Billing Rule
+             * @enum {string}
+             */
+            billing_rule: "performance" | "usage_fee";
+            /** Rule */
+            rule: string;
+            /** Baseline Cost */
+            baseline_cost: number;
+            /** Shared Cost */
+            shared_cost: number;
+            /** Savings */
+            savings: number;
+            /** Savings Per Pallet */
+            savings_per_pallet: number;
+            /** Fee */
+            fee: number;
+            /** Shipper Gain */
+            shipper_gain: number;
+            /** Assumed Container Pallets */
+            assumed_container_pallets?: number | null;
+            /** Assumptions */
+            assumptions: string[];
+        };
         /** Scenario */
         Scenario: {
             /** Id */
@@ -7307,6 +7361,8 @@ export interface components {
             load_pallets: number;
             /** Stops */
             stops: string[];
+            /** Stop Pallets */
+            stop_pallets: number[];
         };
         /** ShowcaseVoyage */
         ShowcaseVoyage: {
@@ -7822,6 +7878,12 @@ export interface components {
             pallets: number;
             /** Reason */
             reason: string;
+            /**
+             * Reason Code
+             * @default other
+             * @enum {string}
+             */
+            reason_code: "fixed" | "capacity_or_cost" | "destination_mismatch" | "over_capacity" | "ca_unsupported" | "sea_deadline_miss" | "sea_sell_by_miss" | "sea_shelf_life_miss" | "sea_forbidden" | "pickup_cutoff_miss" | "air_not_allowed" | "air_forbidden" | "air_sell_by_miss" | "air_shelf_life_miss" | "no_feasible_mode" | "no_solution" | "other";
         };
         /** ValidationError */
         ValidationError: {

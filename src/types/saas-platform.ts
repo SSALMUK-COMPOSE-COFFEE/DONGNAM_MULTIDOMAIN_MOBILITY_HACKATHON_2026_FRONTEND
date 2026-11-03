@@ -52,3 +52,6 @@ export type PowerPlanT = SaasSchemaT<'PowerPlan'>;
 export type LotPowerPlanT = SaasSchemaT<'LotPowerPlan'>;
 export type PowerSegmentT = SaasSchemaT<'PowerSegment'>;
 export type GensetCandidateT = SaasSchemaT<'GensetCandidate'>;
+
+export type AssignmentReasonT = SaasSchemaT<'AssignmentReason'>;
+export type AssignmentReasonCodeT = AssignmentReasonT['code'];

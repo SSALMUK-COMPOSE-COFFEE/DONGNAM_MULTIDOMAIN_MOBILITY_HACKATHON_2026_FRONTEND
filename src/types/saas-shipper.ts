@@ -50,3 +50,5 @@ export type ShipperChangeRequestListParamsT = SaasQueryT<'/test/api/saas/shipper
 export type ShipperNotificationT = SaasSchemaT<'Notification'>;
 export type ShipperNotificationKindT = ShipperNotificationT['kind'];
 export type ShipperNotificationListParamsT = SaasQueryT<'/test/api/saas/shipper/notifications'>;
+
+export type SavingsEstimateT = SaasSchemaT<'SavingsEstimate'>;
