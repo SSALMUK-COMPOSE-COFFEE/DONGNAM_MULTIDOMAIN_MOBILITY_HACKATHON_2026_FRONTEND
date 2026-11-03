@@ -430,6 +430,7 @@ test('목업 모드에서 포워더가 실행 카드에 번호를 넣고 VGM·�
       /\d\s*원/
     );
   });
+});
 
 test('다른 탭에서 로그인·로그아웃하면 기존 탭이 새 세션을 따라간다', async ({ context, page }) => {
   await page.goto(LOGIN_PATH);
