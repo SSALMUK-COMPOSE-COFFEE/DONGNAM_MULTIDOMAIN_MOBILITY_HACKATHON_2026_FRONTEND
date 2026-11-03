@@ -212,6 +212,8 @@ type AlertStreamT = {
   state: ForwarderStreamStateT;
 };
 
+const toAlertKey = ({ container_id, key }: ForwarderAlertT) => `${container_id}:${key}`;
+
 const streamUrl = (planId: string, since: number) => {
   const params = new URLSearchParams({ plan_id: planId, since: String(since) });
 
@@ -258,9 +260,13 @@ export const useForwarderAlertStream = (planId: string) => {
         if (seen.has(alert.seq)) return;
 
         seen.add(alert.seq);
+        const alertKey = toAlertKey(alert);
         setStream(prev =>
           prev.planId === planId && prev.orgId === orgId
-            ? { ...prev, alerts: [alert, ...prev.alerts] }
+            ? {
+                ...prev,
+                alerts: [alert, ...prev.alerts.filter(item => toAlertKey(item) !== alertKey)],
+              }
             : { planId, orgId, alerts: [alert], state: 'open' }
         );
       });

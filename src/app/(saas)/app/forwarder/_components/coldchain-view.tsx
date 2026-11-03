@@ -156,7 +156,7 @@ function PlanColdchain({ planId, containerParam }: PlanColdchainPropsT) {
         <ContainerPanel planId={planId} containerId={containerId} isLoading={isLoading} />
         <div className="flex flex-col gap-3">
           <Badge className={cn('self-end', streamState.className)}>{streamState.label}</Badge>
-          <AlertFeed alerts={stream.alerts} />
+          <AlertFeed alerts={stream.alerts.filter(alert => alert.container_id === containerId)} />
         </div>
       </div>
     </div>
