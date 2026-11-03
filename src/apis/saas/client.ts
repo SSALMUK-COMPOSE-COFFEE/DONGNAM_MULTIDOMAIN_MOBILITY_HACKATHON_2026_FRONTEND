@@ -7,6 +7,7 @@ import {
   BASE_PATH,
   SAAS_API_BASE,
   SAAS_AUTH_ENDPOINTS,
+  SAAS_ENDPOINTS,
   SAAS_HEADERS,
   SAAS_LOGIN_PATH,
   SAAS_PUBLIC_PATHS,
@@ -62,6 +63,22 @@ const redirectToLogin = () => {
   window.location.assign(loginHref(currentAppPath()));
 };
 
+const recheckSession = () => {
+  getSaasQueryClient()?.invalidateQueries({ queryKey: orgKeys.me, exact: true });
+};
+
+const isPinnedOrgDenied = (error: unknown) => {
+  if (!isAxiosError(error) || error.response?.status !== 403) return false;
+
+  const url = error.config?.url ?? '';
+
+  return (
+    !!error.config?.headers?.has(SAAS_HEADERS.ORG_ID) &&
+    url !== SAAS_ENDPOINTS.ME &&
+    !SAAS_AUTH_ENDPOINTS.includes(url)
+  );
+};
+
 saasApi.interceptors.response.use(
   response => response,
   error => {
@@ -72,6 +89,8 @@ saasApi.interceptors.response.use(
     ) {
       redirectToLogin();
     }
+
+    if (isPinnedOrgDenied(error)) recheckSession();
 
     return Promise.reject(error);
   }

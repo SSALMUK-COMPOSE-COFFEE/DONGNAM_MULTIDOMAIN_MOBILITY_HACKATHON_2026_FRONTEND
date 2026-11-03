@@ -20,7 +20,7 @@ export type ForwarderTwinStateT = TwinStateT;
 export type ForwarderAlertT = SaasSchemaT<'Alert'>;
 export type ForwarderColdchainActionT = SaasSchemaT<'ColdchainAction'>;
 
-export type ForwarderStreamStateT = 'connecting' | 'open' | 'retrying';
+export type ForwarderStreamStateT = 'connecting' | 'open' | 'retrying' | 'stopped';
 
 export type ForwarderExecutionCardT = SaasSchemaT<'ExecutionCard'>;
 export type ForwarderContainerExecutionT = SaasSchemaT<'ContainerExecution'>;

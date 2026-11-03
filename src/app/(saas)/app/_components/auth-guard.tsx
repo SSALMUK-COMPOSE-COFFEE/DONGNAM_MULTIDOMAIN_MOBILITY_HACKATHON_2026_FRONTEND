@@ -4,7 +4,7 @@ import { isAxiosError } from 'axios';
 import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
-import { useMe } from '@/apis/saas/auth';
+import { useMe, useSessionSync } from '@/apis/saas/auth';
 import { useRoleSwitchStore } from '@/app/(saas)/app/_components/use-role-switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { orgTypeOfPath, roleHome } from '@/consts/route-saas';
@@ -13,6 +13,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const me = useMe();
+  useSessionSync();
   const switchTarget = useRoleSwitchStore(state => state.target);
 
   const activeType = me.data?.active_org.org_type ?? null;

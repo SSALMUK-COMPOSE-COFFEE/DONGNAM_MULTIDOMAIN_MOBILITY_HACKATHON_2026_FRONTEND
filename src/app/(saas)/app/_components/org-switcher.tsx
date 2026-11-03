@@ -76,8 +76,9 @@ export function OrgSwitcher({ me }: { me: Me }) {
 
         if (!target || orgId === active.org_id) return;
 
-        switchOrg(orgId);
-        router.replace(roleHome(target.org_type));
+        switchOrg(orgId).then(isSwitched => {
+          if (isSwitched) router.replace(roleHome(target.org_type));
+        });
       }}
     >
       <SelectTrigger

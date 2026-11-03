@@ -47,6 +47,7 @@ const STREAM_LABEL: Record<ForwarderStreamStateT, { label: string; chip: string 
   connecting: { label: '연결 중', chip: 'm2-chip' },
   open: { label: '실시간 수신 중', chip: 'm2-chip m2-chip-ok' },
   retrying: { label: '다시 연결 중', chip: 'm2-chip m2-chip-warn' },
+  stopped: { label: '연결 끊김', chip: 'm2-chip m2-chip-berry' },
 };
 
 const ALERT_COLOR: Record<ForwarderAlertT['level'], string> = {

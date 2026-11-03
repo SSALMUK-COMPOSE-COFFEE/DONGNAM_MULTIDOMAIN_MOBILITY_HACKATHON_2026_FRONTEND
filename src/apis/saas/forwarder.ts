@@ -245,6 +245,7 @@ export const useAnswerForwarderRequest = (planId: string, orderId: string) => {
 
 const STREAM_RETRY_MS = 3_000;
 const STREAM_MAX_RETRY_MS = 30_000;
+export const FORWARDER_STREAM_MAX_FAILURES = 6;
 
 type AlertStreamT = {
   planId: string;
@@ -269,6 +270,7 @@ export const useForwarderAlertStream = (planId: string) => {
     alerts: [],
     state: 'connecting',
   });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!planId || !orgId) return;
@@ -278,6 +280,7 @@ export const useForwarderAlertStream = (planId: string) => {
     let source: EventSource | null = null;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     let retryDelay = STREAM_RETRY_MS;
+    let failures = 0;
     let isClosed = false;
 
     const update = (next: Partial<Omit<AlertStreamT, 'planId' | 'orgId'>>) =>
@@ -293,6 +296,7 @@ export const useForwarderAlertStream = (planId: string) => {
       source = new EventSource(streamUrl(planId, lastSeq), { withCredentials: true });
       source.addEventListener('open', () => {
         retryDelay = STREAM_RETRY_MS;
+        failures = 0;
         update({ state: 'open' });
       });
       source.addEventListener('alert', event => {
@@ -316,6 +320,12 @@ export const useForwarderAlertStream = (planId: string) => {
         source = null;
         if (isClosed) return;
 
+        failures += 1;
+        if (failures >= FORWARDER_STREAM_MAX_FAILURES) {
+          update({ state: 'stopped' });
+          return;
+        }
+
         update({ state: 'retrying' });
         retryTimer = setTimeout(connect, retryDelay);
         retryDelay = Math.min(retryDelay * 2, STREAM_MAX_RETRY_MS);
@@ -329,12 +339,16 @@ export const useForwarderAlertStream = (planId: string) => {
       if (retryTimer) clearTimeout(retryTimer);
       source?.close();
     };
-  }, [planId, orgId]);
+  }, [planId, orgId, attempt]);
 
   const isCurrent = stream.planId === planId && stream.orgId === orgId;
 
   return {
     alerts: isCurrent ? stream.alerts : [],
     state: isCurrent ? stream.state : ('connecting' as const),
+    reconnect: () => {
+      setStream(prev => ({ ...prev, state: 'connecting' }));
+      setAttempt(value => value + 1);
+    },
   };
 };

@@ -19,6 +19,7 @@ export const SAAS_ENDPOINTS = {
   AUTH_LOGIN: '/auth/login',
   AUTH_DEMO_LOGIN: '/auth/demo-login',
   AUTH_LOGOUT: '/auth/logout',
+  AUTH_ACTIVE_ORG: '/auth/active-org',
   ME: '/me',
   PUBLIC_SHOWCASE: '/public/showcase',
 } as const;

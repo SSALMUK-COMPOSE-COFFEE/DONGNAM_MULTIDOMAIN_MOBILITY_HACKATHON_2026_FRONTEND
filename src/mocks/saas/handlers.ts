@@ -71,7 +71,13 @@ import type {
   TwinStateT,
 } from '@/types/api';
 import type { SaasSchemaT } from '@/types/api-saas';
-import type { DemoLoginRequest, LoginRequest, SignupOrgType, SignupRequest } from '@/types/saas';
+import type {
+  ActiveOrgRequest,
+  DemoLoginRequest,
+  LoginRequest,
+  SignupOrgType,
+  SignupRequest,
+} from '@/types/saas';
 import type {
   AirSeaComparisonT,
   ArrivalRequestT,
@@ -553,6 +559,17 @@ const authHandlers = [
     saveAccount({ org, email: body.email, name: body.name, password: body.password });
 
     return startSession(org, body.email, body.name);
+  }),
+
+  http.put(api(SAAS_ENDPOINTS.AUTH_ACTIVE_ORG), async ({ request }) => {
+    const principal = authorize(request);
+    if (principal instanceof Response) return principal;
+
+    const { org_id } = (await request.json()) as ActiveOrgRequest;
+    const membership = principal.me.memberships.find(item => item.org_id === org_id);
+    if (!membership) return fail(403, '소속되지 않은 조직입니다');
+
+    return HttpResponse.json({ ...principal.me, active_org: membership });
   }),
 
   http.post(api(SAAS_ENDPOINTS.AUTH_LOGOUT), ({ request }) => {

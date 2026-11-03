@@ -430,4 +430,24 @@ test('목업 모드에서 포워더가 실행 카드에 번호를 넣고 VGM·�
       /\d\s*원/
     );
   });
+
+test('다른 탭에서 로그인·로그아웃하면 기존 탭이 새 세션을 따라간다', async ({ context, page }) => {
+  await page.goto(LOGIN_PATH);
+  const pinned = page.waitForRequest(
+    request => request.url().includes('/api/saas/') && !!request.headers()['x-org-id']
+  );
+  await enterAs(page, 'shipper');
+  const main = page.getByRole('main').first();
+  await expect(main.getByRole('heading', { level: 1 })).toContainText('진주 딸기 수출농가 A');
+  expect((await pinned).headers()['x-org-id']).toBe('shipper-jinju');
+
+  const other = await context.newPage();
+  await other.goto(LOGIN_PATH);
+  await enterAs(other, 'platform');
+
+  await page.waitForURL(/\/test\/app\/platform/);
+  await expect(page.getByRole('main').first()).not.toContainText('진주 딸기 수출농가 A');
+
+  await logout(other);
+  await page.waitForURL(/\/test\/login/);
 });
