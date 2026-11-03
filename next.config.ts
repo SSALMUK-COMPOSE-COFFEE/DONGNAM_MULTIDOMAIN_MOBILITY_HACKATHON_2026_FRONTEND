@@ -8,6 +8,7 @@ const saasDevApiPrefix = process.env.SAAS_DEV_API_PREFIX ?? `${basePath}/api`;
 const nextConfig: NextConfig = {
   basePath,
   output: 'standalone',
+  compress: !isDev,
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
