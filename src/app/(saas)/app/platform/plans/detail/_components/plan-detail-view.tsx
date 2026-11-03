@@ -29,7 +29,12 @@ import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-stat
 import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { SettlementPreviewCard } from '@/app/(saas)/app/platform/_components/settlement-preview-card';
+import { ArrivalInspectionCard } from '@/app/(saas)/app/platform/plans/detail/_components/arrival-inspection-card';
+import { BenchmarkCard } from '@/app/(saas)/app/platform/plans/detail/_components/benchmark-card';
 import { ForwarderAssignCard } from '@/app/(saas)/app/platform/plans/detail/_components/forwarder-assign-card';
+import { FuelShockSection } from '@/app/(saas)/app/platform/plans/detail/_components/fuel-shock-section';
+import { LearnedLossCard } from '@/app/(saas)/app/platform/plans/detail/_components/learned-loss-card';
+import { ProvenanceCard } from '@/app/(saas)/app/platform/plans/detail/_components/provenance-card';
 import { ReplanSection } from '@/app/(saas)/app/platform/plans/detail/_components/replan-section';
 import { ShipperSavingsCard } from '@/app/(saas)/app/platform/plans/detail/_components/shipper-savings-card';
 import { TariffSheetCard } from '@/app/(saas)/app/platform/plans/detail/_components/tariff-sheet-card';
@@ -190,6 +195,26 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
       <div className="mt-4">
         <SectionErrorBoundary message="재최적화 영역을 그리지 못했습니다." className="h-64">
           <ReplanSection key={session.plan_id} session={session} />
+        </SectionErrorBoundary>
+      </div>
+
+      <div className="m2-col mt-4">
+        <SectionErrorBoundary message="방법 비교를 그리지 못했습니다." className="h-64">
+          <BenchmarkCard planId={planId} />
+        </SectionErrorBoundary>
+        <SectionErrorBoundary message="운임 쇼크 분석을 그리지 못했습니다." className="h-64">
+          <FuelShockSection key={session.plan_id} session={session} />
+        </SectionErrorBoundary>
+        <div className="m2-grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
+          <SectionErrorBoundary message="도착 검수를 그리지 못했습니다." className="h-64">
+            <ArrivalInspectionCard key={session.plan_id} session={session} />
+          </SectionErrorBoundary>
+          <SectionErrorBoundary message="학습 손실률을 그리지 못했습니다." className="h-64">
+            <LearnedLossCard scenario={session.scenario} />
+          </SectionErrorBoundary>
+        </div>
+        <SectionErrorBoundary message="데이터 출처를 그리지 못했습니다." className="h-64">
+          <ProvenanceCard />
         </SectionErrorBoundary>
       </div>
     </>
