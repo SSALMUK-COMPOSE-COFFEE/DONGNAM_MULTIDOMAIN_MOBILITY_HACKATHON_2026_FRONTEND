@@ -8,11 +8,16 @@ import { toast } from 'sonner';
 import { saasErrorReason } from '@/apis/saas/errors';
 import {
   type ShipperIntakePreviewRequestT,
+  previewExpectedLossOf,
   useCreateShipperLot,
   useShipperIntakePreview,
 } from '@/apis/saas/shipper';
 import { todayIso } from '@/app/(saas)/app/shipper/_components/catalog';
 import { SELL_WINDOW_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
+import {
+  lossBasisText,
+  lossRateText,
+} from '@/app/(saas)/app/shipper/_components/loss-disclosure-card';
 import { lotLabelFrom } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { plainWords, so2Text } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { errorStatus, toFieldErrors } from '@/app/(saas)/app/shipper/_components/query-state';
@@ -220,6 +225,8 @@ export function ShipperLotForm({
       ? `${earliest.container_id} · ${earliestCapacity}파렛트 컨테이너`
       : earliest.container_id;
   };
+
+  const expectedLoss = previewExpectedLossOf(previewData);
 
   const onlyShipper = catalog.shippers.length <= 1;
   const hasWarnings = (previewData?.hints.warnings.length ?? 0) > 0;
@@ -440,6 +447,14 @@ export function ShipperLotForm({
                 {previewData.hints.air.feasible
                   ? `가능 · ${fmtDay(previewData.hints.air.arrival_date)} 도착`
                   : '불가'}
+              </b>
+            </div>
+          )}
+          {expectedLoss && (
+            <div>
+              <span>예상 손실률 ({expectedLoss.mode === 'air' ? '항공' : '해상'})</span>
+              <b className={cn(isChecking && 'text-m2-muted')}>
+                {lossRateText(expectedLoss)} · {lossBasisText(expectedLoss)}
               </b>
             </div>
           )}

@@ -1,6 +1,11 @@
 import { cn } from 'cn';
 import { CheckIcon, PlaneIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
 
+import { previewExpectedLossOf } from '@/apis/saas/shipper';
+import {
+  lossBasisText,
+  lossRateText,
+} from '@/app/(saas)/app/shipper/_components/loss-disclosure-card';
 import { lotLabelFrom } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { plainWords, so2Text } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { fmtDay, fmtMonthDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
@@ -21,6 +26,7 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
 
   const { lot, resolved, defaults_applied, hints } = preview;
   const earliestId = hints.earliest_feasible?.container_id ?? null;
+  const expectedLoss = previewExpectedLossOf(preview);
 
   return (
     <section className="m2-card" aria-label="등록 결과">
@@ -43,6 +49,14 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
           <span>출하 이름</span>
           <b title={lot.id}>{lotLabelFrom(resolved.product_name, lot.ready_date, lot.pallets)}</b>
         </div>
+        {expectedLoss && (
+          <div>
+            <span>예상 손실률 ({expectedLoss.mode === 'air' ? '항공' : '해상'})</span>
+            <b>
+              {lossRateText(expectedLoss)} · {lossBasisText(expectedLoss)}
+            </b>
+          </div>
+        )}
       </div>
 
       <h3 className="m2-h3 mt-4 mb-2">해상</h3>

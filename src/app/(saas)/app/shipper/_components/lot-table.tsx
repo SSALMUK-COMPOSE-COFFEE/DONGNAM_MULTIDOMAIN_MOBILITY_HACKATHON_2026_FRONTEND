@@ -10,6 +10,10 @@ import {
   LOT_STATUS_LABEL,
   SELL_WINDOW_LABEL,
 } from '@/app/(saas)/app/shipper/_components/labels';
+import {
+  LossBasisChip,
+  lossRateText,
+} from '@/app/(saas)/app/shipper/_components/loss-disclosure-card';
 import { LotEditDialog } from '@/app/(saas)/app/shipper/_components/lot-edit-dialog';
 import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { LotStatusChip } from '@/app/(saas)/app/shipper/_components/lot-status-chip';
@@ -169,6 +173,10 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                 <th>판매기한</th>
                 <th>판매 기간</th>
                 <th>목적지</th>
+                <th>
+                  예상 손실률
+                  <span className="sr-only"> (해상)</span>
+                </th>
                 <th>상태</th>
                 <th className="r">관리</th>
               </tr>
@@ -205,6 +213,17 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                     <td className={cn('m2-num', CARD_HIDE)}>{fmtMonthDay(lot.sell_by_date)}</td>
                     <td className={CARD_HIDE}>{SELL_WINDOW_LABEL[lot.sell_window]}</td>
                     <td className={CARD_HIDE}>{portName(lot.destination)}</td>
+                    <td>
+                      <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <span className={cn('text-[12px] text-m2-muted', MOBILE_ONLY)}>
+                          예상 손실
+                        </span>
+                        <span className="m2-num font-semibold">
+                          {lossRateText(lot.expected_loss)}
+                        </span>
+                        <LossBasisChip loss={lot.expected_loss} />
+                      </span>
+                    </td>
                     <td>
                       <LotStatusChip status={lot.status} />
                     </td>

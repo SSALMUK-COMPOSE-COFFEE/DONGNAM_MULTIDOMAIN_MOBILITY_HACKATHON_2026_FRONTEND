@@ -5,6 +5,85 @@ const SIGNUP_PATH = '/test/signup';
 const LOGIN_PATH = '/test/login';
 const RAW_LOT_ID = /\blot-[a-z0-9-]+/;
 const MOBILE_WIDTH = 390;
+const LOSS_TEXT = /^\d+\.\d% · 도착 검수 학습 \d+건$/;
+const LOSS_CHIP = /^근거: 도착 검수 학습 \d+건$/;
+const ASSUMED_LOSS_TEXT = /^\d+\.\d% · 기본값\(가정\)$/;
+const ASSUMED_LOSS_CHIP = '근거: 기본값 가정';
+const ASSUMED_LOSS_NOTE = '가정: 아직 도착 검수 기록이 없어 정한 기본값입니다.';
+const LOSS_CARD = '내 출하 예상 손실률 (해상)';
+
+const assumeDefaultLoss = (page: Page) =>
+  page.addInitScript(() => {
+    const urls = new WeakMap<XMLHttpRequest, string>();
+    const open = XMLHttpRequest.prototype.open;
+    const responseText = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText');
+    const assumed = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(assumed);
+      if (!value || typeof value !== 'object') return value;
+
+      return Object.fromEntries(
+        Object.entries(value).map(([key, item]) =>
+          key === 'expected_loss' && item && typeof item === 'object'
+            ? [key, { ...item, basis: '기본값(가정)', n_observations: 0, source: null }]
+            : [key, assumed(item)]
+        )
+      );
+    };
+
+    XMLHttpRequest.prototype.open = function (
+      this: XMLHttpRequest,
+      ...args: Parameters<XMLHttpRequest['open']>
+    ) {
+      urls.set(this, String(args[1]));
+
+      return open.apply(this, args);
+    } as XMLHttpRequest['open'];
+    Object.defineProperty(XMLHttpRequest.prototype, 'responseText', {
+      configurable: true,
+      get(this: XMLHttpRequest) {
+        const text = String(responseText?.get?.call(this) ?? '');
+        const url = urls.get(this) ?? '';
+        if (!/\/(saas\/shipper|intake)\/lots/.test(url) || !text.includes('expected_loss')) {
+          return text;
+        }
+
+        return JSON.stringify(assumed(JSON.parse(text)));
+      },
+    });
+  });
+
+const expectLossCard = async (page: Page) => {
+  const card = page.getByRole('region', { name: LOSS_CARD });
+  await expect(card).toBeVisible();
+  await expect(card.getByRole('definition')).toHaveText(/^\d+\.\d%$/);
+  await expect(card.getByText(/내 물량의 약 \d+\.\d%가 상품성을 잃을 수 있다는 뜻/)).toBeVisible();
+  const rows = card.getByRole('list', { name: '품목·목적지별 예상 손실률' }).getByRole('listitem');
+  await expect(rows.first()).toContainText(/\d+\.\d%/);
+  await expect(rows.first().locator('.m2-chip')).toHaveText(LOSS_CHIP);
+  await expect(card.getByRole('link', { name: '출하별로 보기' })).toHaveAttribute(
+    'href',
+    /\/app\/shipper\/lots$/
+  );
+
+  return card;
+};
+
+const expectLossColumn = async (page: Page) => {
+  const main = page.getByRole('main').first();
+  await expect(main.getByRole('columnheader', { name: /예상 손실률/ })).toBeVisible();
+  const cell = main
+    .locator('tbody')
+    .getByRole('row')
+    .first()
+    .getByRole('cell')
+    .filter({ hasText: /\d+\.\d%/ });
+  await expect(cell).toHaveCount(1);
+  await expect(cell.locator('.m2-chip')).toHaveText(LOSS_CHIP);
+  await page.setViewportSize({ width: MOBILE_WIDTH, height: 844 });
+  await expect(cell.getByText('예상 손실')).toBeVisible();
+  await expect(cell).toContainText(/\d+\.\d%/);
+  await page.setViewportSize({ width: 1440, height: 900 });
+};
 
 const menu = (page: Page, name: RegExp) =>
   page.getByRole('complementary', { name: '주 메뉴' }).getByRole('link', { name });
@@ -152,6 +231,8 @@ test('새 화주가 화면만으로 선과장을 등록하고 수출 시기 밖 
       .filter({ hasText: /딸기 수출 시기\(11~5월\) 밖의 출하일입니다/ });
     await expect(warning).toBeVisible();
     await expect(ready).toHaveAccessibleDescription(/수출 시기/);
+    const previewLoss = form.locator('.m2-lines > div').filter({ hasText: '예상 손실률 (해상)' });
+    await expect(previewLoss.locator('b')).toHaveText(LOSS_TEXT);
     await expectNoSeriousAxe(page, '출하 등록(경고)');
 
     await form.getByRole('button', { name: '출하 등록' }).click();
@@ -163,6 +244,14 @@ test('새 화주가 화면만으로 선과장을 등록하고 수출 시기 밖 
     await expect(edit).toBeVisible();
     await expect(main.getByText(/판매기한 = .*2027-07-08/)).toBeVisible();
     await expect(main.getByText(/2026-11-24/)).toHaveCount(0);
+    await expect(
+      main
+        .getByRole('region', { name: '등록 결과' })
+        .locator('.m2-lines > div')
+        .filter({ hasText: '예상 손실률 (해상)' })
+        .locator('b')
+    ).toHaveText(LOSS_TEXT);
+    await expectLossColumn(page);
     await expectNoRawLotId(page);
 
     await edit.click();
@@ -188,7 +277,11 @@ test('새 화주가 화면만으로 선과장을 등록하고 수출 시기 밖 
     await menu(page, /^홈/).click();
     await page.waitForURL(/\/test\/app\/shipper$/);
     expect(await seasonNumbers(page)).toEqual({ savings: '0원', fee: '0원', gain: '0원' });
+    const card = await expectLossCard(page);
+    await expect(card.getByRole('listitem')).toHaveCount(1);
+    await expect(card.getByRole('listitem').first()).toContainText('딸기 → ');
     await expectNoRawLotId(page);
+    await expectNoSeriousAxe(page, '화주 홈(손실률 카드)');
   });
 });
 
@@ -206,6 +299,7 @@ test('데모 화주 홈 시즌 카드 숫자가 정산 화면 합계와 같고 �
   const home = await seasonNumbers(page);
   expect(home.savings).not.toBe('0원');
   await expect(page.getByText(/내 파렛트 \d+ \/ 컨테이너 전체 \d+/)).toBeVisible();
+  await expectLossCard(page);
   await expectNoRawLotId(page);
   await expectNoSeriousAxe(page, '화주 홈');
   await expectFitsMobile(page, '화주 홈');
@@ -240,8 +334,61 @@ test('데모 화주 홈 시즌 카드 숫자가 정산 화면 합계와 같고 �
   await menu(page, /내 출하/).click();
   await page.waitForURL(/\/test\/app\/shipper\/lots/);
   await expect(page.getByRole('main').first().getByRole('row').nth(1)).toBeVisible();
+  await expectLossColumn(page);
   await expectNoRawLotId(page);
   await expectNoSeriousAxe(page, '내 출하(데모)');
+});
+
+test('도착 검수 기록이 없는 출하는 예상 손실률을 기본값 가정으로 밝힌다', async ({ page }) => {
+  await assumeDefaultLoss(page);
+  await page.goto(LOGIN_PATH);
+  await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+  await page
+    .getByRole('button', { name: /들어가기/ })
+    .nth(1)
+    .click();
+  await page.waitForURL(/\/test\/app\/shipper/);
+
+  const card = page.getByRole('region', { name: LOSS_CARD });
+  await expect(card.getByRole('definition')).toHaveText(/^\d+\.\d%$/);
+  const rows = card.getByRole('list', { name: '품목·목적지별 예상 손실률' }).getByRole('listitem');
+  await expect(rows.first()).toContainText(/\d+\.\d%/);
+  for (const chip of await rows.locator('.m2-chip').all()) {
+    await expect(chip).toHaveText(ASSUMED_LOSS_CHIP);
+    await expect(chip).toHaveClass(/m2-chip-warn/);
+  }
+  await expect(card.getByText(/학습 \d+건/)).toHaveCount(0);
+  await expect(card.getByText(ASSUMED_LOSS_NOTE)).toBeVisible();
+  await expectNoSeriousAxe(page, '화주 홈(손실률 가정)');
+  await expectFitsMobile(page, '화주 홈(손실률 가정)');
+
+  await menu(page, /내 출하/).click();
+  await page.waitForURL(/\/test\/app\/shipper\/lots/);
+  const main = page.getByRole('main').first();
+  const cell = main
+    .locator('tbody')
+    .getByRole('row')
+    .first()
+    .getByRole('cell')
+    .filter({ hasText: /\d+\.\d%/ });
+  await expect(cell).toHaveCount(1);
+  await expect(cell.locator('.m2-chip')).toHaveText(ASSUMED_LOSS_CHIP);
+  await expect(main.locator('tbody .m2-chip-ok')).toHaveCount(0);
+
+  const form = page.getByRole('region', { name: '새 출하 등록' });
+  await form.getByLabel('출하 가능일').fill('2027-03-02');
+  await expect(
+    form.locator('.m2-lines > div').filter({ hasText: '예상 손실률 (해상)' }).locator('b')
+  ).toHaveText(ASSUMED_LOSS_TEXT);
+  await form.getByRole('button', { name: '출하 등록' }).click();
+  await expect(
+    main
+      .getByRole('region', { name: '등록 결과' })
+      .locator('.m2-lines > div')
+      .filter({ hasText: '예상 손실률 (해상)' })
+      .locator('b')
+  ).toHaveText(ASSUMED_LOSS_TEXT);
+  await expectNoSeriousAxe(page, '내 출하(손실률 가정)');
 });
 
 test('화주 정산 화면이 1024·1280·390px에서 가로로 넘치지 않는다', async ({ page }) => {

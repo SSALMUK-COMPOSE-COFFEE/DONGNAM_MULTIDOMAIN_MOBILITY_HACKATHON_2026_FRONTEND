@@ -14,6 +14,7 @@ import {
 } from '@/apis/saas/shipper';
 import { isReplanPending, useShipperPlanConfirmations } from '@/apis/saas/shipper-confirm';
 import { useShipperProfile } from '@/apis/saas/shipper-profile';
+import { LossDisclosureCard } from '@/app/(saas)/app/shipper/_components/loss-disclosure-card';
 import { lotLabel, lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { MOBILE_STEPS } from '@/app/(saas)/app/shipper/_components/mobile';
 import { MyLotsCard } from '@/app/(saas)/app/shipper/_components/my-lots-card';
@@ -500,6 +501,13 @@ export function ShipperHomeView() {
             myPlan={myPlan}
             awaitingLotIds={awaitingLotIds}
           />
+          {!needsOnboarding && (
+            <LossDisclosureCard
+              lots={lots.data}
+              isError={lots.isError}
+              catalog={catalog.data ?? null}
+            />
+          )}
         </div>
 
         <SectionErrorBoundary message="출하 등록 영역을 그리지 못했습니다." className="h-96">
