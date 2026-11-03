@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { subjectParticle } from '@/utils/josa';
 
 export function ForwarderAssignCard({ planId }: { planId: string }) {
   const forwardersQuery = useForwarderOrgs();
@@ -135,8 +136,8 @@ function AssignmentDescription({ isPending, isKnown, forwarderName }: Assignment
 
   return (
     <>
-      지금 <span className="font-bold text-navy">{forwarderName}</span>가 이 항차의 실행 지시를
-      확정합니다.
+      지금 <span className="font-bold text-navy">{forwarderName}</span>
+      {subjectParticle(forwarderName)} 이 항차의 실행 지시를 확정합니다.
     </>
   );
 }
