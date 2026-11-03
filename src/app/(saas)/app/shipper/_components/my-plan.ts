@@ -275,7 +275,15 @@ export const myPendingConfirmations = (orders: ShipperOrderT[], own: OwnScopeT) 
     );
 };
 
-export type ConfirmWaitT = 'forwarder' | 'others' | null;
+export type ConfirmWaitT =
+  'mine' | 'rejected' | 'replanning' | 'shippers' | 'forwarder' | 'others' | null;
+
+export type OwnPlanConfirmT = 'pending' | 'rejected' | 'replanning' | 'none';
+
+const AWAITING_SHIPPERS_STATUS = 'pending_shipper_confirmation';
+
+export const isAwaitingShippers = (session: PlanSessionT) =>
+  String(session.status) === AWAITING_SHIPPERS_STATUS;
 
 const OPEN_CONFIRM_STATUSES: readonly ShipperOrderT['status'][] = ['proposed', 'shipper_confirmed'];
 
@@ -296,9 +304,17 @@ export const activeOrderOf = (session: PlanSessionT, orders: ShipperOrderT[]) =>
 export const confirmWaitOf = (
   session: PlanSessionT,
   orders: ShipperOrderT[],
-  pendingCount: number
+  pendingCount: number,
+  ownPlan: OwnPlanConfirmT = 'none'
 ): ConfirmWaitT => {
   if (pendingCount > 0) return null;
+  if (isAwaitingShippers(session)) {
+    if (ownPlan === 'replanning') return 'replanning';
+    if (ownPlan === 'pending') return 'mine';
+    if (ownPlan === 'rejected') return 'rejected';
+
+    return 'shippers';
+  }
 
   const status = activeOrderOf(session, orders)?.status ?? null;
 
@@ -310,6 +326,10 @@ export const confirmWaitOf = (
 };
 
 export const CONFIRM_WAIT_LABEL: Record<Exclude<ConfirmWaitT, null>, string> = {
+  mine: '내 확인 필요',
+  rejected: '거절함 · 재계획 대기',
+  replanning: '다시 짜는 중',
+  shippers: '화주 확인 대기',
   forwarder: '포워더 확정 대기',
   others: '다른 화주 확정 대기',
 };

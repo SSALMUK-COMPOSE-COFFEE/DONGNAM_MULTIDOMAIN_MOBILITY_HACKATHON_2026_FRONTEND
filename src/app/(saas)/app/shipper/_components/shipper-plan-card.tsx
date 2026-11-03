@@ -1,13 +1,23 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 
+import { useShipperOrgId } from '@/apis/saas/shipper';
+import {
+  type ShipperConfirmationViewT,
+  isReplanPending,
+  shipperPlanConfirmationQueryOptions,
+} from '@/apis/saas/shipper-confirm';
 import {
   CONFIRM_WAIT_LABEL,
+  type ConfirmWaitT,
   type MyPlanT,
+  type OwnPlanConfirmT,
   type OwnScopeT,
   baselineRowLabel,
   confirmWaitOf,
+  isAwaitingShippers,
 } from '@/app/(saas)/app/shipper/_components/my-plan';
 import {
   DecisionButtons,
@@ -111,6 +121,34 @@ function ContainerSlots({ myPlan, own }: { myPlan: MyPlanT; own: OwnScopeT }) {
   );
 }
 
+const ownPlanConfirmOf = (
+  view: ShipperConfirmationViewT,
+  replanPending: boolean,
+  own: OwnScopeT
+): OwnPlanConfirmT => {
+  if (replanPending || isReplanPending(view)) return 'replanning';
+  const ownShippers = new Set(own.shipperIds);
+  const rows = view.confirmations.filter(({ shipper_id }) => ownShippers.has(shipper_id));
+
+  if (rows.some(({ status }) => status === 'pending')) return 'pending';
+  if (rows.some(({ status }) => status === 'rejected')) return 'rejected';
+
+  return 'none';
+};
+
+const WAIT_CHIP_CLASS: Partial<Record<Exclude<ConfirmWaitT, null>, string>> = {
+  mine: 'm2-chip m2-chip-brand',
+  rejected: 'm2-chip m2-chip-berry',
+  replanning: 'm2-chip',
+};
+
+const mineNoteOf = (wait: ConfirmWaitT, showDetailLink: boolean) => {
+  if (wait !== 'mine') return '';
+  if (showDetailLink) return ' 수락·거절은 계획 상세에서 합니다.';
+
+  return ' 수락·거절은 위 계획 확인 카드에서 합니다.';
+};
+
 type ShipperPlanCardPropsT = {
   myPlan: MyPlanT;
   own: OwnScopeT;
@@ -134,8 +172,20 @@ export function ShipperPlanCard({
   const decision = useOrderDecision(planId, showDecision ? items : []);
   const ordersKnown = pending !== null && orders !== null;
   const isPending = items.length > 0;
-  const wait = ordersKnown ? confirmWaitOf(session, orders, items.length) : null;
-  const isConfirmed = ordersKnown && !isPending && wait === null;
+  const awaitingShippers = isAwaitingShippers(session);
+  const orgId = useShipperOrgId();
+  const planConfirmation = useQuery({
+    ...shipperPlanConfirmationQueryOptions(orgId, planId),
+    enabled: awaitingShippers && !!orgId && !!planId,
+  });
+  const ownPlanKnown = !awaitingShippers || planConfirmation.isSuccess;
+  const ownPlan =
+    awaitingShippers && planConfirmation.isSuccess
+      ? ownPlanConfirmOf(planConfirmation.data, isReplanPending(session), own)
+      : 'none';
+  const wait =
+    ordersKnown && ownPlanKnown ? confirmWaitOf(session, orders, items.length, ownPlan) : null;
+  const isConfirmed = ordersKnown && ownPlanKnown && !isPending && wait === null;
   const truckNote = firstStop
     ? `집하 트럭 ${firstStop.run.label}가 ${fmtMonthDayTime(firstStop.stop.eta)}에 들릅니다.`
     : '';
@@ -155,7 +205,12 @@ export function ShipperPlanCard({
               확정 대기
             </span>
           )}
-          {wait && <span className="m2-chip m2-chip-warn">{CONFIRM_WAIT_LABEL[wait]}</span>}
+          {wait && (
+            <span className={WAIT_CHIP_CLASS[wait] ?? 'm2-chip m2-chip-warn'}>
+              {wait === 'mine' && <span className="m2-dot" />}
+              {CONFIRM_WAIT_LABEL[wait]}
+            </span>
+          )}
           {isConfirmed && (
             <span className="m2-chip m2-chip-ok">
               <span className="m2-dot" />
@@ -233,6 +288,7 @@ export function ShipperPlanCard({
         <div className="m2-sub mt-0">
           {isPending && truckNote ? `확정하면 ${truckNote}` : truckNote}
           {isPending && !showDecision ? ' 수락·거절은 아래 실행 지시에서 지시마다 합니다.' : ''}
+          {mineNoteOf(wait, showDetailLink)}
         </div>
         <div className="flex flex-none flex-wrap gap-2">
           {showDetailLink && (
