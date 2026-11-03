@@ -52,6 +52,35 @@ export default defineConfig([
     },
   },
 
+  {
+    files: ['src/app/(saas)/**/*.{ts,tsx}', 'src/app/(auth)/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/consts/demo', '**/consts/demo'],
+              message: 'SaaS 화면은 시연 상수(consts/demo)를 쓰지 않는다',
+            },
+            {
+              group: [
+                '@/stores/usePlanStore',
+                '**/stores/usePlanStore',
+                '@/hooks/useCurrentPlan',
+                '**/hooks/useCurrentPlan',
+                '@/hooks/useCreatePlan',
+                '**/hooks/useCreatePlan',
+              ],
+              message:
+                'SaaS 화면은 시연 계획 상태(usePlanStore·useCurrentPlan·useCreatePlan)를 쓰지 않는다',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   eslintConfigPrettier,
   globalIgnores([
     '.next/**',
