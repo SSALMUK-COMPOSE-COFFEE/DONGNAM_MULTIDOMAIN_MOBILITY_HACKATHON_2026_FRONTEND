@@ -7,7 +7,7 @@ import { type ReactNode, useEffect } from 'react';
 import { useMe } from '@/apis/saas/auth';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SAAS_PAGES, orgTypeOfPath, roleHome } from '@/consts/route-saas';
+import { orgTypeOfPath, roleHome } from '@/consts/route-saas';
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -22,12 +22,6 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (redirectTo) router.replace(redirectTo);
   }, [redirectTo, router]);
-
-  useEffect(() => {
-    if (isUnauthorized) {
-      router.replace(`${SAAS_PAGES.LOGIN}?next=${encodeURIComponent(pathname)}`);
-    }
-  }, [isUnauthorized, pathname, router]);
 
   if (me.isError && !isUnauthorized) {
     return (
