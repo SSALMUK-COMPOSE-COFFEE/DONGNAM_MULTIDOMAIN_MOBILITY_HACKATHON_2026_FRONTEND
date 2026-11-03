@@ -154,6 +154,8 @@ export const useSessionSync = () => {
   useEffect(
     () =>
       subscribeSessionChange(async () => {
+        await useActiveOrgStore.persist.rehydrate();
+
         const activeOrgOf = () =>
           queryClient.getQueryData<Me>(orgKeys.me)?.active_org.org_id ?? null;
         const before = activeOrgOf();
@@ -192,6 +194,7 @@ export const useSwitchOrg = (boundOrgId: string | null = null) => {
       pinActiveOrg(me);
       queryClient.removeQueries({ queryKey: orgKeys.all });
       queryClient.setQueryData(orgKeys.me, me);
+      broadcastSessionChange('switch');
 
       return true;
     },

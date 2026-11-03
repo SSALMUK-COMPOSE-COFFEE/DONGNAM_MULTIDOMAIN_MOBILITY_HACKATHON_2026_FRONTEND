@@ -9,6 +9,7 @@ import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
 import { orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
+import { broadcastSessionChange } from '@/apis/saas/session-sync';
 import type {
   Invitation,
   InvitationAccept,
@@ -125,6 +126,7 @@ export const useAcceptInvitation = () => {
       useActiveOrgStore.getState().setOrgId(me.active_org.org_id);
       queryClient.removeQueries({ queryKey: orgKeys.all });
       queryClient.setQueryData(orgKeys.me, me);
+      broadcastSessionChange('switch');
       toast.success(`${me.active_org.org_name}에 합류했습니다.`);
     },
     onError: toastSaasError('초대 코드를 사용하지 못했습니다.'),

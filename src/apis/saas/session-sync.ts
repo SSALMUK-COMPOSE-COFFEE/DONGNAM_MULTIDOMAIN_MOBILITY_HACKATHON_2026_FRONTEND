@@ -1,4 +1,6 @@
-export type SessionSignalKindT = 'login' | 'logout';
+export type SessionSignalKindT = 'login' | 'logout' | 'switch';
+
+const SESSION_SIGNAL_KINDS: ReadonlySet<string> = new Set(['login', 'logout', 'switch']);
 
 type SessionSignalT = { kind: SessionSignalKindT; at: number };
 
@@ -20,7 +22,7 @@ const sessionChannel = () => {
 const parseSignal = (value: unknown): SessionSignalT | null => {
   const signal = value as Partial<SessionSignalT> | null;
 
-  return signal && (signal.kind === 'login' || signal.kind === 'logout')
+  return signal && typeof signal.kind === 'string' && SESSION_SIGNAL_KINDS.has(signal.kind)
     ? { kind: signal.kind, at: Number(signal.at) || 0 }
     : null;
 };

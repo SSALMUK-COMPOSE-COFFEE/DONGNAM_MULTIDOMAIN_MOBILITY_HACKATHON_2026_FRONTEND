@@ -451,3 +451,35 @@ test('다른 탭에서 로그인·로그아웃하면 기존 탭이 새 세션을
   await logout(other);
   await page.waitForURL(/\/test\/login/);
 });
+
+test('다른 탭이 조직을 바꾼 신호를 보내면 기존 탭이 저장된 조직으로 me 를 다시 읽는다', async ({
+  context,
+  page,
+}) => {
+  await page.goto(LOGIN_PATH);
+  await enterAs(page, 'shipper');
+  await expect(page.getByRole('main').first().getByRole('heading', { level: 1 })).toContainText(
+    '진주 딸기 수출농가 A'
+  );
+
+  const other = await context.newPage();
+  await other.goto(LOGIN_PATH);
+
+  const reread = page.waitForRequest(
+    request =>
+      new URL(request.url()).pathname.endsWith('/api/me') &&
+      request.headers()['x-org-id'] === 'shipper-switched'
+  );
+  await other.evaluate(() => {
+    localStorage.setItem(
+      'fs.saas.org',
+      JSON.stringify({ state: { orgId: 'shipper-switched' }, version: 0 })
+    );
+    new BroadcastChannel('fs.saas.session').postMessage({ kind: 'switch', at: Date.now() });
+  });
+
+  await reread;
+  await expect(page.getByRole('main').first().getByRole('heading', { level: 1 })).toContainText(
+    '진주 딸기 수출농가 A'
+  );
+});
