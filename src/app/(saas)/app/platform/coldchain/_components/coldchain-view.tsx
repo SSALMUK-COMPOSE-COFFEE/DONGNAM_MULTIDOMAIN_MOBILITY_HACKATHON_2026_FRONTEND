@@ -179,18 +179,20 @@ function PlanColdchain({ planId }: { planId: string }) {
       )}
 
       {containerId && (
-        <div className="grid grid-cols-[1fr_440px] gap-6">
-          <ContainerTwin planId={planId} containerId={containerId} />
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              알림 스트림 <Badge className={stream.className}>{stream.label}</Badge>
-              {status === 'stopped' && (
-                <Button size="sm" variant="outline" onClick={reconnect}>
-                  다시 연결
-                </Button>
-              )}
+        <div className="@container">
+          <div className="grid grid-cols-1 gap-6 @min-[1000px]:grid-cols-[minmax(0,1fr)_440px]">
+            <ContainerTwin planId={planId} containerId={containerId} />
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                알림 스트림 <Badge className={stream.className}>{stream.label}</Badge>
+                {status === 'stopped' && (
+                  <Button size="sm" variant="outline" onClick={reconnect}>
+                    다시 연결
+                  </Button>
+                )}
+              </div>
+              <AlertFeed alerts={alerts.filter(alert => alert.container_id === containerId)} />
             </div>
-            <AlertFeed alerts={alerts.filter(alert => alert.container_id === containerId)} />
           </div>
         </div>
       )}

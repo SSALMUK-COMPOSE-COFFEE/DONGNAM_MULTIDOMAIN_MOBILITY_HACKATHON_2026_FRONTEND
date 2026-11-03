@@ -106,7 +106,7 @@ export function PlanDetailView() {
           </div>
 
           <SectionErrorBoundary message="운송계획을 그리지 못했습니다." className="h-96">
-            <PlanDetail session={session} viewerShipperId={viewerShipperId} />
+            <PlanDetail session={session} viewerShipperId={viewerShipperId} isResponsive />
           </SectionErrorBoundary>
 
           <SectionErrorBoundary message="실행 지시를 그리지 못했습니다." className="h-64">

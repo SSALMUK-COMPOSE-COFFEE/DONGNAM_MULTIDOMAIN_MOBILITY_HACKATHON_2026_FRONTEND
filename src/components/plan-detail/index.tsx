@@ -1,3 +1,5 @@
+import { cn } from 'cn';
+
 import { ContainerCard } from '@/components/plan-detail/container-card';
 import { PickupMap } from '@/components/plan-detail/pickup-map';
 import { PlanSummary } from '@/components/plan-detail/plan-summary';
@@ -8,16 +10,24 @@ import type { PlanSessionT } from '@/types/api';
 type PlanDetailPropsT = {
   session: PlanSessionT;
   viewerShipperId?: string;
+  isResponsive?: boolean;
 };
 
-export function PlanDetail({ session, viewerShipperId }: PlanDetailPropsT) {
+export function PlanDetail({ session, viewerShipperId, isResponsive = false }: PlanDetailPropsT) {
   const { plan, scenario } = session;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={cn('flex flex-col gap-6', isResponsive && '@container')}>
       <PlanSummary plan={plan} />
 
-      <div className="grid grid-cols-[1fr_560px] gap-6">
+      <div
+        className={cn(
+          'grid gap-6',
+          isResponsive
+            ? 'grid-cols-1 @min-[1200px]:grid-cols-[minmax(0,1fr)_560px]'
+            : 'grid-cols-[1fr_560px]'
+        )}
+      >
         <div className="flex flex-col gap-6">
           <ContainerCard plan={plan} scenario={scenario} viewerShipperId={viewerShipperId} />
           <SettlementTable
