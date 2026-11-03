@@ -4,7 +4,6 @@ import { cn } from 'cn';
 import { toast } from 'sonner';
 
 import { useAnswerShipperRequest } from '@/apis/saas/shipper';
-import { formatKstMonthDayTime } from '@/app/(saas)/app/shipper/_components/kst';
 import {
   REQUEST_KIND_LABEL,
   REQUEST_STATUS_LABEL,
@@ -17,6 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { ShipperOrderT, ShipperRequestT } from '@/types/saas-shipper';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 export type RequestItemT = {
   planId: string;

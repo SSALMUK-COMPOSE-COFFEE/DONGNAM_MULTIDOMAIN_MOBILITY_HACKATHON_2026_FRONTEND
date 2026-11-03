@@ -22,7 +22,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ForwarderPlanSessionT } from '@/types/saas-forwarder';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 const firstVoyage = ({ plan, scenario }: ForwarderPlanSessionT) => {
   const used = new Set(
@@ -111,9 +111,9 @@ export function PlanDetailView() {
         <p className="text-3xl font-bold">
           {voyage?.vessel_name ?? '선박 미정'}
           <span className="mx-4">·</span>
-          출항 <span className="num text-cyan">{formatMonthDayTime(voyage?.etd)}</span>
+          출항 <span className="num text-cyan">{formatKstMonthDayTime(voyage?.etd)}</span>
           <span className="mx-4">·</span>
-          CY 마감 <span className="num">{formatMonthDayTime(voyage?.cy_cutoff)}</span>
+          CY 마감 <span className="num">{formatKstMonthDayTime(voyage?.cy_cutoff)}</span>
         </p>
         <div className="ml-auto flex items-center gap-3">
           <Badge variant="secondary">{PLAN_STATUS_LABEL[session.status]}</Badge>

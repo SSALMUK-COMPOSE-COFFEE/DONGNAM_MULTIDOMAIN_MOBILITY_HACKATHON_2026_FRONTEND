@@ -19,7 +19,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { PlatformSettlementT } from '@/types/saas-platform';
-import { formatManwon, formatMonthDayTime } from '@/utils/format';
+import { formatManwon } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 const sumBy = (rows: PlatformSettlementT[], pick: (row: PlatformSettlementT) => number) =>
   rows.reduce((total, row) => total + pick(row), 0);
@@ -97,7 +98,7 @@ export function SettlementView() {
                         {row.vessel ?? row.plan_id}
                       </Link>
                     </TableCell>
-                    <TableCell className="num">{formatMonthDayTime(row.departure)}</TableCell>
+                    <TableCell className="num">{formatKstMonthDayTime(row.departure)}</TableCell>
                     <TableCell className="text-right num text-ok">
                       {formatManwon(row.total_saving_krw)}
                     </TableCell>

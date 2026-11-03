@@ -13,7 +13,8 @@ import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ShipperCatalogT, ShipperLotT, ShipperPlanItemT } from '@/types/saas-shipper';
-import { formatMonthDay, formatMonthDayTime } from '@/utils/format';
+import { formatMonthDay } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 import { getProductName } from '@/utils/scenario';
 
 const RECENT_LOT_COUNT = 5;
@@ -155,7 +156,7 @@ function NextPlanCard({
               <span>
                 출항{' '}
                 <span className="font-bold num text-foreground">
-                  {formatMonthDayTime(next.departure)}
+                  {formatKstMonthDayTime(next.departure)}
                 </span>
               </span>
               <span>

@@ -31,7 +31,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AlertT } from '@/types/api';
 import type { TwinSummaryT } from '@/types/saas-platform';
-import { formatMonthDayTime, formatPercent } from '@/utils/format';
+import { formatPercent } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 const PLAN_QUERY = 'plan';
 
@@ -93,7 +94,7 @@ export function ColdchainView() {
           <SelectContent>
             {plansQuery.data.map(({ plan_id, vessel, departure }) => (
               <SelectItem key={plan_id} value={plan_id}>
-                {vessel ?? plan_id} · {formatMonthDayTime(departure)} 출항
+                {vessel ?? plan_id} · {formatKstMonthDayTime(departure)} 출항
               </SelectItem>
             ))}
             {!plansQuery.data.some(({ plan_id }) => plan_id === planId) && (

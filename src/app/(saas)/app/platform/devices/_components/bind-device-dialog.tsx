@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { BindingStageT, DeviceT } from '@/types/saas-platform';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 const STAGES: { value: BindingStageT; label: string }[] = [
   { value: 'trucking', label: '집하 트럭' },
@@ -87,7 +87,7 @@ function BindDeviceForm({ device, onDone }: { device: DeviceT; onDone: () => voi
             <SelectContent>
               {plansQuery.data?.map(({ plan_id, vessel, departure }) => (
                 <SelectItem key={plan_id} value={plan_id}>
-                  {vessel ?? plan_id} · {formatMonthDayTime(departure)} 출항
+                  {vessel ?? plan_id} · {formatKstMonthDayTime(departure)} 출항
                 </SelectItem>
               ))}
             </SelectContent>

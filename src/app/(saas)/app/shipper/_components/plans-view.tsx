@@ -4,7 +4,6 @@ import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { useShipperPlans } from '@/apis/saas/shipper';
-import { formatKstMonthDayTime } from '@/app/(saas)/app/shipper/_components/kst';
 import { PLAN_STATUS_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
 import { EmptyState, QueryError } from '@/app/(saas)/app/shipper/_components/query-state';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
@@ -20,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 export function PlansView() {
   const plans = useShipperPlans();
@@ -78,7 +77,7 @@ export function PlansView() {
                   <TableRow key={plan_id}>
                     <TableCell className="font-bold text-navy">{vessel ?? '선박 미정'}</TableCell>
                     <TableCell className="text-right num">
-                      {formatMonthDayTime(departure)}
+                      {formatKstMonthDayTime(departure)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={status === 'committed' ? 'default' : 'secondary'}>

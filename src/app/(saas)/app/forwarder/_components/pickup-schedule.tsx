@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { ForwarderPlanSessionT } from '@/types/saas-forwarder';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 import { getShipperName } from '@/utils/scenario';
 
 const CARGO_GROUP_LABEL: Record<string, string> = {
@@ -73,9 +73,9 @@ export function PickupSchedule({ session }: { session: ForwarderPlanSessionT }) 
                 <span className="text-sm num text-muted-foreground">
                   {voyage ? `${voyage.vessel_name} · ` : ''}
                   {route.load_pallets}/{route.capacity_pallets}파렛트 · {route.km.toFixed(1)}km ·
-                  출발 {formatMonthDayTime(route.earliest_departure)}~
-                  {formatMonthDayTime(route.latest_departure).slice(-5)} · 항구 도착{' '}
-                  {formatMonthDayTime(route.port_eta)}
+                  출발 {formatKstMonthDayTime(route.earliest_departure)}~
+                  {formatKstMonthDayTime(route.latest_departure).slice(-5)} · 항구 도착{' '}
+                  {formatKstMonthDayTime(route.port_eta)}
                 </span>
               </div>
               <Table>
@@ -109,8 +109,10 @@ export function PickupSchedule({ session }: { session: ForwarderPlanSessionT }) 
                         </TableCell>
                         <TableCell>{shippersOf(stop.lot_ids).join(', ') || '–'}</TableCell>
                         <TableCell className="text-right num">{stop.pallets}</TableCell>
-                        <TableCell className="num">{formatMonthDayTime(stop.ready_at)}</TableCell>
-                        <TableCell className="num">{formatMonthDayTime(stop.eta)}</TableCell>
+                        <TableCell className="num">
+                          {formatKstMonthDayTime(stop.ready_at)}
+                        </TableCell>
+                        <TableCell className="num">{formatKstMonthDayTime(stop.eta)}</TableCell>
                       </TableRow>
                     );
                   })}

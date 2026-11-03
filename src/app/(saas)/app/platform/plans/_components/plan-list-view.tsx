@@ -4,7 +4,6 @@ import Link from 'next/link';
 
 import { usePlatformPlans } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
-import { formatKstMonthDayTime } from '@/app/(saas)/app/platform/_components/format-kst';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
@@ -20,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 export function PlanListView() {
   const { data: plans, isPending, isError, error, refetch, isFetching } = usePlatformPlans();
@@ -68,7 +67,7 @@ export function PlanListView() {
               {plans.map(plan => (
                 <TableRow key={plan.plan_id}>
                   <TableCell className="font-bold">{plan.vessel ?? '배정 선박 없음'}</TableCell>
-                  <TableCell className="num">{formatMonthDayTime(plan.departure)}</TableCell>
+                  <TableCell className="num">{formatKstMonthDayTime(plan.departure)}</TableCell>
                   <TableCell className="text-right num">{plan.shipper_count}곳</TableCell>
                   <TableCell className="text-right num">{plan.total_pallets}</TableCell>
                   <TableCell>

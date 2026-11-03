@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { ForwarderOrderT, ForwarderPlanItemT } from '@/types/saas-forwarder';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 type PlanOrderT = {
   plan: ForwarderPlanItemT;
@@ -120,12 +120,12 @@ export function OrdersView() {
                     <TableCell className="font-bold text-navy">
                       {plan.vessel ?? '선박 미정'}
                     </TableCell>
-                    <TableCell className="num">{formatMonthDayTime(plan.departure)}</TableCell>
+                    <TableCell className="num">{formatKstMonthDayTime(plan.departure)}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{ORDER_STATUS_LABEL[order.status]}</Badge>
                     </TableCell>
                     <TableCell className="num text-muted-foreground">
-                      {formatMonthDayTime(order.updated_at)}
+                      {formatKstMonthDayTime(order.updated_at)}
                     </TableCell>
                     <TableCell className="text-right num">{history}건</TableCell>
                     <TableCell className="text-right">
@@ -153,7 +153,7 @@ function PlanLine({ plan }: { plan: ForwarderPlanItemT }) {
       <p className="text-lg font-bold text-navy">
         {plan.vessel ?? '선박 미정'}
         <span className="ml-2 text-base font-medium num text-muted-foreground">
-          출항 {formatMonthDayTime(plan.departure)} · 화주 {plan.shipper_count} ·{' '}
+          출항 {formatKstMonthDayTime(plan.departure)} · 화주 {plan.shipper_count} ·{' '}
           {plan.total_pallets}파렛트
         </span>
       </p>

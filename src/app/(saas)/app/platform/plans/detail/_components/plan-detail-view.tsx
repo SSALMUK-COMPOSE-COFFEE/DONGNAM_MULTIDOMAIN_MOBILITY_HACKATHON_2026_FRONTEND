@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 
 import { usePlatformPlan } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
-import { formatKstMonthDayTime } from '@/app/(saas)/app/platform/_components/format-kst';
 import { PLAN_DETAIL_QUERY, PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
@@ -16,6 +15,7 @@ import { PlanDetail } from '@/components/plan-detail';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 export function PlanDetailView() {
   const planId = useSearchParams().get(PLAN_DETAIL_QUERY) ?? '';

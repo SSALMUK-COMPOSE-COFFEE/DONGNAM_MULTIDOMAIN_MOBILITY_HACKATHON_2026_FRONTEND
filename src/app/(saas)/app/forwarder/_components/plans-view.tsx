@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { ForwarderOrderT } from '@/types/saas-forwarder';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 export function PlansView() {
   const plans = useForwarderPlans();
@@ -100,7 +100,7 @@ export function PlansView() {
                     <TableCell className="font-bold text-navy">
                       {plan.vessel ?? '선박 미정'}
                     </TableCell>
-                    <TableCell className="num">{formatMonthDayTime(plan.departure)}</TableCell>
+                    <TableCell className="num">{formatKstMonthDayTime(plan.departure)}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{PLAN_STATUS_LABEL[plan.status]}</Badge>
                     </TableCell>
@@ -119,7 +119,7 @@ export function PlansView() {
                     <TableCell className="text-right num">{plan.shipper_count}</TableCell>
                     <TableCell className="text-right num">{plan.total_pallets}</TableCell>
                     <TableCell className="num text-muted-foreground">
-                      {formatMonthDayTime(plan.created_at)}
+                      {formatKstMonthDayTime(plan.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Link

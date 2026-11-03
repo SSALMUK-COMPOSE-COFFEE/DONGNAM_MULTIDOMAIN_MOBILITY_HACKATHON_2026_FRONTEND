@@ -19,7 +19,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { ShipperSettlementT } from '@/types/saas-shipper';
-import { formatManwon, formatMonthDayTime } from '@/utils/format';
+import { formatManwon } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 const BASIS_LABEL: Record<ShipperSettlementT['basis'], string> = {
   tariff: '정산표 단가',
@@ -107,7 +108,7 @@ export function SettlementsView() {
                   <TableCell>
                     <p className="font-bold text-navy">{row.vessel ?? '선박 미정'}</p>
                     <p className="text-sm num text-muted-foreground">
-                      출항 {formatMonthDayTime(row.departure)} · v{row.version}
+                      출항 {formatKstMonthDayTime(row.departure)} · v{row.version}
                     </p>
                   </TableCell>
                   <TableCell>

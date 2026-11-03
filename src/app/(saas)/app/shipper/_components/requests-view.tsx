@@ -3,7 +3,6 @@
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import { formatKstMonthDayTime } from '@/app/(saas)/app/shipper/_components/kst';
 import { EmptyState, QueryError } from '@/app/(saas)/app/shipper/_components/query-state';
 import { RequestList } from '@/app/(saas)/app/shipper/_components/request-list';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
@@ -15,7 +14,8 @@ import {
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatMonthDayTime, formatSignedManwon } from '@/utils/format';
+import { formatSignedManwon } from '@/utils/format';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 export function RequestsView() {
   const {
@@ -90,7 +90,7 @@ export function RequestsView() {
                     <p className="font-bold text-navy">
                       {plan.vessel ?? '선박 미정'}
                       <span className="ml-2 text-sm font-medium num text-muted-foreground">
-                        출항 {formatMonthDayTime(plan.departure)}
+                        출항 {formatKstMonthDayTime(plan.departure)}
                       </span>
                     </p>
                     {mine.map(({ shipper_id, reason_text, net_cost_delta, deadline }) => (

@@ -2,7 +2,6 @@
 
 import { useDeleteDevice, useDevices } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
-import { formatKstMonthDayTime } from '@/app/(saas)/app/platform/_components/format-kst';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { BindDeviceDialog } from '@/app/(saas)/app/platform/devices/_components/bind-device-dialog';
 import {
@@ -28,6 +27,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { DeviceT } from '@/types/saas-platform';
+import { formatKstMonthDayTime } from '@/utils/kst';
 
 export function DeviceListCard() {
   const { data: devices, isPending, isError, error, refetch, isFetching } = useDevices();
