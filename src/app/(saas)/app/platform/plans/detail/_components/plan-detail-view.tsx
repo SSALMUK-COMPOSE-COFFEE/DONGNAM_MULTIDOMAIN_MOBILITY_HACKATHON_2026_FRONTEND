@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { usePlatformPlan } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
+import { formatKstMonthDayTime } from '@/app/(saas)/app/platform/_components/format-kst';
 import { PLAN_DETAIL_QUERY, PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
@@ -15,7 +16,6 @@ import { PlanDetail } from '@/components/plan-detail';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatMonthDayTime } from '@/utils/format';
 
 export function PlanDetailView() {
   const planId = useSearchParams().get(PLAN_DETAIL_QUERY) ?? '';
@@ -48,7 +48,7 @@ export function PlanDetailView() {
         <PlanStatusBadge status={session.status} />
         <span className="text-muted-foreground">
           버전 <span className="num">{session.version}</span> · 갱신{' '}
-          <span className="num">{formatMonthDayTime(session.updated_at)}</span>
+          <span className="num">{formatKstMonthDayTime(session.updated_at)}</span>
         </span>
         <div className="ml-auto flex gap-2">
           <Button asChild variant="outline">

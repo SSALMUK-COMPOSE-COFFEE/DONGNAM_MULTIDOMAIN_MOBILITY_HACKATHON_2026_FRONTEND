@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { usePlatformPlans } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
+import { formatKstMonthDayTime } from '@/app/(saas)/app/platform/_components/format-kst';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
@@ -83,7 +84,7 @@ export function PlanListView() {
                     )}
                   </TableCell>
                   <TableCell className="num text-muted-foreground">
-                    {formatMonthDayTime(plan.created_at)}
+                    {formatKstMonthDayTime(plan.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button asChild size="sm" variant="outline">

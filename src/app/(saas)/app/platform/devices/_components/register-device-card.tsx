@@ -22,7 +22,11 @@ import type { RegisteredDeviceT } from '@/types/saas-platform';
 
 const registerErrorMessage = (error: unknown) => {
   if (isAxiosError(error) && error.response?.status === 409) {
-    return '이미 다른 조직이 등록한 기기 ID 입니다.';
+    const detail = (error.response.data as { detail?: unknown } | undefined)?.detail;
+
+    return typeof detail === 'string'
+      ? detail
+      : '이미 등록됐거나 다른 조직에 연결된 기기 ID 입니다.';
   }
   if (isAxiosError(error) && error.response?.status === 422) return '기기 ID를 확인하세요.';
 
