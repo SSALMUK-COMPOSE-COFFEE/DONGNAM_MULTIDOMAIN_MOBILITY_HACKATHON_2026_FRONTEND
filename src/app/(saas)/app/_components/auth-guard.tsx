@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
 import { useMe } from '@/apis/saas/auth';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { orgTypeOfPath, roleHome } from '@/consts/route-saas';
 
@@ -25,12 +24,21 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   if (me.isError && !isUnauthorized) {
     return (
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-4">
-        <p className="text-lg font-bold text-navy">계정 정보를 불러오지 못했습니다.</p>
-        <p className="text-muted-foreground">서버 연결을 확인하고 다시 시도하세요.</p>
-        <Button variant="outline" onClick={() => me.refetch()} disabled={me.isFetching}>
-          {me.isFetching ? '다시 시도 중' : '다시 시도'}
-        </Button>
+      <div className="m2-main">
+        <div className="m2-window m2-solo">
+          <div className="m2-content flex min-h-80 flex-col items-center justify-center gap-3 text-center">
+            <p className="m2-h2">계정 정보를 불러오지 못했습니다.</p>
+            <p className="m2-sub">서버 연결을 확인하고 다시 시도하세요.</p>
+            <button
+              type="button"
+              className="m2-btn m2-btn-sec mt-2"
+              onClick={() => me.refetch()}
+              disabled={me.isFetching}
+            >
+              {me.isFetching ? '다시 시도 중' : '다시 시도'}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -42,17 +50,32 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
 function ShellSkeleton() {
   return (
-    <div aria-busy className="flex flex-1">
-      <div className="flex w-72 shrink-0 flex-col gap-4 border-r bg-white/85 px-5 py-6">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
+    <div aria-busy className="m2-main">
+      <div className="m2-topline">
+        <Skeleton className="h-5 w-28" />
       </div>
-      <div className="flex flex-1 flex-col gap-6 px-8 pt-8">
-        <Skeleton className="h-12 w-1/3" />
-        <Skeleton className="h-64 w-full" />
+      <div className="m2-window">
+        <div className="m2-side">
+          <div className="m2-side-in gap-3">
+            <div className="m2-org">
+              <Skeleton className="size-[34px] shrink-0 rounded-[10px]" />
+              <div className="m2-org-text flex flex-col gap-1.5">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            </div>
+            <Skeleton className="h-9 w-full rounded-xl" />
+            <Skeleton className="h-9 w-full rounded-xl" />
+            <Skeleton className="h-9 w-full rounded-xl" />
+            <Skeleton className="h-9 w-full rounded-xl" />
+          </div>
+        </div>
+        <div className="m2-content flex flex-col gap-4">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-14 w-full rounded-2xl" />
+          <Skeleton className="h-80 w-full rounded-[18px]" />
+        </div>
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 'use client';
 
+import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useLogout } from '@/apis/saas/auth';
-import { Button } from '@/components/ui/button';
 import { SAAS_PAGES } from '@/consts/route-saas';
 
 export function LogoutButton() {
@@ -15,16 +15,22 @@ export function LogoutButton() {
     router.prefetch(SAAS_PAGES.LOGIN);
   }, [router]);
 
+  const label = logout.isPending ? '로그아웃 중' : '로그아웃';
+
   return (
-    <Button
-      variant="outline"
+    <button
+      type="button"
+      className="m2-btn m2-btn-sec m2-btn-sm"
       disabled={logout.isPending}
+      aria-label={label}
+      title={label}
       onClick={() => {
         router.replace(SAAS_PAGES.LOGIN);
         logout.mutate();
       }}
     >
-      {logout.isPending ? '로그아웃 중' : '로그아웃'}
-    </Button>
+      <LogOut size={14} strokeWidth={1.8} aria-hidden />
+      <span className="m2-rail-hide">{label}</span>
+    </button>
   );
 }

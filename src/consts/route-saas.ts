@@ -10,9 +10,34 @@ export const SAAS_PAGES = {
   APP: '/app',
 } as const;
 
+export type SaasMenuIconT =
+  | 'plans'
+  | 'pool'
+  | 'coldchain'
+  | 'settlement'
+  | 'device'
+  | 'home'
+  | 'lots'
+  | 'confirm'
+  | 'requests'
+  | 'voyages'
+  | 'orders';
+
+export type SaasMenuCountKeyT =
+  | 'platformPlans'
+  | 'platformRegisteredLots'
+  | 'shipperRegisteredLots'
+  | 'shipperPendingConfirmations'
+  | 'shipperPendingRequests'
+  | 'forwarderPlans';
+
 export type SaasMenuItemT = {
   href: string;
   label: string;
+  icon: SaasMenuIconT;
+  section?: string;
+  countKey?: SaasMenuCountKeyT;
+  countStrong?: boolean;
 };
 
 export type SaasRoleRouteT = {
@@ -28,31 +53,65 @@ export const SAAS_ROUTES = {
     label: '플랫폼 운영',
     home: '/app/platform',
     menu: [
-      { href: '/app/platform', label: '출하 현황' },
-      { href: '/app/platform/plans', label: '공동적재 계획' },
-      { href: '/app/platform/coldchain', label: '콜드체인 관제' },
-      { href: '/app/platform/devices', label: '기기 관리' },
-      { href: '/app/platform/settlements', label: '정산' },
+      {
+        href: '/app/platform/plans',
+        label: '공동적재 계획',
+        icon: 'plans',
+        section: '운영',
+        countKey: 'platformPlans',
+      },
+      {
+        href: '/app/platform',
+        label: '출하 풀',
+        icon: 'pool',
+        section: '운영',
+        countKey: 'platformRegisteredLots',
+      },
+      {
+        href: '/app/platform/coldchain',
+        label: '콜드체인 관제',
+        icon: 'coldchain',
+        section: '운영',
+      },
+      { href: '/app/platform/settlements', label: '정산', icon: 'settlement', section: '운영' },
+      { href: '/app/platform/devices', label: '온도 기기', icon: 'device', section: '설정' },
     ],
   },
   shipper: {
     label: '화주',
     home: '/app/shipper',
     menu: [
-      { href: '/app/shipper', label: '홈' },
-      { href: '/app/shipper/lots', label: '출하 등록 · 목록' },
-      { href: '/app/shipper/plans', label: '운송계획 확인' },
-      { href: '/app/shipper/requests', label: '요청 응답' },
-      { href: '/app/shipper/settlements', label: '절감액 · 정산' },
+      { href: '/app/shipper', label: '홈', icon: 'home' },
+      {
+        href: '/app/shipper/lots',
+        label: '내 출하',
+        icon: 'lots',
+        countKey: 'shipperRegisteredLots',
+      },
+      {
+        href: '/app/shipper/plans',
+        label: '계획 확정',
+        icon: 'confirm',
+        countKey: 'shipperPendingConfirmations',
+        countStrong: true,
+      },
+      {
+        href: '/app/shipper/requests',
+        label: '요청 응답',
+        icon: 'requests',
+        countKey: 'shipperPendingRequests',
+        countStrong: true,
+      },
+      { href: '/app/shipper/settlements', label: '정산', icon: 'settlement' },
     ],
   },
   forwarder: {
     label: '포워더',
     home: '/app/forwarder',
     menu: [
-      { href: '/app/forwarder', label: '배정된 항차' },
-      { href: '/app/forwarder/orders', label: '실행 지시' },
-      { href: '/app/forwarder/coldchain', label: '콜드체인 조회' },
+      { href: '/app/forwarder', label: '배정 항차', icon: 'voyages', countKey: 'forwarderPlans' },
+      { href: '/app/forwarder/orders', label: '실행 지시', icon: 'orders' },
+      { href: '/app/forwarder/coldchain', label: '콜드체인', icon: 'coldchain' },
     ],
   },
 } as const satisfies Record<OrgType, SaasRoleRouteT>;
