@@ -382,7 +382,11 @@ export const usePlatformLots = (status: LotStatusT | null = null) =>
 
 export const usePlatformCatalog = () => useQuery(platformCatalogQueryOptions(usePlatformOrgId()));
 
-export const usePlatformPlans = () => useQuery(platformPlansQueryOptions(usePlatformOrgId()));
+export const usePlatformPlans = () => {
+  const query = useQuery(platformPlansQueryOptions(usePlatformOrgId()));
+
+  return { ...query, ...capOf(query.data ?? null, PLATFORM_PLANS_LIMIT) };
+};
 
 export const usePlatformPlanPreview = (lotIds: readonly string[]) =>
   useQuery(platformPlanPreviewQueryOptions(usePlatformOrgId(), lotIds));
