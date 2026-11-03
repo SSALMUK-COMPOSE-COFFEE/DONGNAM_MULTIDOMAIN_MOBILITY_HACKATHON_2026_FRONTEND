@@ -31,6 +31,7 @@ export const SAAS_ROUTES = {
       { href: '/app/platform', label: '출하 현황' },
       { href: '/app/platform/plans', label: '공동적재 계획' },
       { href: '/app/platform/coldchain', label: '콜드체인 관제' },
+      { href: '/app/platform/devices', label: '기기 관리' },
       { href: '/app/platform/settlements', label: '정산' },
     ],
   },
