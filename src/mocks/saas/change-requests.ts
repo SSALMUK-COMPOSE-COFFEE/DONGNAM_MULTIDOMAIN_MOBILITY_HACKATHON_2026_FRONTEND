@@ -85,13 +85,20 @@ const estimateOf = (
   if (type === 'air_switch') return null;
 
   const cancelled = type === 'cancel' ? pallets : pallets - (newPallets ?? pallets);
+  const rateBase = reduceReplan.alternatives
+    .filter(alternative => alternative.feasible)
+    .map(alternative => alternative.diff.cancellation)
+    .find(cancellation => cancellation && cancellation.dead_pallets > 0);
+  const first = reduceReplan.alternatives[0]?.diff.cancellation;
+  const perPallet = rateBase
+    ? rateBase.fee / rateBase.dead_pallets
+    : (first?.share_per_pallet_before ?? 0) * (first?.fee_rate ?? 0);
   const charges = reduceReplan.alternatives.flatMap(alternative => {
     const base = alternative.diff.cancellation;
     if (!alternative.feasible || !base) return [];
 
     const refilled = base.refilled_pallets > 0 ? Math.min(cancelled, base.refilled_pallets) : 0;
     const dead = cancelled - refilled;
-    const perPallet = base.dead_pallets > 0 ? base.fee / base.dead_pallets : 0;
 
     return [{ id: alternative.id, base, refilled, dead, fee: Math.round(perPallet * dead) }];
   });
