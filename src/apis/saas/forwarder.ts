@@ -294,6 +294,7 @@ export const useForwarderAlertStream = (planId: string) => {
     let retryDelay = STREAM_RETRY_MS;
     let failures = 0;
     let isClosed = false;
+    let isReady = false;
 
     const update = (next: Partial<Omit<AlertStreamT, 'planId' | 'orgId'>>) =>
       setStream(prev =>
@@ -344,11 +345,32 @@ export const useForwarderAlertStream = (planId: string) => {
       });
     };
 
-    mockingReady.then(connect);
+    const resume = () => {
+      if (isClosed || !isReady || source) return;
+
+      if (retryTimer) clearTimeout(retryTimer);
+      retryTimer = null;
+      failures = 0;
+      retryDelay = STREAM_RETRY_MS;
+      update({ state: 'connecting' });
+      connect();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') resume();
+    };
+
+    mockingReady.then(() => {
+      isReady = true;
+      connect();
+    });
+    window.addEventListener('online', resume);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       isClosed = true;
       if (retryTimer) clearTimeout(retryTimer);
+      window.removeEventListener('online', resume);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       source?.close();
     };
   }, [planId, orgId, attempt]);

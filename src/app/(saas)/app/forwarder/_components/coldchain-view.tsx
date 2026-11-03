@@ -194,6 +194,15 @@ function PlanColdchain({ planId, containerParam }: PlanColdchainPropsT) {
           <div className="m2-card-h">
             <h2 className="m2-h2">실시간 알림</h2>
             <span className={streamState.chip}>{streamState.label}</span>
+            {stream.state === 'stopped' && (
+              <button
+                type="button"
+                className="m2-btn m2-btn-sec m2-btn-sm"
+                onClick={stream.reconnect}
+              >
+                다시 연결
+              </button>
+            )}
           </div>
           {alerts.length === 0 ? (
             <p className="m2-sub">아직 알림이 없습니다.</p>
