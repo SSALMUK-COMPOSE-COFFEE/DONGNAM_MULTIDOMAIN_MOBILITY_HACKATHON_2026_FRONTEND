@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useBindDevice, usePlatformPlan, usePlatformPlans } from '@/apis/saas/platform';
+import { planOptionLabel } from '@/app/(saas)/app/platform/_components/plan-label';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,7 +23,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { BindingStageT, DeviceT } from '@/types/saas-platform';
-import { formatKstMonthDayTime } from '@/utils/kst';
 
 const STAGES: { value: BindingStageT; label: string }[] = [
   { value: 'trucking', label: '집하 트럭' },
@@ -85,9 +85,9 @@ function BindDeviceForm({ device, onDone }: { device: DeviceT; onDone: () => voi
               <SelectValue placeholder={plansQuery.isPending ? '불러오는 중' : '계획 선택'} />
             </SelectTrigger>
             <SelectContent>
-              {plansQuery.data?.map(({ plan_id, vessel, departure }) => (
-                <SelectItem key={plan_id} value={plan_id}>
-                  {vessel ?? plan_id} · {formatKstMonthDayTime(departure)} 출항
+              {plansQuery.data?.map(plan => (
+                <SelectItem key={plan.plan_id} value={plan.plan_id}>
+                  {planOptionLabel(plan)}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -6,6 +6,7 @@ import { Fragment } from 'react';
 import { usePlatformSettlements } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
+import { NO_VESSEL_LABEL } from '@/app/(saas)/app/platform/_components/plan-label';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { StatTile } from '@/app/(saas)/app/platform/_components/stat-tile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -95,7 +96,7 @@ export function SettlementView() {
                         href={PLATFORM_PATHS.PLAN(row.plan_id)}
                         className="text-navy hover:text-brand"
                       >
-                        {row.vessel ?? row.plan_id}
+                        {row.vessel ?? NO_VESSEL_LABEL}
                       </Link>
                     </TableCell>
                     <TableCell className="num">{formatKstMonthDayTime(row.departure)}</TableCell>

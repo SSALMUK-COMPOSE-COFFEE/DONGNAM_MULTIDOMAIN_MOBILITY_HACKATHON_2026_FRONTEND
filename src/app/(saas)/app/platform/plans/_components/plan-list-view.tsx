@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePlatformPlans } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
+import { NO_VESSEL_LABEL } from '@/app/(saas)/app/platform/_components/plan-label';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { Badge } from '@/components/ui/badge';
@@ -66,7 +67,7 @@ export function PlanListView() {
             <TableBody>
               {plans.map(plan => (
                 <TableRow key={plan.plan_id}>
-                  <TableCell className="font-bold">{plan.vessel ?? '배정 선박 없음'}</TableCell>
+                  <TableCell className="font-bold">{plan.vessel ?? NO_VESSEL_LABEL}</TableCell>
                   <TableCell className="num">{formatKstMonthDayTime(plan.departure)}</TableCell>
                   <TableCell className="text-right num">{plan.shipper_count}곳</TableCell>
                   <TableCell className="text-right num">{plan.total_pallets}</TableCell>

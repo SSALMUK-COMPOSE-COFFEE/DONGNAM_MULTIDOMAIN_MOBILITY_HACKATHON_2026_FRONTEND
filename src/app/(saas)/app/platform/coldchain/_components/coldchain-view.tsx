@@ -14,6 +14,7 @@ import {
   usePlatformPlans,
 } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
+import { planOptionLabel } from '@/app/(saas)/app/platform/_components/plan-label';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { ActionList } from '@/components/action-list';
 import { AlertFeed } from '@/components/alert-feed';
@@ -32,7 +33,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { AlertT } from '@/types/api';
 import type { TwinSummaryT } from '@/types/saas-platform';
 import { formatPercent } from '@/utils/format';
-import { formatKstMonthDayTime } from '@/utils/kst';
 
 const PLAN_QUERY = 'plan';
 
@@ -92,9 +92,9 @@ export function ColdchainView() {
             <SelectValue placeholder="계획 선택" />
           </SelectTrigger>
           <SelectContent>
-            {plansQuery.data.map(({ plan_id, vessel, departure }) => (
-              <SelectItem key={plan_id} value={plan_id}>
-                {vessel ?? plan_id} · {formatKstMonthDayTime(departure)} 출항
+            {plansQuery.data.map(plan => (
+              <SelectItem key={plan.plan_id} value={plan.plan_id}>
+                {planOptionLabel(plan)}
               </SelectItem>
             ))}
             {!plansQuery.data.some(({ plan_id }) => plan_id === planId) && (
