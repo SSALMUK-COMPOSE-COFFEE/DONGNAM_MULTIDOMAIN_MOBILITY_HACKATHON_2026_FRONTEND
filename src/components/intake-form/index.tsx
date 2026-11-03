@@ -46,17 +46,27 @@ export function IntakeForm({
   options,
   hideShipperField = false,
 }: IntakeFormPropsT) {
-  const [form, setForm] = useState<IntakeRequestT>({
-    ...DEMO_INTAKE,
-    sell_window: 'normal',
-    scenario_id: DEMO_SCENARIO_ID,
-    ...initialValues,
-  });
-  const update = (patch: Partial<IntakeRequestT>) => setForm(prev => ({ ...prev, ...patch }));
-
   const products = options?.products ?? toProductOptions(scenario);
   const shippers = options?.shippers ?? toShipperOptions(scenario);
   const destinations = options?.destinations ?? toDestinationOptions(scenario);
+
+  const [form, setForm] = useState<IntakeRequestT>(() => {
+    const base: IntakeRequestT = {
+      ...DEMO_INTAKE,
+      sell_window: 'normal',
+      scenario_id: DEMO_SCENARIO_ID,
+      ...initialValues,
+    };
+
+    return {
+      ...base,
+      product: pickOption(options?.products, base.product),
+      shipper: pickOption(options?.shippers, base.shipper),
+      destination: pickOption(options?.destinations, base.destination),
+    };
+  });
+  const update = (patch: Partial<IntakeRequestT>) => setForm(prev => ({ ...prev, ...patch }));
+
   const errorOf = (field: string) => fieldErrors.find(error => error.field === field)?.message;
 
   return (
@@ -96,6 +106,10 @@ export function IntakeForm({
               onChange={event => update({ pallets: Number(event.target.value) })}
             />
           </Field>
+
+          {hideShipperField && errorOf('shipper') && (
+            <p className="text-sm text-berry">{errorOf('shipper')}</p>
+          )}
 
           {!hideShipperField && (
             <Field label="화주 · 선과장" error={errorOf('shipper')}>
@@ -146,6 +160,9 @@ export function IntakeForm({
     </Card>
   );
 }
+
+const pickOption = (list: IntakeOptionT[] | undefined, current: string): string =>
+  !list || list.some(({ id }) => id === current) ? current : (list[0]?.id ?? current);
 
 const toProductOptions = (scenario: ScenarioT): IntakeOptionT[] =>
   scenario.products.map(({ id, name }) => ({ id, label: name }));
