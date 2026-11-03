@@ -1121,6 +1121,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/shipper/plans/{plan_id}/containers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Container Numbers */
+        get: operations["read_container_numbers_test_api_saas_shipper_plans__plan_id__containers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/saas/shipper/plans/{plan_id}/orders": {
         parameters: {
             query?: never;
@@ -3554,6 +3571,8 @@ export interface components {
             diff: components["schemas"]["PlanDiff"] | null;
             /** Solve Ms */
             solve_ms: number;
+            /** Warnings */
+            warnings?: string[];
             explanation?: components["schemas"]["Explanation"] | null;
             /** Plan Id */
             plan_id: string;
@@ -3854,6 +3873,8 @@ export interface components {
             /** Requests */
             requests: components["schemas"]["ExternalRequest"][];
             cancellation?: components["schemas"]["CancellationCharge"] | null;
+            /** Cancellation Charges */
+            cancellation_charges?: components["schemas"]["CancellationCharge"][];
             /** Expired Reason */
             expired_reason?: string | null;
             /** Rolled Back To Version */
@@ -4149,6 +4170,8 @@ export interface components {
             /** Requests */
             requests: components["schemas"]["ExternalRequest"][];
             cancellation?: components["schemas"]["ForwarderCancellation"] | null;
+            /** Cancellation Charges */
+            cancellation_charges?: components["schemas"]["ForwarderCancellation"][];
             /** Expired Reason */
             expired_reason?: string | null;
             /** Rolled Back To Version */
@@ -6912,6 +6935,8 @@ export interface components {
             diff: components["schemas"]["PlanDiff"] | null;
             /** Solve Ms */
             solve_ms: number;
+            /** Warnings */
+            warnings?: string[];
             explanation?: components["schemas"]["Explanation"] | null;
             /** Plan Id */
             plan_id: string;
@@ -7691,6 +7716,28 @@ export interface components {
             plan_version: number;
             /** Confirmations */
             confirmations: components["schemas"]["PlanConfirmation"][];
+            /**
+             * Replan Pending
+             * @default false
+             */
+            replan_pending: boolean;
+        };
+        /** ShipperContainerNumbers */
+        ShipperContainerNumbers: {
+            /** Container Id */
+            container_id: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Container No */
+            container_no: string;
+            /** Seal No */
+            seal_no: string;
+            /** Mock */
+            mock: boolean;
+            /** Container No Mock */
+            container_no_mock: boolean;
+            /** Seal No Mock */
+            seal_no_mock: boolean;
         };
         /** ShipperCost */
         ShipperCost: {
@@ -7839,6 +7886,43 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** ShipperPlanConfirmation */
+        ShipperPlanConfirmation: {
+            /** Plan Id */
+            plan_id: string;
+            /** Round */
+            round: number;
+            /** Shipper Id */
+            shipper_id: string;
+            /** Shipper Org Id */
+            shipper_org_id: string;
+            /** Lot Ids */
+            lot_ids: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "accepted" | "rejected";
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Auto Accepted
+             * @default false
+             */
+            auto_accepted: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decided At */
+            decided_at?: string | null;
+            /**
+             * Replan Pending
+             * @default false
+             */
+            replan_pending: boolean;
+        };
         /** ShipperPlanItem */
         ShipperPlanItem: {
             /** Plan Id */
@@ -7860,6 +7944,11 @@ export interface components {
             my_pallets: number;
             /** Total Pallets */
             total_pallets: number;
+            /**
+             * Replan Pending
+             * @default false
+             */
+            replan_pending: boolean;
         };
         /** ShipperProfileOut */
         ShipperProfileOut: {
@@ -8819,6 +8908,8 @@ export interface components {
             transit_days: number;
             /** Original Etd */
             original_etd?: string | null;
+            /** Original Cy Cutoff */
+            original_cy_cutoff?: string | null;
             /** Call Sign */
             call_sign?: string | null;
         };
@@ -11495,6 +11586,37 @@ export interface operations {
             };
         };
     };
+    read_container_numbers_test_api_saas_shipper_plans__plan_id__containers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipperContainerNumbers"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_orders_test_api_saas_shipper_plans__plan_id__orders_get: {
         parameters: {
             query?: never;
@@ -12118,7 +12240,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlanConfirmation"][];
+                    "application/json": components["schemas"]["ShipperPlanConfirmation"][];
                 };
             };
             /** @description Validation Error */
