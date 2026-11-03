@@ -105,6 +105,7 @@ export const SAAS_ROUTES = {
         countStrong: true,
       },
       { href: '/app/shipper/coldchain', label: '내 화물 상태', icon: 'coldchain' },
+      { href: '/app/shipper/onboarding', label: '선과장 등록', icon: 'home' },
       { href: '/app/shipper/settlements', label: '정산', icon: 'settlement' },
     ],
   },

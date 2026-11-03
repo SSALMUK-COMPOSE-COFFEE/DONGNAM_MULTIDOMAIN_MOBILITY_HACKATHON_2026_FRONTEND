@@ -207,13 +207,16 @@ function SidebarNav({ route, counts, railTips }: SidebarNavPropsT) {
                 <Link
                   href={item.href}
                   aria-current={isActive ? 'page' : false}
-                  aria-label={fullLabel}
+                  {...(railTips ? { 'aria-label': fullLabel } : {})}
                   {...(railTips ? {} : { title: item.label })}
                 >
                   <Icon size={18} strokeWidth={1.6} aria-hidden />
                   <span className="m2-nav-t">{item.label}</span>
                   {showCount ? (
-                    <i className={item.countStrong ? 'm2-cnt is-strong' : 'm2-cnt'}>{count}</i>
+                    <i className={item.countStrong ? 'm2-cnt is-strong' : 'm2-cnt'}>
+                      {count}
+                      <span className="sr-only">건</span>
+                    </i>
                   ) : null}
                 </Link>
               );

@@ -93,7 +93,7 @@ function ScenarioStep({ step, activeType, pathname, onSwitch, isPending }: Scena
       className="m2-sbx-step"
       disabled={isPending}
       title={`${ROLE_SHORT[step.orgType]}(으)로 바꿔 이동`}
-      aria-label={`${step.step} ${step.label} · ${ROLE_SHORT[step.orgType]}(으)로 바꿔 이동`}
+      aria-label={`${step.label} · ${ROLE_SHORT[step.orgType]}(으)로 바꿔 이동`}
       onClick={() => onSwitch(step.orgType, step.href)}
     >
       {content}
