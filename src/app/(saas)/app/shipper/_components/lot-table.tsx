@@ -123,7 +123,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           />
         )}
         {visible.length > 0 && (
-          <Table>
+          <Table className="[&_td]:whitespace-normal [&_th]:whitespace-normal">
             <TableHeader>
               <TableRow>
                 <TableHead>로트</TableHead>
@@ -146,7 +146,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
 
                 return (
                   <TableRow key={lot.id}>
-                    <TableCell className="font-bold num">{lot.id}</TableCell>
+                    <TableCell className="font-bold num break-all">{lot.id}</TableCell>
                     <TableCell>{productName(lot.product_id)}</TableCell>
                     <TableCell className="text-right num">{lot.pallets}</TableCell>
                     <TableCell className="text-right num">
@@ -168,7 +168,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                           계획 확정 후 변경 불가
                         </span>
                       ) : (
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
                           {lot.status === 'registered' && (
                             <>
                               <Button

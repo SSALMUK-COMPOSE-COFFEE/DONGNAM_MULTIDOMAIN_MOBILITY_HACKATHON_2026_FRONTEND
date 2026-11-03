@@ -51,7 +51,7 @@ export function PlanListView() {
           </EmptyState>
         )}
         {!!plans?.length && (
-          <Table>
+          <Table className="[&_td]:whitespace-normal [&_th]:whitespace-normal">
             <TableHeader>
               <TableRow>
                 <TableHead>선박</TableHead>
@@ -86,7 +86,7 @@ export function PlanListView() {
                   <TableCell className="num text-muted-foreground">
                     {formatKstMonthDayTime(plan.created_at)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right whitespace-nowrap!">
                     <Button asChild size="sm" variant="outline">
                       <Link href={PLATFORM_PATHS.PLAN(plan.plan_id)}>상세</Link>
                     </Button>

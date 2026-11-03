@@ -41,7 +41,7 @@ export function LotsView() {
   const createLot = useCreateShipperLot();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="@container flex flex-col gap-6">
       <SectionErrorBoundary message="출하 등록 영역을 그리지 못했습니다." className="h-96">
         {catalog.isError && (
           <QueryError
@@ -58,7 +58,7 @@ export function LotsView() {
           />
         )}
         {catalog.data && catalog.data.shippers.length > 0 && (
-          <div className="grid grid-cols-[480px_1fr] gap-6">
+          <div className="grid grid-cols-1 gap-6 @min-[1000px]:grid-cols-[480px_minmax(0,1fr)]">
             <IntakeForm
               key={`${orgId}:${catalog.data.id}`}
               scenario={catalog.data}

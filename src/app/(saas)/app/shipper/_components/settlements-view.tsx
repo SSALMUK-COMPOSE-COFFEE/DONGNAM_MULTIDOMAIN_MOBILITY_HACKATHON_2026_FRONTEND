@@ -88,7 +88,7 @@ export function SettlementsView() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="[&_td]:whitespace-normal [&_th]:whitespace-normal">
             <TableHeader>
               <TableRow>
                 <TableHead>선박 · 출항</TableHead>
@@ -132,7 +132,7 @@ export function SettlementsView() {
                   <TableCell className="text-right font-bold num">
                     {formatManwon(row.shipper_gain)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right whitespace-nowrap!">
                     <Link
                       href={SHIPPER_PATHS.PLAN(row.plan_id)}
                       className={buttonVariants({ variant: 'outline', size: 'sm' })}

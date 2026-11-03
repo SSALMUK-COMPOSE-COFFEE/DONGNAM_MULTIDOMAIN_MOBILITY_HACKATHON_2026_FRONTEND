@@ -65,10 +65,10 @@ export function PlanDetailView() {
 
   if (plan.isPending) {
     return (
-      <div aria-busy className="flex flex-col gap-6">
+      <div aria-busy className="@container flex flex-col gap-6">
         {backLink}
         <Skeleton className="h-24" />
-        <div className="grid grid-cols-[1fr_560px] gap-6">
+        <div className="grid grid-cols-1 gap-6 @min-[1200px]:grid-cols-[minmax(0,1fr)_560px]">
           <Skeleton className="h-96" />
           <Skeleton className="h-96" />
         </div>
@@ -105,7 +105,7 @@ export function PlanDetailView() {
   const pallets = session.plan.assignments.reduce((sum, { pallets }) => sum + pallets, 0);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="@container flex flex-col gap-6">
       {backLink}
 
       <div className="flex flex-wrap items-center gap-6 rounded-3xl bg-navy px-10 py-7 text-white">
@@ -132,7 +132,7 @@ export function PlanDetailView() {
 
       <CurrentOrder planId={session.plan_id} />
 
-      <div className="grid grid-cols-[1fr_560px] gap-6">
+      <div className="grid grid-cols-1 gap-6 @min-[1200px]:grid-cols-[minmax(0,1fr)_560px]">
         <ContainerCard plan={session.plan} scenario={session.scenario} showAirLots />
         <PickupMap scenario={session.scenario} voyagePickups={session.routes} />
       </div>

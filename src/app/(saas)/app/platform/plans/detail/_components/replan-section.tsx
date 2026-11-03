@@ -58,7 +58,7 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
       : `${shipperName} ${pallets === 0 ? '전량' : `${(lot?.pallets ?? 0) - pallets}파렛트`} 취소하고 다시 짜기`;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="@container flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>재최적화</CardTitle>
@@ -66,7 +66,7 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
             화주 취소·감축이나 항공 전환이 생기면 세 가지 안을 다시 계산해 고릅니다.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-[400px_1fr] items-start gap-10">
+        <CardContent className="grid grid-cols-1 items-start gap-10 @min-[960px]:grid-cols-[400px_minmax(0,1fr)]">
           {seaLots.length === 0 ? (
             <p className="text-muted-foreground">해상으로 가는 로트가 없어 바꿀 대상이 없습니다.</p>
           ) : (
