@@ -6,15 +6,6 @@ import { useSignup } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { FormField } from '@/app/(auth)/_components/form-field';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { SAAS_ROUTES, SIGNUP_ORG_TYPES } from '@/consts/route-saas';
 
 type SignupOrgTypeT = (typeof SIGNUP_ORG_TYPES)[number];
@@ -35,32 +26,29 @@ export function SignupForm() {
 
   return (
     <form
-      className="flex flex-col gap-5"
       onSubmit={event => {
         event.preventDefault();
         signup.mutate(form, { onSuccess: enterApp });
       }}
     >
       <FormField id="signup-org-type" label="회사 종류">
-        <Select
+        <select
+          id="signup-org-type"
+          className="m2-inp w-full"
           value={form.org_type}
-          onValueChange={value => update({ org_type: value as SignupOrgTypeT })}
+          onChange={event => update({ org_type: event.target.value as SignupOrgTypeT })}
         >
-          <SelectTrigger id="signup-org-type" className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SIGNUP_ORG_TYPES.map(orgType => (
-              <SelectItem key={orgType} value={orgType}>
-                {SAAS_ROUTES[orgType].label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {SIGNUP_ORG_TYPES.map(orgType => (
+            <option key={orgType} value={orgType}>
+              {SAAS_ROUTES[orgType].label}
+            </option>
+          ))}
+        </select>
       </FormField>
 
       <FormField id="signup-org-name" label="회사 이름">
-        <Input
+        <input
+          className="m2-inp"
           id="signup-org-name"
           required
           maxLength={200}
@@ -71,7 +59,8 @@ export function SignupForm() {
       </FormField>
 
       <FormField id="signup-name" label="담당자 이름">
-        <Input
+        <input
+          className="m2-inp"
           id="signup-name"
           required
           maxLength={200}
@@ -82,7 +71,8 @@ export function SignupForm() {
       </FormField>
 
       <FormField id="signup-email" label="이메일">
-        <Input
+        <input
+          className="m2-inp"
           id="signup-email"
           type="email"
           required
@@ -93,7 +83,8 @@ export function SignupForm() {
       </FormField>
 
       <FormField id="signup-password" label="비밀번호" hint={`${PASSWORD_MIN_LENGTH}자 이상`}>
-        <Input
+        <input
+          className="m2-inp"
           id="signup-password"
           type="password"
           required
@@ -106,14 +97,18 @@ export function SignupForm() {
       </FormField>
 
       {signup.isError && (
-        <p role="alert" className="text-sm text-berry">
+        <p role="alert" className="mb-3 text-[12.5px] font-medium text-m2-crit">
           {authErrorMessage(signup.error, '가입하지 못했습니다. 잠시 뒤 다시 시도하세요.')}
         </p>
       )}
 
-      <Button type="submit" size="lg" disabled={signup.isPending}>
+      <button
+        type="submit"
+        className="m2-btn m2-btn-pri m2-btn-lg mt-1 w-full"
+        disabled={signup.isPending}
+      >
         {signup.isPending ? '가입 중' : '가입하고 시작하기'}
-      </Button>
+      </button>
     </form>
   );
 }

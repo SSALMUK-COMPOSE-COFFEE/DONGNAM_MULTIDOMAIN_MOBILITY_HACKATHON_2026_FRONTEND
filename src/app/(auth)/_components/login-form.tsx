@@ -7,8 +7,6 @@ import { useLogin } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { FormField } from '@/app/(auth)/_components/form-field';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { isDemoEmail } from '@/consts/sandbox-saas';
 
 const DEMO_PASSWORD_LOGIN_MESSAGE =
@@ -29,17 +27,18 @@ export function LoginForm() {
 
   return (
     <form
-      className="flex flex-col gap-5"
       onSubmit={event => {
         event.preventDefault();
         login.mutate({ email, password }, { onSuccess: enterApp });
       }}
     >
       <FormField id="login-email" label="이메일">
-        <Input
+        <input
           id="login-email"
+          className="m2-inp"
           type="email"
           autoComplete="email"
+          placeholder="name@company.kr"
           required
           value={email}
           onChange={event => setEmail(event.target.value)}
@@ -47,8 +46,9 @@ export function LoginForm() {
       </FormField>
 
       <FormField id="login-password" label="비밀번호">
-        <Input
+        <input
           id="login-password"
+          className="m2-inp"
           type="password"
           autoComplete="current-password"
           required
@@ -58,14 +58,18 @@ export function LoginForm() {
       </FormField>
 
       {login.isError && (
-        <p role="alert" className="text-sm text-berry">
+        <p role="alert" className="mb-3 text-[12.5px] font-medium text-m2-crit">
           {loginErrorMessage(login.error, login.variables?.email ?? email)}
         </p>
       )}
 
-      <Button type="submit" size="lg" disabled={login.isPending}>
+      <button
+        type="submit"
+        className="m2-btn m2-btn-pri m2-btn-lg mt-1 w-full"
+        disabled={login.isPending}
+      >
         {login.isPending ? '로그인 중' : '로그인'}
-      </Button>
+      </button>
     </form>
   );
 }

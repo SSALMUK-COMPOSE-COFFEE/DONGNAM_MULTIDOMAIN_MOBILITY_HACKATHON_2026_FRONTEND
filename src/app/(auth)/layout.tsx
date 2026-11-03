@@ -1,21 +1,23 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { PageWave } from '@/components/page-wave';
+import '@/app/m2.css';
+import { SAAS_PAGES } from '@/consts/route-saas';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <>
-      <header className="mx-auto flex h-16 w-full max-w-[1600px] items-center px-8">
-        <Link href="/login" className="flex items-center gap-2 text-xl font-black text-navy">
-          프레시스위치
-          <span className="text-brand">≈</span>
-        </Link>
-      </header>
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 items-start justify-center px-8 pt-12">
-        {children}
-      </main>
-      <PageWave />
-    </>
+    <div data-ui="m2" className="m2-page flex flex-col">
+      <div className="m2-main">
+        <div className="m2-topline">
+          <Link href={SAAS_PAGES.LOGIN} className="m2-logo">
+            프레시스위치
+            <span aria-hidden>≈</span>
+          </Link>
+        </div>
+        <div className="m2-window m2-solo">
+          <main className="m2-content">{children}</main>
+        </div>
+      </div>
+    </div>
   );
 }

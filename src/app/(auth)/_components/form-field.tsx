@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react';
 
-import { Label } from '@/components/ui/label';
-
 type FormFieldPropsT = {
   id: string;
   label: string;
@@ -11,10 +9,10 @@ type FormFieldPropsT = {
 
 export function FormField({ id, label, hint, children }: FormFieldPropsT) {
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{label}</Label>
+    <div className="m2-field">
+      <label htmlFor={id}>{label}</label>
       {children}
-      {hint && <p className="text-sm text-muted-foreground">{hint}</p>}
+      {hint ? <p className="m2-sub mt-0 text-xs">{hint}</p> : null}
     </div>
   );
 }

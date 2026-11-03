@@ -1,36 +1,97 @@
 'use client';
 
 import { cn } from 'cn';
+import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { useDemoLogin } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { roleLinkKeys, useShowcaseScene } from '@/app/(auth)/_components/use-showcase-scene';
+import { useMapLinkTarget } from '@/components/map-link';
 import { ORG_TYPES, SAAS_ROUTES } from '@/consts/route-saas';
-import { DEMO_SHIPPER_ORGS } from '@/consts/sandbox-saas';
+import { DEMO_FORWARDER_ORGS, DEMO_PLATFORM_ORG, DEMO_SHIPPER_ORGS } from '@/consts/sandbox-saas';
 import type { OrgType } from '@/types/saas';
 
 const DEMO_DESCRIPTIONS: Record<OrgType, string> = {
-  platform: '모든 화주 출하로 공동적재 계획 · 재최적화 · 정산',
-  shipper: '출하 5개 항목 등록, 계획 확인 · 확정, 절감액 조회',
-  forwarder: '배정된 항차의 실행 지시 확정 · 운송 실행',
+  platform: '출하 풀 → 공동적재 계획 생성 · 포워더 배정 · 정산',
+  shipper: '출하 등록 · 계획 확정 · 내 절감액',
+  forwarder: '실행 지시 · 집하 경로 · 콜드체인',
 };
+
+const AVATAR_TONE: Record<OrgType, string> = {
+  platform: 'bg-m2-navy',
+  shipper: 'bg-m2-berry',
+  forwarder: 'bg-m2-ink-2',
+};
+
+const avatarText = (orgType: OrgType, orgName: string) =>
+  orgType === 'platform' ? 'FS' : (orgName.split(' ')[0] ?? orgName).slice(0, 2);
+
+type RoleButtonPropsT = {
+  orgType: OrgType;
+  title: string;
+  avatar: string;
+  linkKeys: string[];
+  disabled: boolean;
+  isEntering: boolean;
+  onEnter: () => void;
+};
+
+function RoleButton({
+  orgType,
+  title,
+  avatar,
+  linkKeys,
+  disabled,
+  isEntering,
+  onEnter,
+}: RoleButtonPropsT) {
+  const { className: linkClassName, ...link } = useMapLinkTarget(linkKeys, { pickable: false });
+
+  return (
+    <button
+      type="button"
+      {...link}
+      disabled={disabled}
+      onClick={onEnter}
+      className={cn('m2-role disabled:cursor-wait disabled:opacity-60', linkClassName)}
+    >
+      <span
+        aria-hidden
+        className={cn(
+          'grid size-10 place-items-center rounded-xl text-[13px] font-bold text-white',
+          AVATAR_TONE[orgType]
+        )}
+      >
+        {avatar}
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <b className="truncate text-sm font-semibold">{title}</b>
+        <small className="text-[12.5px] text-m2-muted">{DEMO_DESCRIPTIONS[orgType]}</small>
+      </span>
+      <span className="inline-flex items-center gap-1 text-[12.5px] font-semibold whitespace-nowrap text-m2-brand-ink">
+        {isEntering ? '들어가는 중' : '들어가기'}
+        <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+      </span>
+    </button>
+  );
+}
 
 export function DemoLoginPanel() {
   const demoLogin = useDemoLogin();
   const enterApp = useEnterApp();
+  const { scene } = useShowcaseScene();
   const [chosen, setChosen] = useState<OrgType | null>(null);
   const [shipperOrgId, setShipperOrgId] = useState<string>(DEMO_SHIPPER_ORGS[0].org_id);
   const [isPickingShipper, setIsPickingShipper] = useState(false);
   const shipperOrg =
     DEMO_SHIPPER_ORGS.find(({ org_id }) => org_id === shipperOrgId) ?? DEMO_SHIPPER_ORGS[0];
+  const orgNames: Record<OrgType, string> = {
+    platform: DEMO_PLATFORM_ORG.org_name,
+    shipper: shipperOrg.org_name,
+    forwarder: DEMO_FORWARDER_ORGS[0].org_name,
+  };
 
   const enter = (orgType: OrgType) => {
     setChosen(orgType);
@@ -43,63 +104,53 @@ export function DemoLoginPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2.5">
       {ORG_TYPES.map(orgType => (
         <div key={orgType} className="flex flex-col gap-2">
-          <button
-            type="button"
+          <RoleButton
+            orgType={orgType}
+            title={
+              orgType === 'platform'
+                ? SAAS_ROUTES.platform.label
+                : `${SAAS_ROUTES[orgType].label} · ${orgNames[orgType]}`
+            }
+            avatar={avatarText(orgType, orgNames[orgType])}
+            linkKeys={roleLinkKeys(scene, orgType, shipperOrg.org_id)}
             disabled={demoLogin.isPending}
-            onClick={() => enter(orgType)}
-            className={cn(
-              'flex flex-col items-start gap-1 rounded-xl border bg-white px-5 py-4 text-left transition-colors',
-              'hover:border-brand hover:bg-brand-soft disabled:opacity-50'
-            )}
-          >
-            <span className="flex items-center gap-2 text-lg font-bold text-navy">
-              {SAAS_ROUTES[orgType].label}
-              {orgType === 'shipper' && (
-                <span className="text-sm font-medium text-brand">{shipperOrg.org_name}</span>
-              )}
-              {demoLogin.isPending && chosen === orgType && (
-                <span className="text-sm font-medium text-muted-foreground">들어가는 중</span>
-              )}
-            </span>
-            <span className="text-sm text-muted-foreground">{DEMO_DESCRIPTIONS[orgType]}</span>
-          </button>
+            isEntering={demoLogin.isPending && chosen === orgType}
+            onEnter={() => enter(orgType)}
+          />
 
           {orgType === 'shipper' && !isPickingShipper && (
             <button
               type="button"
               disabled={demoLogin.isPending}
               onClick={() => setIsPickingShipper(true)}
-              className="self-end px-1 text-sm font-bold text-brand disabled:opacity-50"
+              className="self-end px-1 text-[12.5px] font-semibold text-m2-brand-ink disabled:opacity-50"
             >
               다른 화주로 바꾸기
             </button>
           )}
           {orgType === 'shipper' && isPickingShipper && (
-            <Select
+            <select
+              aria-label="데모 화주 조직"
+              className="m2-inp w-full"
               value={shipperOrg.org_id}
               disabled={demoLogin.isPending}
-              onValueChange={setShipperOrgId}
+              onChange={event => setShipperOrgId(event.target.value)}
             >
-              <SelectTrigger aria-label="데모 화주 조직" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DEMO_SHIPPER_ORGS.map(({ org_id, org_name }) => (
-                  <SelectItem key={org_id} value={org_id}>
-                    {org_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {DEMO_SHIPPER_ORGS.map(({ org_id, org_name }) => (
+                <option key={org_id} value={org_id}>
+                  {org_name}
+                </option>
+              ))}
+            </select>
           )}
         </div>
       ))}
 
       {demoLogin.isError && (
-        <p role="alert" className="text-sm text-berry">
+        <p role="alert" className="text-[12.5px] font-medium text-m2-crit">
           {authErrorMessage(demoLogin.error, '데모 계정으로 들어가지 못했습니다.')}
         </p>
       )}
