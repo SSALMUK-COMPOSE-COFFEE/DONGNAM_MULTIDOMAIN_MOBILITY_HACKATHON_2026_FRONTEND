@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { cn } from 'cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -7,20 +8,34 @@ import { toast } from 'sonner';
 
 import { useIsSandbox } from '@/apis/saas/auth';
 import {
+  coldchainKeys,
+  useColdchainContainers,
+  useColdchainOrgId,
+  useColdchainSettlementPreview,
+  useColdchainSimulation,
+  useColdchainTwin,
+} from '@/apis/saas/coldchain';
+import {
   type AlertStreamStatusT,
-  usePlanContainerTwin,
-  usePlanContainers,
   usePlatformAlertStream,
   usePlatformPlan,
   usePlatformPlans,
-  usePlatformSimulation,
 } from '@/apis/saas/platform';
+import {
+  NO_READING_TEXT,
+  TwinBody,
+  TwinChips,
+} from '@/app/(saas)/app/forwarder/_components/coldchain-twin';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { readPlanQuery, withPlanQuery } from '@/app/(saas)/app/platform/_components/paths';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
-import { ActionList } from '@/components/action-list';
+import { ColdchainActionList } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-action-list';
+import { ColdchainCsvButtons } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-csv-buttons';
+import { ColdchainGensetCandidates } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-genset-candidates';
+import { ColdchainLossBanner } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-loss-banner';
+import { ColdchainLossTable } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-loss-table';
+import { ColdchainResidualRisks } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-residual-risks';
 import { AlertFeed } from '@/components/alert-feed';
-import { SensorStatusCard } from '@/components/sensor-status-card';
 import {
   Select,
   SelectContent,
@@ -33,8 +48,6 @@ import type { AlertT } from '@/types/api';
 import type { TwinSummaryT } from '@/types/saas-platform';
 import { formatPercent } from '@/utils/format';
 import { planOptionLabel } from '@/utils/plan-label';
-
-const SAAS_EMPTY_TEXT = '기기를 연결하면 측정값이 들어옵니다.';
 
 const STATUS_STYLE: Record<TwinSummaryT['status'], { label: string; className: string }> = {
   no_data: { label: '측정값 없음', className: '' },
@@ -111,11 +124,18 @@ export function ColdchainView() {
 
 function PlanColdchain({ planId }: { planId: string }) {
   const planQuery = usePlatformPlan(planId);
-  const summariesQuery = usePlanContainers(planId);
+  const summariesQuery = useColdchainContainers(planId);
+  const queryClient = useQueryClient();
+  const orgId = useColdchainOrgId();
   const [openedAt] = useState(() => new Date().toISOString());
   const [pickedContainerId, setPickedContainerId] = useState('');
   const isSandbox = useIsSandbox();
-  const simulation = usePlatformSimulation(planId);
+  const simulation = useColdchainSimulation(planId);
+  const runSimulation = (id: string) =>
+    simulation.mutate(id, {
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: coldchainKeys.plan(orgId, planId) }),
+    });
 
   const streamPlanId = planQuery.isSuccess ? planId : '';
   const { alerts, status, reconnect } = usePlatformAlertStream(streamPlanId, (alert: AlertT) => {
@@ -197,13 +217,14 @@ function PlanColdchain({ planId }: { planId: string }) {
                     type="button"
                     className="m2-btn m2-btn-pri m2-btn-sm ml-auto"
                     disabled={simulation.isPending}
-                    onClick={() => simulation.mutate(containerId)}
+                    onClick={() => runSimulation(containerId)}
                   >
                     시뮬레이션 실행
                   </button>
                 )}
               </div>
               <AlertFeed alerts={alerts.filter(alert => alert.container_id === containerId)} />
+              <ColdchainGensetCandidates planId={planId} containerId={containerId} />
             </div>
           </div>
         </div>
@@ -257,8 +278,11 @@ function ContainerTile({ containerId, summary, isActive, onSelect }: ContainerTi
 }
 
 function ContainerTwin({ planId, containerId }: { planId: string; containerId: string }) {
-  const twinQuery = usePlanContainerTwin(planId, containerId);
+  const twinQuery = useColdchainTwin(planId, containerId);
   const twin = twinQuery.data ?? null;
+  const hasData = !!twin?.has_data;
+  const previewQuery = useColdchainSettlementPreview(planId, containerId, hasData);
+  const preview = hasData ? (previewQuery.data ?? null) : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -270,13 +294,36 @@ function ContainerTwin({ planId, containerId }: { planId: string; containerId: s
           isRetrying={twinQuery.isFetching}
         />
       )}
+      {twin && hasData ? <ColdchainLossBanner twin={twin} preview={preview} /> : null}
       {twinQuery.isPending ? (
         <Skeleton className="h-96 rounded-[18px]" />
       ) : (
-        <SensorStatusCard containerId={containerId} twin={twin} emptyText={SAAS_EMPTY_TEXT} />
+        <section className="m2-card">
+          <div className="m2-card-h flex-wrap gap-2">
+            <h2 className="m2-h2">{containerId} 품온 · 전원</h2>
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              {twin ? <TwinChips twin={twin} /> : null}
+              <ColdchainCsvButtons planId={planId} containerId={containerId} hasData={hasData} />
+            </div>
+          </div>
+          {twin && hasData ? (
+            <TwinBody twin={twin} containerId={containerId} />
+          ) : (
+            <p className="m2-sub py-6 text-center">{NO_READING_TEXT}</p>
+          )}
+        </section>
       )}
       {twin ? (
-        <ActionList actions={twin.actions} />
+        <>
+          {hasData ? <ColdchainLossTable loss={twin.loss} preview={preview} /> : null}
+          <ColdchainActionList
+            planId={planId}
+            containerId={containerId}
+            actions={twin.actions}
+            canAct
+          />
+          <ColdchainResidualRisks risks={twin.residual_risks} />
+        </>
       ) : (
         <section className="m2-card">
           <h2 className="m2-h2">자동 조치</h2>

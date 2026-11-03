@@ -4,9 +4,9 @@ import { cn } from 'cn';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { useColdchainTwin } from '@/apis/saas/coldchain';
 import {
   useForwarderAlertStream,
-  useForwarderContainer,
   useForwarderContainers,
   useForwarderPlan,
   useForwarderPlans,
@@ -22,6 +22,10 @@ import { ForwarderPageHeader } from '@/app/(saas)/app/forwarder/_components/forw
 import { FORWARDER_PATHS } from '@/app/(saas)/app/forwarder/_components/forwarder-paths';
 import { EmptyState, QueryError } from '@/app/(saas)/app/forwarder/_components/query-state';
 import { useForwarderOrgName } from '@/app/(saas)/app/forwarder/_components/use-org-name';
+import { ColdchainActionList } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-action-list';
+import { ColdchainCsvButtons } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-csv-buttons';
+import { ColdchainGensetCandidates } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-genset-candidates';
+import { ColdchainResidualRisks } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-residual-risks';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import {
   Select,
@@ -214,6 +218,10 @@ function PlanColdchain({ planId, containerParam }: PlanColdchainPropsT) {
           )}
         </section>
       </div>
+
+      <SectionErrorBoundary message="젯셋 사전 배정 후보를 그리지 못했습니다." className="h-48">
+        <ColdchainGensetCandidates planId={planId} containerId={containerId} />
+      </SectionErrorBoundary>
     </div>
   );
 }
@@ -324,7 +332,7 @@ function ContainerTile({ planId, containerId, summary, isActive }: ContainerTile
 }
 
 function ContainerTwin({ planId, containerId }: { planId: string; containerId: string }) {
-  const twin = useForwarderContainer(planId, containerId);
+  const twin = useColdchainTwin(planId, containerId);
 
   if (twin.isPending) return <Skeleton className="h-96 rounded-[18px]" />;
 
@@ -338,20 +346,44 @@ function ContainerTwin({ planId, containerId }: { planId: string; containerId: s
     );
   }
 
+  const data = twin.data;
+
   return (
-    <section className="m2-card">
-      <div className="m2-card-h flex-wrap">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="m2-h2">{containerId} 품온 · 전원</h2>
-          {twin.data ? <TwinChips twin={twin.data} /> : null}
+    <div className="flex flex-col gap-4">
+      <section className="m2-card">
+        <div className="m2-card-h flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="m2-h2">{containerId} 품온 · 전원</h2>
+            {data ? <TwinChips twin={data} /> : null}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-[12px] text-m2-muted max-[1180px]:hidden">
+              차트 위를 움직이면 시각별 품온
+            </span>
+            <ColdchainCsvButtons
+              planId={planId}
+              containerId={containerId}
+              hasData={!!data?.has_data}
+            />
+          </div>
         </div>
-        <span className="text-[12px] text-m2-muted">차트 위를 움직이면 시각별 품온</span>
-      </div>
-      {twin.data ? (
-        <TwinBody twin={twin.data} containerId={containerId} />
-      ) : (
-        <p className="m2-sub py-6 text-center">{NO_READING_TEXT}</p>
-      )}
-    </section>
+        {data && data.has_data ? (
+          <TwinBody twin={data} containerId={containerId} />
+        ) : (
+          <p className="m2-sub py-6 text-center">{NO_READING_TEXT}</p>
+        )}
+      </section>
+      {data ? (
+        <>
+          <ColdchainActionList
+            planId={planId}
+            containerId={containerId}
+            actions={data.actions}
+            canAct
+          />
+          <ColdchainResidualRisks risks={data.residual_risks} />
+        </>
+      ) : null}
+    </div>
   );
 }

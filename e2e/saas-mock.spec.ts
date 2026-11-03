@@ -50,7 +50,7 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
     const registered = main.getByRole('row').filter({ hasText: '등록됨' });
     await expect(registered).toHaveCount(1);
 
-    await main.getByRole('button', { name: '한 팔레트 늘리기' }).click();
+    await main.getByRole('button', { name: '한 파렛트 늘리기' }).click();
     await main.getByRole('button', { name: '출하 등록' }).click();
     await expect(registered).toHaveCount(2);
     await logout(page);
@@ -69,9 +69,7 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
 
     await expect(main.getByRole('heading', { name: '포워더 배정' })).toBeVisible();
     await expect(main.getByRole('combobox', { name: '포워더' })).toHaveText('동남 콜드체인 포워딩');
-    await expect(
-      main.getByRole('img', { name: 'CA-01 17/20 파렛트, 진주 8, 산청 5, 밀양 4' }).first()
-    ).toBeVisible();
+    await expect(main.getByRole('img', { name: '20칸 중 17칸 적재' }).first()).toBeVisible();
   });
 
   await test.step('플랫폼이 감축 재최적화를 적용한다', async () => {
@@ -85,7 +83,7 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
 
     await main.getByRole('button', { name: '이 안으로 적용' }).first().click();
     await expect(main.getByRole('button', { name: '적용됨' })).toBeVisible();
-    await expect(main).toContainText(/실행 지시\s*화주 확인 대기/);
+    await expect(main).toContainText(/실행 지시[\s\S]{0,80}화주 확인 대기/);
     await expectPlatformPlanStatus(page, '확정 대기');
     await logout(page);
   });
@@ -105,8 +103,8 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
     await expect(main).not.toContainText('진주 딸기 수출농가 A');
     await expect(main).not.toContainText('산청 딸기 수출농가 B');
 
-    await main.getByRole('button', { name: '계획 확정하기' }).click();
-    await expect(main).toContainText(/실행 지시\s*포워더 확정 대기/);
+    await main.getByRole('button', { name: '수락', exact: true }).click();
+    await expect(main).toContainText(/실행 지시[\s\S]{0,80}포워더 확정 대기/);
     await logout(page);
   });
 
@@ -209,4 +207,60 @@ test('초대로 들어온 멤버도 관리자가 등록한 선과장 이후 출�
   });
 
   expect(result).toEqual({ invitation: 201, packhouse: 201, login: 200, created: 201, lots: 1 });
+});
+
+test('목업 모드에서 세 역할이 같은 컨테이너의 콜드체인을 자기 범위로 본다', async ({ page }) => {
+  await page.goto(LOGIN_PATH);
+
+  await test.step('플랫폼이 조치를 수락·완료하고 측정 기록을 내려받는다', async () => {
+    await enterAs(page, 'platform');
+    await menu(page, /콜드체인 관제/).click();
+    await page.waitForURL(/\/platform\/coldchain/);
+    const main = page.getByRole('main').first();
+    await expect(main.getByText('열린 조치 4건', { exact: true })).toBeVisible();
+
+    await main
+      .getByRole('button', { name: /조치 수락$/ })
+      .first()
+      .click();
+    await expect(main.getByText('수락됨', { exact: true }).first()).toBeVisible();
+    await expect(main.getByText('열린 조치 4건', { exact: true })).toBeVisible();
+
+    await main
+      .getByRole('button', { name: /조치 완료$/ })
+      .first()
+      .click();
+    await expect(main.getByText('열린 조치 3건', { exact: true })).toBeVisible();
+
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      main.getByRole('button', { name: '측정 기록 CSV' }).click(),
+    ]);
+    expect(download.suggestedFilename()).toBe('CA-01-readings.csv');
+    await logout(page);
+  });
+
+  await test.step('포워더는 조치를 보지만 금액은 보지 않는다', async () => {
+    await enterAs(page, 'forwarder');
+    await menu(page, /콜드체인/).click();
+    await page.waitForURL(/\/forwarder\/coldchain/);
+    const main = page.getByRole('main').first();
+    await expect(main.getByRole('button', { name: /조치 완료$/ }).first()).toBeVisible();
+    await expect(main.getByText('요청 문장').first()).toBeVisible();
+    await expect(main).not.toContainText(/\d원/);
+    await logout(page);
+  });
+
+  await test.step('화주는 내 화물 상태에서 자기 로트만 본다', async () => {
+    await enterAs(page, 'shipper');
+    await page.goto('/test/app/shipper/coldchain');
+    const main = page.getByRole('main').first();
+    await expect(main.getByRole('heading', { name: '내 화물 상태' })).toBeVisible();
+    await expect(main.getByRole('heading', { name: 'CA-01 품온 · 전원' })).toBeVisible();
+    await expect(main.getByRole('cell', { name: 'lot-jinju-sb-1' })).toBeVisible();
+    await expect(main).not.toContainText('lot-sancheong-sb-1');
+    await expect(main).not.toContainText('lot-miryang-sb-1');
+    await expect(main.getByRole('button', { name: /조치 (수락|완료)$/ })).toHaveCount(0);
+    await expect(main.getByRole('button', { name: '측정 기록 CSV' })).toBeEnabled();
+  });
 });

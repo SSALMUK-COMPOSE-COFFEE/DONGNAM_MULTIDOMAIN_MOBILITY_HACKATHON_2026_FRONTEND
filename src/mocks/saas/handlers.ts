@@ -20,6 +20,7 @@ import {
 } from '@/mocks/saas/access';
 import { createAnonymizer } from '@/mocks/saas/anonymize';
 import { changeRequestHandlers } from '@/mocks/saas/change-requests';
+import { coldchainActionHandlers } from '@/mocks/saas/coldchain';
 import {
   demoConfirm,
   demoCreatePlan,
@@ -1472,6 +1473,7 @@ const sandboxHandlers = [
 ];
 
 export const saasHandlers = [
+  ...coldchainActionHandlers,
   ...authHandlers,
   ...publicHandlers,
   ...catalogHandlers,
