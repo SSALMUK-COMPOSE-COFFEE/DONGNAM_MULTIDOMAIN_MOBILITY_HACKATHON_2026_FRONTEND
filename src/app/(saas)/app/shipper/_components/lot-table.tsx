@@ -115,7 +115,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
         {lots.data && visible.length === 0 && (
           <EmptyState
             title={filter === 'all' ? '등록한 출하가 없습니다' : '이 상태의 출하가 없습니다'}
-            description={filter === 'all' ? '위 양식으로 첫 출하를 등록하세요.' : ''}
+            description={
+              filter === 'all' && !!catalog?.shippers.length
+                ? '위 양식으로 첫 출하를 등록하세요.'
+                : ''
+            }
           />
         )}
         {visible.length > 0 && (
