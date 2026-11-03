@@ -22,6 +22,12 @@ export type PendingRequestT = {
 
 export const isOrderOpen = (order: ShipperOrderT) => !CLOSED_ORDER_STATUSES.includes(order.status);
 
+export const isRequestAnswerable = (order: ShipperOrderT, request: ShipperRequestT) =>
+  request.status === 'pending' && order.status === 'forwarder_confirmed';
+
+export const isRequestAwaitingForwarder = (order: ShipperOrderT, request: ShipperRequestT) =>
+  request.status === 'pending' && isOrderOpen(order) && order.status !== 'forwarder_confirmed';
+
 export const pendingConfirmationsOf = (orders: ShipperOrderT[]) =>
   orders.filter(
     order =>
@@ -31,11 +37,9 @@ export const pendingConfirmationsOf = (orders: ShipperOrderT[]) =>
 
 export const pendingRequestsOf = (orders: ShipperOrderT[]) =>
   orders.flatMap(order =>
-    isOrderOpen(order)
-      ? order.requests
-          .filter(({ status }) => status === 'pending')
-          .map(request => ({ order, request }))
-      : []
+    order.requests
+      .filter(request => isRequestAnswerable(order, request))
+      .map(request => ({ order, request }))
   );
 
 export const useShipperTasks = () => {

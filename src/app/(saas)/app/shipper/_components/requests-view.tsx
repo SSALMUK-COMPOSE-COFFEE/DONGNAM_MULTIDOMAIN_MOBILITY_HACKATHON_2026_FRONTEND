@@ -3,10 +3,15 @@
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { formatKstMonthDayTime } from '@/app/(saas)/app/shipper/_components/kst';
 import { EmptyState, QueryError } from '@/app/(saas)/app/shipper/_components/query-state';
 import { RequestList } from '@/app/(saas)/app/shipper/_components/request-list';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
-import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
+import {
+  isRequestAnswerable,
+  isRequestAwaitingForwarder,
+  useShipperTasks,
+} from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,19 +47,16 @@ export function RequestsView() {
     );
   }
 
-  const answered = byPlan.flatMap(({ plan, orders }) =>
+  const items = byPlan.flatMap(({ plan, orders }) =>
     orders.flatMap(order =>
-      order.requests
-        .filter(({ status }) => status !== 'pending')
-        .map(request => ({ planId: plan.plan_id, order, request }))
+      order.requests.map(request => ({ planId: plan.plan_id, order, request }))
     )
   );
-  const pending = byPlan.flatMap(({ plan, orders }) =>
-    orders.flatMap(order =>
-      order.requests
-        .filter(({ status }) => status === 'pending')
-        .map(request => ({ planId: plan.plan_id, order, request }))
-    )
+  const pending = items.filter(({ order, request }) => isRequestAnswerable(order, request));
+  const awaiting = items.filter(({ order, request }) => isRequestAwaitingForwarder(order, request));
+  const closed = items.filter(
+    ({ order, request }) =>
+      !isRequestAnswerable(order, request) && !isRequestAwaitingForwarder(order, request)
   );
 
   return (
@@ -97,7 +99,7 @@ export function RequestsView() {
                         <span className="num text-foreground">
                           {formatSignedManwon(net_cost_delta)}만 원
                         </span>{' '}
-                        · 기한 <span className="num">{formatMonthDayTime(deadline)}</span>
+                        · 기한 <span className="num">{formatKstMonthDayTime(deadline)}</span>
                       </p>
                     ))}
                   </div>
@@ -130,13 +132,27 @@ export function RequestsView() {
         </CardContent>
       </Card>
 
-      {answered.length > 0 && (
+      {awaiting.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>응답한 요청</CardTitle>
+            <CardTitle>
+              포워더 확정 대기 <span className="num text-muted-foreground">{awaiting.length}</span>
+              건
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <RequestList items={answered} emptyText="" />
+            <RequestList items={awaiting} emptyText="" />
+          </CardContent>
+        </Card>
+      )}
+
+      {closed.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>지난 요청</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RequestList items={closed} emptyText="" />
           </CardContent>
         </Card>
       )}

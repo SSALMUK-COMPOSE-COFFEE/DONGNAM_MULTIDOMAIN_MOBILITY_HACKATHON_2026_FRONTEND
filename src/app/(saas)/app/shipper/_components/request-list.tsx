@@ -4,22 +4,28 @@ import { cn } from 'cn';
 import { toast } from 'sonner';
 
 import { useAnswerShipperRequest } from '@/apis/saas/shipper';
+import { formatKstMonthDayTime } from '@/app/(saas)/app/shipper/_components/kst';
 import {
   REQUEST_KIND_LABEL,
   REQUEST_STATUS_LABEL,
 } from '@/app/(saas)/app/shipper/_components/labels';
 import { errorDetail } from '@/app/(saas)/app/shipper/_components/query-state';
-import { isOrderOpen } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
+import {
+  isRequestAnswerable,
+  isRequestAwaitingForwarder,
+} from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { ShipperOrderT, ShipperRequestT } from '@/types/saas-shipper';
-import { formatMonthDayTime } from '@/utils/format';
 
 export type RequestItemT = {
   planId: string;
   order: ShipperOrderT;
   request: ShipperRequestT;
 };
+
+const requestStatusLabel = (request: ShipperRequestT) =>
+  request.status === 'pending' ? '마감' : REQUEST_STATUS_LABEL[request.status];
 
 export function RequestList({ items, emptyText }: { items: RequestItemT[]; emptyText: string }) {
   const answer = useAnswerShipperRequest();
@@ -39,7 +45,10 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
     <ul className="flex flex-col gap-3">
       {items.map(item => {
         const { order, request } = item;
-        const canAnswer = request.status === 'pending' && isOrderOpen(order);
+        const canAnswer = isRequestAnswerable(order, request);
+        const statusLabel = isRequestAwaitingForwarder(order, request)
+          ? '포워더 확정 대기'
+          : requestStatusLabel(request);
         const isBusy = answer.isPending && answer.variables?.requestId === request.request_id;
 
         return (
@@ -61,7 +70,7 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
                 <span>
                   기한{' '}
                   <span className="num text-foreground">
-                    {formatMonthDayTime(request.deadline)}
+                    {formatKstMonthDayTime(request.deadline)}
                   </span>
                 </span>
                 {request.container_id && <span className="num">{request.container_id}</span>}
@@ -92,7 +101,7 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
                 variant="secondary"
                 className={cn(request.status === 'accepted' && 'bg-ok-soft text-ok')}
               >
-                {REQUEST_STATUS_LABEL[request.status]}
+                {statusLabel}
               </Badge>
             )}
           </li>
