@@ -58,6 +58,7 @@ type MockRequestAnswerT = {
 };
 
 const SESSION_STORAGE_KEY = 'fs.saas.mock.session';
+const ACCOUNTS_STORAGE_KEY = 'fs.saas.mock.accounts';
 
 const initialSession = planSessionFixture as unknown as PlanSessionT;
 const SEEDED_AT = initialSession.created_at;
@@ -185,6 +186,30 @@ export const writeSession = (session: MockSessionT) => {
 export const clearSession = () => {
   localStorage.removeItem(SESSION_STORAGE_KEY);
   writeSessionCookie(null);
+};
+
+type MockAccountT = MockSessionT & { password: string };
+
+const readAccounts = (): MockAccountT[] => {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
+    const accounts = raw ? (JSON.parse(raw) as MockAccountT[]) : [];
+    accounts.forEach(account => {
+      if (!findOrg(account.org.org_id)) MOCK_ORGS.push(account.org);
+    });
+
+    return accounts;
+  } catch {
+    return [];
+  }
+};
+
+export const findAccount = (email: string) =>
+  readAccounts().find(account => account.email === email);
+
+export const saveAccount = (account: MockAccountT) => {
+  const accounts = readAccounts().filter(item => item.email !== account.email);
+  localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify([...accounts, account]));
 };
 
 export const answerKey = (orderId: string, requestId: string) => `${orderId}:${requestId}`;

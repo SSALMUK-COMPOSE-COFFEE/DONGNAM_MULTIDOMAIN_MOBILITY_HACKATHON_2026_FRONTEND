@@ -30,9 +30,11 @@ import {
   type MockLotT,
   answerKey,
   clearSession,
+  findAccount,
   mockDb,
   nowIso,
   readSession,
+  saveAccount,
   shipperOrgOfLot,
   writeSession,
 } from '@/mocks/saas/state';
@@ -391,8 +393,12 @@ const authHandlers = [
     if (csrf) return csrf;
 
     const { email, password } = (await request.json()) as LoginRequest;
-    const session = readSession();
-    if (session && session.email === email) return startSession(session.org, email, session.name);
+    const account = findAccount(email);
+    if (account) {
+      if (account.password !== password) return fail(401, '이메일 또는 비밀번호가 맞지 않습니다');
+
+      return startSession(account.org, email, account.name);
+    }
 
     const [orgId, domain] = email.split('@');
     const org = findOrg(orgId);
@@ -427,6 +433,10 @@ const authHandlers = [
       return fail(422, '데모 주소로는 가입할 수 없습니다');
     }
 
+    if (findAccount(body.email)) {
+      return fail(409, '이미 가입된 이메일입니다');
+    }
+
     mockDb.lotSeq += 1;
     const org: MockOrgT = {
       org_id: `${body.org_type}-mock-${mockDb.lotSeq}`,
@@ -435,6 +445,7 @@ const authHandlers = [
       shipper_ids: [],
     };
     MOCK_ORGS.push(org);
+    saveAccount({ org, email: body.email, name: body.name, password: body.password });
 
     return startSession(org, body.email, body.name);
   }),
