@@ -55,3 +55,6 @@ export type GensetCandidateT = SaasSchemaT<'GensetCandidate'>;
 
 export type AssignmentReasonT = SaasSchemaT<'AssignmentReason'>;
 export type AssignmentReasonCodeT = AssignmentReasonT['code'];
+
+export type PlatformAlertT = SaasSchemaT<'Alert'>;
+export type PlatformColdchainActionT = SaasSchemaT<'ColdchainAction'>;

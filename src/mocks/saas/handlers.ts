@@ -1107,18 +1107,23 @@ const streamHandlers = streamOverlapsDemo()
 
         const timer = setInterval(() => {
           const alert = pending.shift();
-          if (!alert) {
+          if (!alert || request.signal.aborted) {
             clearInterval(timer);
 
             return;
           }
 
-          client.send({
-            id: String(alert.seq),
-            event: 'alert',
-            data: JSON.stringify({ ...alert, created_at: nowIso() }),
-          });
+          try {
+            client.send({
+              id: String(alert.seq),
+              event: 'alert',
+              data: JSON.stringify({ ...alert, created_at: nowIso() }),
+            });
+          } catch {
+            clearInterval(timer);
+          }
         }, SSE_TICK_MS);
+        request.signal.addEventListener('abort', () => clearInterval(timer), { once: true });
       }),
     ];
 

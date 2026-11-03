@@ -1,4 +1,4 @@
-import type { AlertT, PlanSessionT, TwinStateT } from '@/types/api';
+import type { PlanSessionT, TwinStateT } from '@/types/api';
 import type { SaasQueryT, SaasSchemaT } from '@/types/api-saas';
 
 export type ForwarderRefT = SaasSchemaT<'ForwarderRef'>;
@@ -17,7 +17,8 @@ export type ForwarderPlanListParamsT = SaasQueryT<'/test/api/saas/forwarder/plan
 
 export type ForwarderTwinSummaryT = SaasSchemaT<'TwinSummary'>;
 export type ForwarderTwinStateT = TwinStateT;
-export type ForwarderAlertT = AlertT;
+export type ForwarderAlertT = SaasSchemaT<'Alert'>;
+export type ForwarderColdchainActionT = SaasSchemaT<'ColdchainAction'>;
 
 export type ForwarderStreamStateT = 'connecting' | 'open' | 'retrying';
 

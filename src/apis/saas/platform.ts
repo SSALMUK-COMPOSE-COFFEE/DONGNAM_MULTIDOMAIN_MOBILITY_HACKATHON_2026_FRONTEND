@@ -19,7 +19,6 @@ import { saasRetry } from '@/apis/saas/retry';
 import { SAAS_API_BASE } from '@/consts/api-saas';
 import { mockingReady } from '@/mocks/ready';
 import type {
-  AlertT,
   AlternativeIdT,
   BindingRequestT,
   ExecutionOrderT,
@@ -39,6 +38,7 @@ import type {
   LotStatusT,
   OrgSummaryT,
   PlanPreviewT,
+  PlatformAlertT,
   PlatformLotT,
   PlatformPlanItemT,
   PlatformPlanRequestT,
@@ -547,12 +547,15 @@ export const usePlatformReplanFlow = (planId: string) => {
   };
 };
 
-const toAlertKey = ({ container_id, key }: AlertT) => `${container_id}:${key}`;
+const toAlertKey = ({ container_id, key }: PlatformAlertT) => `${container_id}:${key}`;
 
 export type AlertStreamStatusT = 'connecting' | 'open' | 'reconnecting' | 'stopped';
 
-export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT) => void) => {
-  const [alerts, setAlerts] = useState<AlertT[]>([]);
+export const usePlatformAlertStream = (
+  planId: string,
+  onAlert?: (alert: PlatformAlertT) => void
+) => {
+  const [alerts, setAlerts] = useState<PlatformAlertT[]>([]);
   const [status, setStatus] = useState<AlertStreamStatusT>('connecting');
   const [attempt, setAttempt] = useState(0);
   const onAlertRef = useRef(onAlert);
@@ -587,7 +590,7 @@ export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT)
         setStatus('open');
       });
       source.addEventListener('alert', event => {
-        const alert = JSON.parse((event as MessageEvent<string>).data) as AlertT;
+        const alert = JSON.parse((event as MessageEvent<string>).data) as PlatformAlertT;
         cursor.lastSeq = Math.max(cursor.lastSeq, alert.seq);
         if (cursor.seen.has(alert.seq)) return;
 
