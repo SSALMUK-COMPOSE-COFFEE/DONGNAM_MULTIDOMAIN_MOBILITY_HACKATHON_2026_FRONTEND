@@ -12,6 +12,7 @@ import {
 import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { orgKeys } from '@/apis/saas/keys';
+import { SHIPPER_PLANS_POLLING_MS, capOf, openOrdersRefetchInterval } from '@/apis/saas/polling';
 import { saasRetry } from '@/apis/saas/retry';
 import type { SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
 import type {
@@ -62,8 +63,14 @@ export const getShipperCatalog = async () => {
   return data;
 };
 
+export const SHIPPER_LOTS_LIMIT = 1_000;
+
+const shipperLotsLimit = (params: ShipperLotListParamsT) => params.limit ?? SHIPPER_LOTS_LIMIT;
+
 export const getShipperLots = async (params: ShipperLotListParamsT = {}) => {
-  const { data } = await saasApi.get<ShipperLotT[]>(SHIPPER_ENDPOINTS.LOTS, { params });
+  const { data } = await saasApi.get<ShipperLotT[]>(SHIPPER_ENDPOINTS.LOTS, {
+    params: { ...params, limit: shipperLotsLimit(params) },
+  });
 
   return data;
 };
@@ -157,6 +164,7 @@ export const shipperPlansQueryOptions = (orgId: string) =>
     queryKey: shipperKeys.plans(orgId),
     queryFn: getShipperPlans,
     retry: saasRetry,
+    refetchInterval: SHIPPER_PLANS_POLLING_MS,
     enabled: !!orgId,
   });
 
@@ -174,6 +182,7 @@ export const shipperPlanOrdersQueryOptions = (orgId: string, planId: string) =>
     queryFn: () => getShipperPlanOrders(planId),
     retry: saasRetry,
     staleTime: 0,
+    refetchInterval: openOrdersRefetchInterval,
     enabled: !!orgId && !!planId,
   });
 
@@ -189,8 +198,11 @@ export const useShipperOrgId = () => useMe().data?.active_org.org_id ?? '';
 
 export const useShipperCatalog = () => useQuery(shipperCatalogQueryOptions(useShipperOrgId()));
 
-export const useShipperLots = (params: ShipperLotListParamsT = {}) =>
-  useQuery(shipperLotsQueryOptions(useShipperOrgId(), params));
+export const useShipperLots = (params: ShipperLotListParamsT = {}) => {
+  const query = useQuery(shipperLotsQueryOptions(useShipperOrgId(), params));
+
+  return { ...query, ...capOf(query.data ?? null, shipperLotsLimit(params)) };
+};
 
 export const useShipperPlans = () => useQuery(shipperPlansQueryOptions(useShipperOrgId()));
 

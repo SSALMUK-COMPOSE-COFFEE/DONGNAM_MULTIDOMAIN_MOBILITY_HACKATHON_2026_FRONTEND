@@ -15,6 +15,7 @@ import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
 import { analysisKeys, orgKeys } from '@/apis/saas/keys';
+import { capOf, openOrdersRefetchInterval } from '@/apis/saas/polling';
 import { saasRetry } from '@/apis/saas/retry';
 import { SAAS_API_BASE } from '@/consts/api-saas';
 import { mockingReady } from '@/mocks/ready';
@@ -198,7 +199,9 @@ export const postPlatformPlanApply = async (
 };
 
 export const getPlatformSettlements = async () => {
-  const { data } = await saasApi.get<PlatformSettlementT[]>(PLATFORM_ENDPOINTS.SETTLEMENTS);
+  const { data } = await saasApi.get<PlatformSettlementT[]>(PLATFORM_ENDPOINTS.SETTLEMENTS, {
+    params: { limit: PLATFORM_PLANS_LIMIT },
+  });
 
   return data;
 };
@@ -321,6 +324,7 @@ export const platformPlanOrdersQueryOptions = (orgId: string, planId: string) =>
     queryFn: () => getPlatformPlanOrders(planId),
     retry: saasRetry,
     staleTime: 0,
+    refetchInterval: openOrdersRefetchInterval,
     enabled: !!orgId && !!planId,
   });
 
@@ -384,8 +388,11 @@ export const usePlatformPlan = (planId: string) =>
 export const usePlatformPlanOrders = (planId: string) =>
   useQuery(platformPlanOrdersQueryOptions(usePlatformOrgId(), planId));
 
-export const usePlatformSettlements = () =>
-  useQuery(platformSettlementsQueryOptions(usePlatformOrgId()));
+export const usePlatformSettlements = () => {
+  const query = useQuery(platformSettlementsQueryOptions(usePlatformOrgId()));
+
+  return { ...query, ...capOf(query.data ?? null, PLATFORM_PLANS_LIMIT) };
+};
 
 export const useForwarderOrgs = () => useQuery(forwarderOrgsQueryOptions(usePlatformOrgId()));
 

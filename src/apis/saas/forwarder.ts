@@ -15,6 +15,7 @@ import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
 import { orgKeys } from '@/apis/saas/keys';
+import { capOf, openOrdersRefetchInterval } from '@/apis/saas/polling';
 import { saasRetry } from '@/apis/saas/retry';
 import { SAAS_API_BASE } from '@/consts/api-saas';
 import type { UseConfirmOrderOptionsT } from '@/hooks/useConfirmOrder';
@@ -63,8 +64,15 @@ export const forwarderKeys = {
     [...forwarderKeys.containers(orgId, planId), containerId] as const,
 };
 
+export const FORWARDER_PLANS_LIMIT = 500;
+
+const forwarderPlansLimit = (params: ForwarderPlanListParamsT) =>
+  params.limit ?? FORWARDER_PLANS_LIMIT;
+
 export const getForwarderPlans = async (params: ForwarderPlanListParamsT = {}) => {
-  const { data } = await saasApi.get<ForwarderPlanItemT[]>(FORWARDER_ENDPOINTS.PLANS, { params });
+  const { data } = await saasApi.get<ForwarderPlanItemT[]>(FORWARDER_ENDPOINTS.PLANS, {
+    params: { ...params, limit: forwarderPlansLimit(params) },
+  });
 
   return data;
 };
@@ -153,6 +161,7 @@ export const forwarderPlanOrdersQueryOptions = (orgId: string, planId: string) =
     queryFn: () => getForwarderPlanOrders(planId),
     retry: saasRetry,
     staleTime: 0,
+    refetchInterval: openOrdersRefetchInterval,
     enabled: !!orgId && !!planId,
   });
 
@@ -182,8 +191,11 @@ export const forwarderContainerQueryOptions = (
 
 export const useForwarderOrgId = () => useMe().data?.active_org.org_id ?? '';
 
-export const useForwarderPlans = (params: ForwarderPlanListParamsT = {}) =>
-  useQuery(forwarderPlansQueryOptions(useForwarderOrgId(), params));
+export const useForwarderPlans = (params: ForwarderPlanListParamsT = {}) => {
+  const query = useQuery(forwarderPlansQueryOptions(useForwarderOrgId(), params));
+
+  return { ...query, ...capOf(query.data ?? null, forwarderPlansLimit(params)) };
+};
 
 export const useForwarderPlan = (planId: string) =>
   useQuery(forwarderPlanQueryOptions(useForwarderOrgId(), planId));
