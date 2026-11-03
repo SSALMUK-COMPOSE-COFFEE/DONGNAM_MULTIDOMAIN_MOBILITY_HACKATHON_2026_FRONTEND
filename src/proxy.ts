@@ -3,10 +3,13 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { ROUTES } from '@/consts/route';
 import { IS_SAAS_BUILD, SAAS_PAGES, SESSION_COOKIE_NAME } from '@/consts/route-saas';
 
+const LANDING_PATH = '/';
+
 const DEMO_PATHS: readonly string[] = Object.values(ROUTES);
 
 const isDemoPath = (pathname: string) =>
-  pathname === '/' || DEMO_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`));
+  pathname === LANDING_PATH ||
+  DEMO_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`));
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -14,10 +17,11 @@ export function proxy(request: NextRequest) {
 
   if (isDemoPath(pathname)) {
     if (!IS_SAAS_BUILD) return NextResponse.next();
+    if (pathname === LANDING_PATH && !hasSession) return NextResponse.next();
 
     const entryUrl = request.nextUrl.clone();
 
-    entryUrl.pathname = pathname === '/' && hasSession ? SAAS_PAGES.APP : SAAS_PAGES.LOGIN;
+    entryUrl.pathname = hasSession ? SAAS_PAGES.APP : LANDING_PATH;
     entryUrl.search = '';
 
     return NextResponse.redirect(entryUrl);

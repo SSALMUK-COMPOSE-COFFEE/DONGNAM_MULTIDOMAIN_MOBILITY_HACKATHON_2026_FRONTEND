@@ -1,8 +1,11 @@
 import { PlanStoreHydrator } from '@/app/(demo)/_components/plan-store-hydrator';
 import { DemoNav } from '@/components/demo-nav';
 import { PageWave } from '@/components/page-wave';
+import { IS_SAAS_BUILD } from '@/consts/route-saas';
 
 export default function DemoLayout({ children }: LayoutProps<'/'>) {
+  if (IS_SAAS_BUILD) return children;
+
   return (
     <>
       <DemoNav />
