@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 
+import { BASE_PATH } from '@/consts/api-saas';
 import { worker } from '@/mocks/browser';
 import { markMockingReady } from '@/mocks/ready';
 
@@ -14,7 +15,11 @@ let workerStart: Promise<unknown> | null = null;
  */
 export default function MswWorker() {
   useEffect(() => {
-    workerStart ??= worker.start({ onUnhandledFrame: 'bypass', quiet: true });
+    workerStart ??= worker.start({
+      onUnhandledFrame: 'bypass',
+      quiet: true,
+      serviceWorker: { url: `${BASE_PATH}/mockServiceWorker.js` },
+    });
     workerStart.then(markMockingReady);
   }, []);
 
