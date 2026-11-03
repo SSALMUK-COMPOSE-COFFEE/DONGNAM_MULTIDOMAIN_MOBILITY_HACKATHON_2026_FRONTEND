@@ -13,7 +13,47 @@ const MONTH_INVALID = '월은 YYYY-MM 형식이어야 합니다';
 const YEARS_INVALID = '기간은 1~5년이어야 합니다';
 const SUBSIDY_INVALID = '지원금은 0 이상이어야 합니다';
 const SHARE_INVALID = '포워더 몫 비율은 0~1 이어야 합니다';
+const RANGE_INVALID = '쿼리 값이 허용 범위를 벗어났습니다';
 const MAX_YEARS = 5;
+
+type RangeT = {
+  min?: number;
+  max?: number;
+  minExclusive?: boolean;
+  integer?: boolean;
+};
+
+const outOfRange = (url: URL, key: string, { min, max, minExclusive, integer }: RangeT) => {
+  const raw = url.searchParams.get(key);
+  if (raw === null) return false;
+
+  const value = Number(raw);
+  if (raw.trim() === '' || !Number.isFinite(value)) return true;
+  if (integer && !Number.isInteger(value)) return true;
+  if (min != null && (minExclusive ? value <= min : value < min)) return true;
+
+  return max != null && value > max;
+};
+
+const anyOutOfRange = (url: URL, checks: [string, RangeT][]) =>
+  checks.some(([key, range]) => outOfRange(url, key, range));
+
+const COUNT_CHECK: RangeT = { min: 0, integer: true };
+
+const BUSINESS_CHECKS: [string, RangeT][] = [
+  ['ops_cost_per_voyage', COUNT_CHECK],
+  ['variable_cost_per_pallet', COUNT_CHECK],
+];
+
+const YEARS_CHECKS: [string, RangeT][] = [
+  ['fee_rate', { min: 0, max: 1 }],
+  ['base_fee_per_pallet', COUNT_CHECK],
+  ['base_fee_from_year', { min: 1, max: 6, integer: true }],
+  ['sensitivity_forwarder_share', { min: 0, max: 1 }],
+  ['fixed_cost', COUNT_CHECK],
+  ['mvp_cash_fixed_cost', COUNT_CHECK],
+  ['volume_scale', { min: 0, max: 20, minExclusive: true }],
+];
 
 const metrics = platformMetricsFixture as unknown as PlatformMetricsT;
 const metricsEmpty = platformMetricsEmptyFixture as unknown as PlatformMetricsT;
@@ -67,6 +107,7 @@ export const metricsHandlers = [
 
     const share = shareParam(url);
     if (Number.isNaN(share)) return fail(422, SHARE_INVALID);
+    if (anyOutOfRange(url, BUSINESS_CHECKS)) return fail(422, RANGE_INVALID);
 
     const base = month === SEEDED_MONTH ? business : { ...businessEmpty, month };
 
@@ -83,10 +124,20 @@ export const metricsHandlers = [
       return fail(422, YEARS_INVALID);
     }
 
-    const subsidies = url.searchParams.getAll('subsidies').map(Number);
-    if (subsidies.some(value => !Number.isFinite(value) || value < 0)) {
+    const rawSubsidies = url.searchParams.getAll('subsidies');
+    if (
+      rawSubsidies.length > MAX_YEARS ||
+      rawSubsidies.some(raw => raw.trim() === '' || !Number.isInteger(Number(raw)))
+    ) {
+      return fail(422, RANGE_INVALID);
+    }
+
+    const subsidies = rawSubsidies.map(Number);
+    if (subsidies.some(value => value < 0)) {
       return fail(422, SUBSIDY_INVALID);
     }
+
+    if (anyOutOfRange(url, YEARS_CHECKS)) return fail(422, RANGE_INVALID);
 
     const subsidyOf = (year: number, fallback: number) =>
       subsidies.length ? (subsidies[year - 1] ?? 0) : fallback;

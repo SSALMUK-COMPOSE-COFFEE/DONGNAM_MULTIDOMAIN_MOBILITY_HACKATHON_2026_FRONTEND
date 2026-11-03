@@ -118,9 +118,24 @@ const setpointOf = (products: ProductT[], productIds: string[]): ForwarderSetpoi
     };
   }
 
-  const low = Math.max(...products.map(product => product.temp_min_c));
-  const high = Math.min(...products.map(product => product.temp_max_c));
+  let low = Math.max(...products.map(product => product.temp_min_c));
+  let high = Math.min(...products.map(product => product.temp_max_c));
   const gas = products.find(product => product.o2_pct != null || product.co2_pct != null) ?? null;
+  const assumptions = ['가정: 설정 온도 = 품목 허용 온도 범위 중앙값'];
+  if (products.length > 1) {
+    assumptions.push('가정: 혼적 품목의 허용 온도 범위 교집합을 쓴다');
+  }
+  if (low > high) {
+    const [first] = products;
+    low = first.temp_min_c;
+    high = first.temp_max_c;
+    assumptions.push(`가정: 혼적 품목 온도 범위가 겹치지 않아 ${first.name} 기준`);
+  }
+  assumptions.push(
+    gas
+      ? '가정: CA 제어 중에는 외기 환기구를 닫는다(품목 데이터에 환기 항목 없음)'
+      : '가정: 기체 제어 없는 품목은 환기 최소(품목 데이터에 환기 항목 없음, SO2 처리 포도는 SO2 유지를 위해 최소)'
+  );
 
   return {
     product_ids: productIds,
@@ -132,12 +147,7 @@ const setpointOf = (products: ProductT[], productIds: string[]): ForwarderSetpoi
     co2_pct: gas?.co2_pct ?? null,
     ca_controlled: !!gas,
     assumed: true,
-    assumptions: [
-      '가정: 설정 온도 = 품목 허용 온도 범위 중앙값',
-      gas
-        ? '가정: CA 제어 중에는 외기 환기구를 닫는다(품목 데이터에 환기 항목 없음)'
-        : '가정: 기체 제어 없는 품목은 환기 최소(품목 데이터에 환기 항목 없음, SO2 처리 포도는 SO2 유지를 위해 최소)',
-    ],
+    assumptions,
     source: products.map(product => `${product.name}: ${product.source ?? '가정'}`).join(' / '),
   };
 };
