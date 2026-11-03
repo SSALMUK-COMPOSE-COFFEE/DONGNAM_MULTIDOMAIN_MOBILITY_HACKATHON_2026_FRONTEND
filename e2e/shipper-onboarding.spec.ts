@@ -52,6 +52,40 @@ const assumeDefaultLoss = (page: Page) =>
     });
   });
 
+const markPlansAwaitingShipper = (page: Page) =>
+  page.addInitScript(() => {
+    const urls = new WeakMap<XMLHttpRequest, string>();
+    const open = XMLHttpRequest.prototype.open;
+    const responseText = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText');
+
+    XMLHttpRequest.prototype.open = function (
+      this: XMLHttpRequest,
+      ...args: Parameters<XMLHttpRequest['open']>
+    ) {
+      urls.set(this, String(args[1]));
+
+      return open.apply(this, args);
+    } as XMLHttpRequest['open'];
+    Object.defineProperty(XMLHttpRequest.prototype, 'responseText', {
+      configurable: true,
+      get(this: XMLHttpRequest) {
+        const text = String(responseText?.get?.call(this) ?? '');
+        const url = urls.get(this) ?? '';
+        if (!/\/saas\/shipper\/plans(\?|$)/.test(url)) return text;
+        const plans: unknown = JSON.parse(text);
+        if (!Array.isArray(plans)) return text;
+
+        return JSON.stringify(
+          plans.map(plan =>
+            plan && typeof plan === 'object'
+              ? { ...plan, status: 'pending_shipper_confirmation' }
+              : plan
+          )
+        );
+      },
+    });
+  });
+
 const expectLossCard = async (page: Page) => {
   const card = page.getByRole('region', { name: LOSS_CARD });
   await expect(card).toBeVisible();
@@ -410,4 +444,24 @@ test('화주 정산 화면이 1024·1280·390px에서 가로로 넘치지 않는
     );
     expect(overflow, `정산 ${width}px 가로 넘침(px)`).toBeLessThanOrEqual(0);
   }
+});
+
+test('화주 확인 대기 계획은 홈 이번 시즌 금액에서 빼고 제외 건수를 밝힌다', async ({ page }) => {
+  await markPlansAwaitingShipper(page);
+  await page.goto(LOGIN_PATH);
+  await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+  await page
+    .getByRole('button', { name: /들어가기/ })
+    .nth(1)
+    .click();
+  await page.waitForURL(/\/test\/app\/shipper/);
+
+  const home = await seasonNumbers(page);
+  expect(home).toEqual({ savings: '0원', fee: '0원', gain: '0원' });
+  const card = page.getByRole('region', { name: '이번 시즌 내가 아낀 금액' });
+  await expect(
+    card.getByText(/^화주 확인 대기 \d+건 제외 \(확인 전 절감액은 합의 전 제안값\)$/)
+  ).toBeVisible();
+  await expect(card.getByText('내가 확인한 계획이 생기면 여기에 쌓입니다.')).toBeVisible();
+  await expectNoSeriousAxe(page, '화주 홈(확인 대기)');
 });

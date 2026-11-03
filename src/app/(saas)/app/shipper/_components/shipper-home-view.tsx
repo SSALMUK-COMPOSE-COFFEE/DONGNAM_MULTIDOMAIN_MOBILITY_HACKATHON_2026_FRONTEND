@@ -10,6 +10,7 @@ import {
   useShipperLots,
   useShipperOrgId,
   useShipperPlan,
+  useShipperPlans,
   useShipperSettlements,
 } from '@/apis/saas/shipper';
 import { isReplanPending, useShipperPlanConfirmations } from '@/apis/saas/shipper-confirm';
@@ -212,22 +213,36 @@ function SeasonStat({ label, value, tone }: { label: string; value: number; tone
   );
 }
 
+const AWAITING_SHIPPER = 'pending_shipper_confirmation';
+
 function SeasonSavingsCard({ myPlan }: { myPlan: MyPlanT | null }) {
   const settlements = useShipperSettlements();
+  const plans = useShipperPlans();
 
-  if (settlements.isError) {
+  if (settlements.isError || plans.isError) {
     return (
       <QueryError
         className="mb-4"
         message="이번 시즌 정산을 불러오지 못했습니다."
-        onRetry={() => settlements.refetch()}
-        isRetrying={settlements.isFetching}
+        onRetry={() => {
+          void settlements.refetch();
+          void plans.refetch();
+        }}
+        isRetrying={settlements.isFetching || plans.isFetching}
       />
     );
   }
-  if (settlements.isPending) return <CardSkeleton height={148} className="mb-4" />;
+  if (settlements.isPending || plans.isPending) {
+    return <CardSkeleton height={148} className="mb-4" />;
+  }
 
-  const rows = settlements.data;
+  const awaiting = new Set(
+    plans.data.filter(({ status }) => status === AWAITING_SHIPPER).map(({ plan_id }) => plan_id)
+  );
+  const rows = settlements.data.filter(({ plan_id }) => !awaiting.has(plan_id));
+  const excluded = new Set(
+    settlements.data.filter(({ plan_id }) => awaiting.has(plan_id)).map(({ plan_id }) => plan_id)
+  ).size;
   const sum = (pick: (row: (typeof rows)[number]) => number) =>
     rows.reduce((total, row) => total + pick(row), 0);
   const savings = sum(({ savings: value }) => value);
@@ -256,7 +271,11 @@ function SeasonSavingsCard({ myPlan }: { myPlan: MyPlanT | null }) {
       </dl>
       <div className="m2-sub mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[12.5px]">
         {rows.length === 0 ? (
-          <span>계획에 출하가 들어가면 여기에 쌓입니다.</span>
+          <span>
+            {excluded > 0
+              ? '내가 확인한 계획이 생기면 여기에 쌓입니다.'
+              : '계획에 출하가 들어가면 여기에 쌓입니다.'}
+          </span>
         ) : (
           <span className="m2-num">
             내 파렛트 {fmtCount(myPallets)} · 계획 {fmtCount(planCount)}건 기준
@@ -266,6 +285,11 @@ function SeasonSavingsCard({ myPlan }: { myPlan: MyPlanT | null }) {
           <span className="m2-num">
             {container.container_id} · 내 파렛트 {fmtCount(myPlan.myContainerPallets)} / 컨테이너
             전체 {fmtCount(container.pallets)}
+          </span>
+        )}
+        {excluded > 0 && (
+          <span className="m2-num">
+            화주 확인 대기 {fmtCount(excluded)}건 제외 (확인 전 절감액은 합의 전 제안값)
           </span>
         )}
         {pilot && <span>무료 시범 항차가 있어 수수료를 받지 않은 계획이 있습니다.</span>}
