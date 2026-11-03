@@ -27,7 +27,15 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
     scenario.packhouses.find(({ id }) => id === packhouseId);
 
   const truckRoutes = voyagePickups.flatMap(({ pickup }) => pickup.routes);
-  const places = useMemo(() => [...scenario.packhouses, port], [scenario.packhouses, port]);
+  const places = useMemo(() => {
+    const stopIds = new Set(
+      voyagePickups.flatMap(({ pickup }) =>
+        pickup.routes.flatMap(({ stops }) => stops.map(({ packhouse_id }) => packhouse_id))
+      )
+    );
+
+    return [...scenario.packhouses.filter(({ id }) => stopIds.has(id)), port];
+  }, [voyagePickups, scenario.packhouses, port]);
 
   return (
     <Card>
@@ -77,7 +85,7 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
 type PlaceT = { id: string; name: string; lat: number; lon: number };
 
 /**
- * 고정 중심·확대 수준으로는 상주·포항이 지도 밖으로 나가므로 모든 선과장과 항구가 들어오게 맞춘다.
+ * 고정 중심·확대 수준으로는 상주·포항이 지도 밖으로 나가므로 경로에 든 선과장과 항구가 들어오게 맞춘다.
  * Map 이 center·level prop 을 레이아웃 effect 에서 다시 적용하므로, 그 뒤(일반 effect)에 맞춰야 덮이지 않는다
  */
 function FitToPlaces({ places }: { places: PlaceT[] }) {
