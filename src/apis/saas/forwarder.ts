@@ -1,6 +1,12 @@
 'use client';
 
-import { queryOptions, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  queryOptions,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -20,6 +26,7 @@ import type {
   ForwarderPlanItemT,
   ForwarderPlanListParamsT,
   ForwarderPlanSessionT,
+  ForwarderRequestAnswerT,
   ForwarderStreamStateT,
   ForwarderTwinStateT,
   ForwarderTwinSummaryT,
@@ -33,6 +40,8 @@ export const FORWARDER_ENDPOINTS = {
   PLAN_ORDERS: (planId: string) => `/saas/forwarder/plans/${segment(planId)}/orders`,
   ORDER_CONFIRM: (planId: string, orderId: string) =>
     `/saas/forwarder/plans/${segment(planId)}/orders/${segment(orderId)}/confirm`,
+  ORDER_REQUEST: (planId: string, orderId: string, requestId: string) =>
+    `/saas/forwarder/plans/${segment(planId)}/orders/${segment(orderId)}/requests/${segment(requestId)}`,
   COLDCHAIN_CONTAINERS: '/coldchain/containers',
   COLDCHAIN_CONTAINER: (containerId: string) => `/coldchain/containers/${segment(containerId)}`,
   COLDCHAIN_ALERTS_STREAM: '/coldchain/alerts/stream',
@@ -80,6 +89,20 @@ export const postForwarderOrderConfirm = async (
   const { data } = await saasApi.post<ForwarderOrderT>(
     FORWARDER_ENDPOINTS.ORDER_CONFIRM(planId, orderId),
     decision
+  );
+
+  return data;
+};
+
+export const postForwarderRequestAnswer = async (
+  planId: string,
+  orderId: string,
+  requestId: string,
+  answer: ForwarderRequestAnswerT
+) => {
+  const { data } = await saasApi.post<ForwarderOrderT>(
+    FORWARDER_ENDPOINTS.ORDER_REQUEST(planId, orderId, requestId),
+    answer
   );
 
   return data;
@@ -202,6 +225,22 @@ export const useForwarderConfirmOptions = (
     }),
     [planId, orderId, orgId, queryClient]
   );
+};
+
+export const useAnswerForwarderRequest = (planId: string, orderId: string) => {
+  const orgId = useForwarderOrgId();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ requestId, answer }: { requestId: string; answer: ForwarderRequestAnswerT }) =>
+      postForwarderRequestAnswer(planId, orderId, requestId, answer),
+    onSuccess: (_updated, { answer }) =>
+      toast.success(answer.accepted ? '회신 수락을 기록했습니다.' : '회신 거절을 기록했습니다.'),
+    onError: toastSaasError('요청 회신을 기록하지 못했습니다.'),
+    onSettled: () => {
+      if (orgId) queryClient.invalidateQueries({ queryKey: forwarderKeys.all(orgId) });
+    },
+  });
 };
 
 const STREAM_RETRY_MS = 3_000;

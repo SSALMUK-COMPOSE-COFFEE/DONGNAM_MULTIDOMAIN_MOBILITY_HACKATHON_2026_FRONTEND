@@ -32,7 +32,18 @@ const SHIPPER_STATUS_LABEL: Record<
   rejected: '거절함',
 };
 
+const REQUEST_STATUS_LABEL: Record<ExecutionOrderT['requests'][number]['status'], string> = {
+  pending: '회신 대기',
+  accepted: '수락',
+  declined: '거절',
+};
+
 const DONE_STATUSES: ExecutionOrderT['status'][] = ['forwarder_confirmed', 'executed'];
+
+export type RequestAnswerT = {
+  answer: (requestId: string, accepted: boolean) => void;
+  busyRequestId: string | null;
+};
 
 export type ExecutionOrderRoleT = 'demo' | 'platform' | 'shipper' | 'forwarder';
 
@@ -42,6 +53,7 @@ type ExecutionOrderPanelPropsT = {
   role?: ExecutionOrderRoleT;
   viewerShipperId?: string;
   confirmOptions?: UseConfirmOrderOptionsT;
+  requestAnswer?: RequestAnswerT;
 };
 
 /**
@@ -54,6 +66,7 @@ export function ExecutionOrderPanel({
   role = 'demo',
   viewerShipperId,
   confirmOptions,
+  requestAnswer,
 }: ExecutionOrderPanelPropsT) {
   const isDone = DONE_STATUSES.includes(order.status);
   const { mutate: confirm, isPending } = useConfirmOrder(planId, order.order_id, confirmOptions);
@@ -136,13 +149,49 @@ export function ExecutionOrderPanel({
         <section className="flex flex-col gap-3">
           <h3 className="font-bold">포워더가 보낼 요청</h3>
           <ul className="flex flex-col gap-2.5 text-sm">
-            {order.requests.map(({ request_id, counterparty, text }) => (
-              <li key={request_id} className="rounded-xl bg-panel p-3">
-                <p className="font-bold text-navy">{counterparty}</p>
+            {order.requests.map(({ request_id, counterparty, text, status }) => (
+              <li key={request_id} className="flex flex-col gap-2 rounded-xl bg-panel p-3">
+                <div className="flex items-center gap-2">
+                  <p className="flex-1 font-bold text-navy">{counterparty}</p>
+                  {requestAnswer && (
+                    <Badge
+                      variant="secondary"
+                      className={cn(status === 'accepted' && 'bg-ok-soft text-ok')}
+                    >
+                      {REQUEST_STATUS_LABEL[status]}
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-muted-foreground">{text}</p>
+                {requestAnswer &&
+                  status === 'pending' &&
+                  order.status === 'forwarder_confirmed' && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        disabled={requestAnswer.busyRequestId === request_id}
+                        onClick={() => requestAnswer.answer(request_id, true)}
+                      >
+                        수락
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={requestAnswer.busyRequestId === request_id}
+                        onClick={() => requestAnswer.answer(request_id, false)}
+                      >
+                        거절
+                      </Button>
+                    </div>
+                  )}
               </li>
             ))}
           </ul>
+          {requestAnswer && !isDone && order.requests.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              포워더 확정 뒤에 상대방 회신을 기록할 수 있습니다.
+            </p>
+          )}
         </section>
       </CardContent>
     </Card>

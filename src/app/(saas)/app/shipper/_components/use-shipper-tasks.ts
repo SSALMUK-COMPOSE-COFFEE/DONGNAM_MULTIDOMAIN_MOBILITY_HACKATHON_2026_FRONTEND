@@ -22,11 +22,18 @@ export type PendingRequestT = {
 
 export const isOrderOpen = (order: ShipperOrderT) => !CLOSED_ORDER_STATUSES.includes(order.status);
 
+const SHIPPER_COUNTERPARTY_ROLES: readonly string[] = ['shipper'];
+
+export const isRequestAddressedToShipper = (request: ShipperRequestT) =>
+  SHIPPER_COUNTERPARTY_ROLES.includes(request.counterparty_role);
+
 export const isRequestAnswerable = (order: ShipperOrderT, request: ShipperRequestT) =>
-  request.status === 'pending' && order.status === 'forwarder_confirmed';
+  isRequestAddressedToShipper(request) &&
+  request.status === 'pending' &&
+  order.status === 'forwarder_confirmed';
 
 export const isRequestAwaitingForwarder = (order: ShipperOrderT, request: ShipperRequestT) =>
-  request.status === 'pending' && isOrderOpen(order) && order.status !== 'forwarder_confirmed';
+  request.status === 'pending' && isOrderOpen(order) && !isRequestAnswerable(order, request);
 
 export const pendingConfirmationsOf = (orders: ShipperOrderT[]) =>
   orders.filter(

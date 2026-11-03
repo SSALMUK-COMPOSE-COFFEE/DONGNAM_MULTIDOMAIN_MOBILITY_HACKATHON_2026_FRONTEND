@@ -1190,6 +1190,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/forwarder/plans/{plan_id}/orders/{order_id}/requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer Request */
+        post: operations["answer_request_test_api_saas_forwarder_plans__plan_id__orders__order_id__requests__request_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/saas/orgs": {
         parameters: {
             query?: never;
@@ -8158,7 +8175,9 @@ export interface operations {
     };
     delete_observation_test_api_quality_observations__obs_id__delete: {
         parameters: {
-            query?: never;
+            query?: {
+                scope?: ("demo" | "sandbox" | "live") | null;
+            };
             header?: never;
             path: {
                 obs_id: string;
@@ -8189,6 +8208,7 @@ export interface operations {
         parameters: {
             query?: {
                 seed?: boolean;
+                scope?: ("demo" | "sandbox" | "live") | null;
             };
             header?: never;
             path?: never;
@@ -9003,6 +9023,43 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ForwarderDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForwarderOrder"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    answer_request_test_api_saas_forwarder_plans__plan_id__orders__order_id__requests__request_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+                order_id: string;
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestResultBody"];
             };
         };
         responses: {

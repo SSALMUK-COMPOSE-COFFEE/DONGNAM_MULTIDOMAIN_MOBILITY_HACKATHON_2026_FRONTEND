@@ -11,6 +11,8 @@ export type ForwarderOrderT = SaasSchemaT<'ForwarderOrder'>;
 
 export type ForwarderDecisionT = SaasSchemaT<'ForwarderDecision'>;
 
+export type ForwarderRequestAnswerT = SaasSchemaT<'RequestResultBody'>;
+
 export type ForwarderPlanListParamsT = SaasQueryT<'/test/api/saas/forwarder/plans'>;
 
 export type ForwarderTwinSummaryT = SaasSchemaT<'TwinSummary'>;

@@ -10,6 +10,7 @@ import {
 } from '@/app/(saas)/app/shipper/_components/labels';
 import { errorDetail } from '@/app/(saas)/app/shipper/_components/query-state';
 import {
+  isRequestAddressedToShipper,
   isRequestAnswerable,
   isRequestAwaitingForwarder,
 } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
@@ -26,6 +27,9 @@ export type RequestItemT = {
 
 const requestStatusLabel = (request: ShipperRequestT) =>
   request.status === 'pending' ? '마감' : REQUEST_STATUS_LABEL[request.status];
+
+const awaitingForwarderLabel = (order: ShipperOrderT) =>
+  order.status === 'forwarder_confirmed' ? '포워더 회신 대기' : '포워더 확정 대기';
 
 export function RequestList({ items, emptyText }: { items: RequestItemT[]; emptyText: string }) {
   const answer = useAnswerShipperRequest();
@@ -47,7 +51,7 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
         const { order, request } = item;
         const canAnswer = isRequestAnswerable(order, request);
         const statusLabel = isRequestAwaitingForwarder(order, request)
-          ? '포워더 확정 대기'
+          ? awaitingForwarderLabel(order)
           : requestStatusLabel(request);
         const isBusy = answer.isPending && answer.variables?.requestId === request.request_id;
 
@@ -63,6 +67,9 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{REQUEST_KIND_LABEL[request.kind]}</Badge>
                 <span className="font-bold text-navy">{request.counterparty}</span>
+                {!isRequestAddressedToShipper(request) && (
+                  <span className="text-sm text-muted-foreground">포워더가 회신 기록</span>
+                )}
                 <span className="text-sm text-muted-foreground">{request.channel}</span>
               </div>
               <p>{request.text}</p>

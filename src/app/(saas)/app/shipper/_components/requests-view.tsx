@@ -137,7 +137,7 @@ export function RequestsView() {
         <Card>
           <CardHeader>
             <CardTitle>
-              포워더 확정 대기 <span className="num text-muted-foreground">{awaiting.length}</span>
+              포워더 처리 대기 <span className="num text-muted-foreground">{awaiting.length}</span>
               건
             </CardTitle>
           </CardHeader>

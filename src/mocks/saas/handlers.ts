@@ -174,6 +174,21 @@ const canReadPlan = (planId: string, org: MockOrgT) => {
   return shipperCanRead(planId, org);
 };
 
+const THIRD_PARTY_ROLES: readonly string[] = ['carrier', 'terminal', 'airline'];
+const THIRD_PARTY_ANSWER_FORBIDDEN = '선사·터미널·항공사 요청의 회신은 배정된 포워더가 기록합니다';
+
+const recordAnswer = async (request: Request, orderId: string, requestId: string) => {
+  const { accepted, note } = (await request.json()) as {
+    accepted: boolean;
+    note?: string | null;
+  };
+  mockDb.answers.set(answerKey(orderId, requestId), {
+    status: accepted ? 'accepted' : 'declined',
+    note: note ?? null,
+    answered_at: nowIso(),
+  });
+};
+
 const withAnswers = (order: ExecutionOrderT): ExecutionOrderT => ({
   ...order,
   requests: order.requests.map(item => {
@@ -654,16 +669,11 @@ const shipperHandlers = [
       const order = orders.find(item => item.order_id === params.orderId);
       const target = order?.requests.find(item => item.request_id === params.requestId);
       if (!order || !target) return fail(404, '실행 지시 또는 요청을 찾을 수 없습니다');
+      if (THIRD_PARTY_ROLES.includes(target.counterparty_role)) {
+        return fail(403, THIRD_PARTY_ANSWER_FORBIDDEN);
+      }
 
-      const { accepted, note } = (await request.json()) as {
-        accepted: boolean;
-        note?: string | null;
-      };
-      mockDb.answers.set(answerKey(order.order_id, target.request_id), {
-        status: accepted ? 'accepted' : 'declined',
-        note: note ?? null,
-        answered_at: nowIso(),
-      });
+      await recordAnswer(request, order.order_id, target.request_id);
 
       return HttpResponse.json(shipperOrders(session, principal.org, [order])[0] ?? order);
     }
@@ -816,6 +826,25 @@ const forwarderHandlers = [
           await demoConfirm(planId, String(params.orderId), { actor: 'forwarder', accept, note })
         )
       );
+    }
+  ),
+
+  http.post(
+    api('/saas/forwarder/plans/:planId/orders/:orderId/requests/:requestId'),
+    async ({ request, params }) => {
+      const principal = authorize(request, 'forwarder');
+      if (principal instanceof Response) return principal;
+
+      const planId = String(params.planId);
+      if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
+
+      const order = (await demoOrders(planId)).find(item => item.order_id === params.orderId);
+      const target = order?.requests.find(item => item.request_id === params.requestId);
+      if (!order || !target) return fail(404, '실행 지시 또는 요청을 찾을 수 없습니다');
+
+      await recordAnswer(request, order.order_id, target.request_id);
+
+      return HttpResponse.json(withAnswers(order));
     }
   ),
 ];
