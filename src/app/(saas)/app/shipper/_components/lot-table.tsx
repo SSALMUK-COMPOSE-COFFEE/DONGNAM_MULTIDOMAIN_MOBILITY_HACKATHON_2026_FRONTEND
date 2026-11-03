@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -10,7 +11,15 @@ import {
   SELL_WINDOW_LABEL,
 } from '@/app/(saas)/app/shipper/_components/labels';
 import { LotEditDialog } from '@/app/(saas)/app/shipper/_components/lot-edit-dialog';
+import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { LotStatusChip } from '@/app/(saas)/app/shipper/_components/lot-status-chip';
+import {
+  CARD_HIDE,
+  CARD_MAIN,
+  CARD_PUSH,
+  CARD_TABLE,
+  MOBILE_ONLY,
+} from '@/app/(saas)/app/shipper/_components/mobile';
 import {
   EmptyState,
   QueryError,
@@ -29,7 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ShipperCatalogT, ShipperLotStatusT, ShipperLotT } from '@/types/saas-shipper';
-import { getPortName, getProductName } from '@/utils/scenario';
+import { getPortName } from '@/utils/scenario';
 
 type FilterT = 'all' | ShipperLotStatusT;
 
@@ -53,8 +62,6 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
     .filter(({ status }) => filter === 'all' || status === filter)
     .sort((a, b) => a.ready_date.localeCompare(b.ready_date) || a.id.localeCompare(b.id));
 
-  const productName = (productId: string) =>
-    catalog ? getProductName(catalog, productId) : productId;
   const portName = (portId: string) => (catalog ? getPortName(catalog, portId) : portId);
   const packhouseName = (packhouseId: string | null | undefined) =>
     catalog?.packhouses.find(({ id }) => id === packhouseId)?.name ?? '';
@@ -119,11 +126,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
       )}
       {visible.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="m2-table">
+          <table className={cn('m2-table', CARD_TABLE)}>
             <thead>
               <tr>
                 <th>출하</th>
-                <th className="r">팔레트</th>
+                <th className="r">파렛트</th>
                 <th>준비일</th>
                 <th>판매기한</th>
                 <th>판매 기간</th>
@@ -140,25 +147,33 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                   (deleteLot.isPending && deleteLot.variables === lot.id);
 
                 return (
-                  <tr key={lot.id} className={lot.status === 'cancelled' ? 'is-dis' : ''}>
-                    <td>
+                  <tr
+                    key={lot.id}
+                    title={lot.id}
+                    className={lot.status === 'cancelled' ? 'is-dis' : ''}
+                  >
+                    <td className={CARD_MAIN}>
                       <div className="m2-who">
-                        {productName(lot.product_id)}
+                        {lotLabel(lot, catalog)}
                         <small>
-                          <span className="m2-mono">{lot.id}</span>
-                          {packhouseName(lot.packhouse) ? ` · ${packhouseName(lot.packhouse)}` : ''}
+                          {packhouseName(lot.packhouse)}
+                          <span className={MOBILE_ONLY}>
+                            {packhouseName(lot.packhouse) ? ' · ' : ''}
+                            {portName(lot.destination)} · 판매기한 {fmtMonthDay(lot.sell_by_date)} ·
+                            판매 기간 {SELL_WINDOW_LABEL[lot.sell_window]}
+                          </span>
                         </small>
                       </div>
                     </td>
-                    <td className="r m2-num">{lot.pallets}</td>
-                    <td className="m2-num">{fmtDay(lot.ready_date)}</td>
-                    <td className="m2-num">{fmtMonthDay(lot.sell_by_date)}</td>
-                    <td>{SELL_WINDOW_LABEL[lot.sell_window]}</td>
-                    <td>{portName(lot.destination)}</td>
+                    <td className={cn('r m2-num', CARD_HIDE)}>{lot.pallets}</td>
+                    <td className={cn('m2-num', CARD_HIDE)}>{fmtDay(lot.ready_date)}</td>
+                    <td className={cn('m2-num', CARD_HIDE)}>{fmtMonthDay(lot.sell_by_date)}</td>
+                    <td className={CARD_HIDE}>{SELL_WINDOW_LABEL[lot.sell_window]}</td>
+                    <td className={CARD_HIDE}>{portName(lot.destination)}</td>
                     <td>
                       <LotStatusChip status={lot.status} />
                     </td>
-                    <td className="r">
+                    <td className={cn('r', CARD_PUSH)}>
                       {isLocked ? (
                         <span className="text-[12px] text-m2-muted">계획 확정 후 변경 불가</span>
                       ) : (
@@ -221,7 +236,8 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           <AlertDialogHeader>
             <AlertDialogTitle>출하를 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleting?.id} 출하를 목록에서 지웁니다. 되돌릴 수 없습니다.
+              {deleting ? lotLabel(deleting, catalog) : ''} 출하를 목록에서 지웁니다. 되돌릴 수
+              없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

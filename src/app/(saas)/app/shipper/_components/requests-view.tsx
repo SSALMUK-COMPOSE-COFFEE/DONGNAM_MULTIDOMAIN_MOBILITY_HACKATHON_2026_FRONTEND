@@ -2,8 +2,11 @@
 
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
+import { useShipperCatalog, useShipperLots } from '@/apis/saas/shipper';
+import { lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import {
   CardSkeleton,
   EmptyState,
@@ -41,6 +44,12 @@ export function RequestsView() {
     isOrdersFetching,
     refetchOrders,
   } = useShipperTasks();
+  const catalog = useShipperCatalog();
+  const lots = useShipperLots();
+  const labels = useMemo(
+    () => lotLabelMap(lots.data, catalog.data ?? null),
+    [lots.data, catalog.data]
+  );
 
   if (plans.isError) {
     return (
@@ -108,7 +117,7 @@ export function RequestsView() {
           return (
             <div
               key={order.order_id}
-              className="m2-block flex items-center gap-4 max-[720px]:flex-col max-[720px]:items-start"
+              className="m2-block flex items-center gap-4 max-[767.98px]:flex-col max-[767.98px]:items-start"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <p className="font-semibold">
@@ -119,14 +128,14 @@ export function RequestsView() {
                 </p>
                 {mine.map(({ shipper_id, reason_text, net_cost_delta, deadline }) => (
                   <p key={shipper_id} className="m2-sub mt-0">
-                    {reason_text.join(' · ')} · 부담{' '}
+                    {plainWords(reason_text.join(' · '), labels)} · 부담{' '}
                     <span className="m2-num text-m2-ink">{fmtSignedWon(net_cost_delta)}</span> ·
                     기한 <span className="m2-num">{fmtMonthDayTime(deadline)}</span>
                   </p>
                 ))}
               </div>
               <Link href={SHIPPER_PATHS.PLAN(plan.plan_id)} className="m2-btn m2-btn-pri m2-btn-sm">
-                계획에서 확정
+                계획에서 확정·거절
                 <ArrowRightIcon size={14} />
               </Link>
             </div>
@@ -144,7 +153,11 @@ export function RequestsView() {
         {isOrdersLoading ? (
           <Skeleton className="h-24" />
         ) : (
-          <RequestList items={pending} emptyText="응답을 기다리는 요청이 없습니다." />
+          <RequestList
+            items={pending}
+            labels={labels}
+            emptyText="응답을 기다리는 요청이 없습니다."
+          />
         )}
       </Section>
 
@@ -156,13 +169,13 @@ export function RequestsView() {
             </>
           }
         >
-          <RequestList items={awaiting} emptyText="" />
+          <RequestList items={awaiting} labels={labels} emptyText="" />
         </Section>
       )}
 
       {closed.length > 0 && (
         <Section title="지난 요청">
-          <RequestList items={closed} emptyText="" />
+          <RequestList items={closed} labels={labels} emptyText="" />
         </Section>
       )}
     </div>

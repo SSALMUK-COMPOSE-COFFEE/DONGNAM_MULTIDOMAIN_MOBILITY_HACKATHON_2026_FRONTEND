@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useUpdateShipperLot } from '@/apis/saas/shipper';
 import { toIntakeOptions } from '@/app/(saas)/app/shipper/_components/catalog';
 import { SELL_WINDOW_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
+import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { errorDetail, toFieldErrors } from '@/app/(saas)/app/shipper/_components/query-state';
 import { Button } from '@/components/ui/button';
 import {
@@ -80,7 +81,8 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
         <DialogHeader>
           <DialogTitle>출하 수정</DialogTitle>
           <DialogDescription>
-            <span className="num">{lot.id}</span> · 계획에 들어가기 전까지만 바꿀 수 있습니다.
+            <span title={lot.id}>{lotLabel(lot, catalog)}</span> · 계획에 들어가기 전까지만 바꿀 수
+            있습니다.
           </DialogDescription>
         </DialogHeader>
         <form

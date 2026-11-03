@@ -15,11 +15,11 @@ export const PLAN_STATUS_LABEL: Record<ShipperPlanItemT['status'], string> = {
 };
 
 export const REQUEST_KIND_LABEL: Record<ShipperRequestT['kind'], string> = {
-  booking_amendment: '부킹 변경',
-  booking_cancel: '부킹 취소',
-  booking_new: '신규 부킹',
-  reefer_plug: '냉동 전원',
-  cy_entry: 'CY 반입',
+  booking_amendment: '배 예약 변경',
+  booking_cancel: '배 예약 취소',
+  booking_new: '새 배 예약',
+  reefer_plug: '냉장 전원 연결',
+  cy_entry: '항구 반입',
   air_booking: '항공 예약',
   air_cancel: '항공 취소',
 };

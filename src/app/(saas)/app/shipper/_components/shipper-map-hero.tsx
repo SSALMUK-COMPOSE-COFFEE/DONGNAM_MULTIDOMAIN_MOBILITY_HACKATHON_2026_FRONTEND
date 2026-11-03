@@ -2,18 +2,29 @@
 
 import { cn } from 'cn';
 
-import type { MyPlanT } from '@/app/(saas)/app/shipper/_components/my-plan';
+import { MOBILE_HERO } from '@/app/(saas)/app/shipper/_components/mobile';
+import {
+  type MyPlanT,
+  type RouteStopT,
+  baselineRowLabel,
+  myShareRate,
+} from '@/app/(saas)/app/shipper/_components/my-plan';
 import {
   fmtCount,
   fmtDay,
   fmtDayTime,
   fmtMonthDay,
   fmtMonthDayTime,
+  fmtTime,
   fmtWon,
   timeOf,
 } from '@/app/(saas)/app/shipper/_components/shipper-format';
+import { useNarrow } from '@/app/(saas)/app/shipper/_components/use-narrow';
 import { HeroPanel, MapHero, type ScenePlaceT } from '@/components/map-hero';
 import { useMapLinkTarget } from '@/components/map-link';
+
+const NARROW_FIT_INSET = 28;
+const WIDE_FIT_INSET = 320;
 
 type JourneyCellT = {
   key: string;
@@ -32,14 +43,18 @@ const journeyOf = ({ firstStop, voyage, scene, container, destinationName, sellB
       key: 'load',
       at: firstStop.stop.eta,
       title: fmtDayTime(firstStop.stop.eta),
-      desc: `${firstStop.stop.name}에서 ${firstStop.stop.pallets}팔레트 상차`,
+      desc: `${firstStop.stop.name}에서 ${fmtCount(firstStop.stop.pallets)}파렛트 상차`,
       keys: [firstStop.stop.packhouseId, firstStop.run.key],
     });
     cells.push({
       key: 'gate',
       at: firstStop.run.portEta,
       title: fmtDayTime(firstStop.run.portEta),
-      desc: [`${scene.port?.name ?? '항구'} 반입`, containerId ? `${containerId} 적재` : '']
+      desc: [
+        `${scene.port?.name ?? '항구'} 반입`,
+        voyage?.cy_cutoff ? `항구 반입 마감 ${fmtMonthDayTime(voyage.cy_cutoff)}` : '',
+        containerId ? `${containerId} 적재` : '',
+      ]
         .filter(Boolean)
         .join(' · '),
       keys: [scene.port?.key ?? '', containerId ?? ''].filter(Boolean),
@@ -69,6 +84,9 @@ const journeyOf = ({ firstStop, voyage, scene, container, destinationName, sellB
   return cells;
 };
 
+export const routeStopText = ({ sequence, own, name, eta }: RouteStopT) =>
+  [`${sequence}번째 정차`, own ? `내 선과장 ${name}` : '다른 화주', fmtTime(eta)].join(' · ');
+
 function JourneyStep({ cell, isNow }: { cell: JourneyCellT; isNow: boolean }) {
   const { className: linkClassName, ...link } = useMapLinkTarget(cell.keys);
 
@@ -79,7 +97,10 @@ function JourneyStep({ cell, isNow }: { cell: JourneyCellT; isNow: boolean }) {
       className={cn('m2-jstep min-w-0', isNow && 'is-now', linkClassName)}
     >
       <div className="m2-jstep-t m2-num truncate">{cell.title}</div>
-      <div className="m2-jstep-d truncate" title={cell.desc}>
+      <div
+        className="m2-jstep-d truncate max-[767.98px]:[overflow-wrap:anywhere] max-[767.98px]:whitespace-normal"
+        title={cell.desc}
+      >
         {cell.desc}
       </div>
     </button>
@@ -93,7 +114,7 @@ function Journey({ cells, now }: { cells: JourneyCellT[]; now: number | null }) 
 
   return (
     <div
-      className="m2-journey max-[720px]:grid-cols-2!"
+      className="m2-journey max-[767.98px]:grid-cols-2! max-[767.98px]:[&>.m2-jstep:nth-child(2n)]:border-r-0 max-[767.98px]:[&>.m2-jstep:nth-child(n+3)]:border-t max-[767.98px]:[&>.m2-jstep:nth-child(n+3)]:border-m2-line"
       style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}
     >
       {cells.map((cell, index) => (
@@ -103,8 +124,26 @@ function Journey({ cells, now }: { cells: JourneyCellT[]; now: number | null }) 
   );
 }
 
+function RouteStops({ myPlan }: { myPlan: MyPlanT }) {
+  const { routeStops, firstStop } = myPlan;
+  if (!firstStop || !routeStops.some(({ own }) => !own)) return null;
+
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-m2-line bg-[#fbfcfd] px-4 py-2.5 text-[12px] text-m2-muted">
+      <span className="font-semibold text-m2-ink-2">트럭 {firstStop.run.label} 집하 순서</span>
+      <ol className="m2-num flex flex-wrap gap-x-3 gap-y-1">
+        {routeStops.map(stop => (
+          <li key={stop.key} className={cn(stop.own && 'font-semibold text-m2-ink')}>
+            {routeStopText(stop)}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function MyPanel({ myPlan }: { myPlan: MyPlanT }) {
-  const { settlement, feeRate, seaPallets, airPallets } = myPlan;
+  const { settlement, seaPallets, airPallets } = myPlan;
 
   if (!settlement) {
     return (
@@ -113,16 +152,20 @@ function MyPanel({ myPlan }: { myPlan: MyPlanT }) {
         value={
           <>
             {fmtCount(seaPallets + airPallets)}
-            <small>팔레트</small>
+            <small>파렛트</small>
           </>
         }
         rows={[
-          { k: '해상', v: `${fmtCount(seaPallets)}팔레트` },
-          ...(airPallets > 0 ? [{ k: '항공 전환', v: `${fmtCount(airPallets)}팔레트` }] : []),
+          { k: '해상', v: `${fmtCount(seaPallets)}파렛트` },
+          ...(airPallets > 0 ? [{ k: '항공 전환', v: `${fmtCount(airPallets)}파렛트` }] : []),
         ]}
       />
     );
   }
+
+  const basis = settlement.baselineLabel ? ` (${settlement.baselineLabel})` : '';
+  const share = myShareRate(settlement);
+  const saved = `절감 ${fmtWon(settlement.savings)}${basis}`;
 
   return (
     <HeroPanel
@@ -133,13 +176,9 @@ function MyPanel({ myPlan }: { myPlan: MyPlanT }) {
           <small>원</small>
         </>
       }
-      sub={
-        feeRate === null
-          ? `절감 ${fmtWon(settlement.savings)}`
-          : `절감 ${fmtWon(settlement.savings)} 중 ${Math.round((1 - feeRate) * 100)}%`
-      }
+      sub={share === null ? saved : `${saved} 중 ${Math.round(share * 100)}%`}
       rows={[
-        { k: '항공 단독', v: fmtWon(settlement.baseline) },
+        { k: baselineRowLabel(settlement), v: fmtWon(settlement.baseline) },
         { k: '공동적재', v: fmtWon(settlement.shared) },
       ]}
     />
@@ -155,23 +194,36 @@ export function ShipperMapHero({
   now: number | null;
   height?: number;
 }) {
-  const { scene, firstStop, container, voyage, destinationName } = myPlan;
+  const narrow = useNarrow();
+  const { scene, firstStop, container, voyage, destinationName, routeStops } = myPlan;
   const containerId = container?.container_id ?? null;
+  const otherStops = routeStops.filter(({ own }) => !own).length;
 
   const placeSublabel = (place: ScenePlaceT) => {
     const visit = place.visits[0];
     if (!visit) return place.sublabel;
 
-    return `${visit.sequence}번째 정차 · ${fmtMonthDayTime(visit.eta)} · ${visit.pallets}P 상차`;
+    return `${visit.sequence}번째 정차 · ${fmtMonthDayTime(visit.eta)} · ${fmtCount(visit.pallets)}파렛트 상차`;
   };
 
   return (
     <MapHero
       scene={scene}
       height={height}
+      className={MOBILE_HERO}
+      fitInsetLeft={narrow ? NARROW_FIT_INSET : WIDE_FIT_INSET}
       panel={<MyPanel myPlan={myPlan} />}
-      hint="다른 화주는 이름·위치 비공개"
-      footer={<Journey cells={journeyOf(myPlan)} now={now} />}
+      hint={
+        otherStops > 0
+          ? `같은 트럭이 다른 화주 ${otherStops}곳에 들릅니다 · 이름·위치 비공개`
+          : '다른 화주는 이름·위치 비공개'
+      }
+      footer={
+        <>
+          <Journey cells={journeyOf(myPlan)} now={now} />
+          <RouteStops myPlan={myPlan} />
+        </>
+      }
       placeLabel={place => `내 선과장 · ${place.name}`}
       placeSublabel={placeSublabel}
       portSublabel={

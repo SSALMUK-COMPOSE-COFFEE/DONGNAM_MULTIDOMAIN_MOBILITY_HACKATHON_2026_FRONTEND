@@ -1,10 +1,18 @@
 'use client';
 
+import { cn } from 'cn';
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { useShipperPlans } from '@/apis/saas/shipper';
 import { PLAN_STATUS_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
+import {
+  CARD_HIDE,
+  CARD_MAIN,
+  CARD_PUSH,
+  CARD_TABLE,
+  MOBILE_BLOCK,
+} from '@/app/(saas)/app/shipper/_components/mobile';
 import {
   CardSkeleton,
   EmptyState,
@@ -47,14 +55,14 @@ export function PlansView() {
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="m2-table">
+          <table className={cn('m2-table', CARD_TABLE)}>
             <thead>
               <tr>
                 <th>선박</th>
                 <th>출항</th>
                 <th>상태</th>
                 <th className="r">내 출하</th>
-                <th className="r">내 팔레트 / 전체</th>
+                <th className="r">내 파렛트 / 전체</th>
                 <th>만든 시각</th>
                 <th />
               </tr>
@@ -72,8 +80,16 @@ export function PlansView() {
                   created_at,
                 }) => (
                   <tr key={plan_id}>
-                    <td className="font-semibold">{vessel ?? NO_VESSEL_LABEL}</td>
-                    <td className="m2-num">{fmtMonthDayTime(departure)}</td>
+                    <td className={CARD_MAIN}>
+                      <div className="m2-who">
+                        {vessel ?? NO_VESSEL_LABEL}
+                        <small className={cn('m2-num', MOBILE_BLOCK)}>
+                          출항 {fmtMonthDayTime(departure)} · 내 {my_pallets}파렛트 / 전체{' '}
+                          {total_pallets}
+                        </small>
+                      </div>
+                    </td>
+                    <td className={cn('m2-num', CARD_HIDE)}>{fmtMonthDayTime(departure)}</td>
                     <td>
                       {pendingPlanIds.has(plan_id) ? (
                         <span className="m2-chip m2-chip-brand">확정 대기</span>
@@ -87,13 +103,15 @@ export function PlansView() {
                         </span>
                       )}
                     </td>
-                    <td className="r m2-num">{my_lot_ids.length}건</td>
-                    <td className="r m2-num">
+                    <td className={cn('r m2-num', CARD_HIDE)}>{my_lot_ids.length}건</td>
+                    <td className={cn('r m2-num', CARD_HIDE)}>
                       <b className="font-semibold">{my_pallets}</b>
                       <span className="text-m2-muted"> / {total_pallets}</span>
                     </td>
-                    <td className="m2-num text-m2-muted">{fmtMonthDayTime(created_at)}</td>
-                    <td className="r">
+                    <td className={cn('m2-num text-m2-muted', CARD_HIDE)}>
+                      {fmtMonthDayTime(created_at)}
+                    </td>
+                    <td className={cn('r', CARD_PUSH)}>
                       <Link
                         href={SHIPPER_PATHS.PLAN(plan_id)}
                         className="m2-btn m2-btn-sec m2-btn-sm"

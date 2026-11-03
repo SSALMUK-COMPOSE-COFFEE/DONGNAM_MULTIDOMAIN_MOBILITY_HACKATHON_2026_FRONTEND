@@ -19,12 +19,30 @@ export const ownScopeOf = (catalog: ShipperCatalogT | null | undefined): OwnScop
 
 export type MyStopT = { stop: SceneStopT; run: SceneRunT };
 
+export type RouteStopT = {
+  key: string;
+  sequence: number;
+  eta: string;
+  own: boolean;
+  name: string;
+  pallets: number;
+};
+
 export type MySettlementT = {
   baseline: number;
   shared: number;
   savings: number;
   fee: number;
   gain: number;
+  baselineLabel: string | null;
+  baselineKind: string | null;
+  performanceOnly: boolean;
+};
+
+const stringField = (row: object, key: string) => {
+  const value: unknown = (row as Record<string, unknown>)[key];
+
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
 };
 
 export type MyPlanT = {
@@ -41,8 +59,8 @@ export type MyPlanT = {
   otherShipperCount: number;
   products: SchemaT<'Product'>[];
   firstStop: MyStopT | null;
+  routeStops: RouteStopT[];
   settlement: MySettlementT | null;
-  feeRate: number | null;
   tariffs: TariffSheetT[];
   sellBy: string | null;
   lotKeys: (lotId: string, packhouseId: string | null) => string[];
@@ -106,6 +124,16 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
     )
     .sort((a, b) => a.stop.eta.localeCompare(b.stop.eta));
 
+  const firstRun = myStops[0]?.run ?? null;
+  const routeStops: RouteStopT[] = (firstRun?.stops ?? []).map(stop => ({
+    key: stop.key,
+    sequence: stop.sequence,
+    eta: stop.eta,
+    own: ownPackhouses.has(stop.packhouseId),
+    name: stop.name,
+    pallets: stop.pallets,
+  }));
+
   const ownSettlements = plan.settlements.filter(({ shipper_id }) => ownShippers.has(shipper_id));
   const settlement = ownSettlements.length
     ? ownSettlements.reduce<MySettlementT>(
@@ -115,12 +143,29 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
           savings: sum.savings + row.savings,
           fee: sum.fee + row.fee,
           gain: sum.gain + row.shipper_gain,
+          baselineLabel:
+            sum.baselineLabel ??
+            stringField(row, 'savings_baseline_label') ??
+            stringField(row, 'baseline_label'),
+          baselineKind: sum.baselineKind ?? stringField(row, 'baseline_kind'),
+          performanceOnly:
+            sum.performanceOnly &&
+            (stringField(row, 'billing_rule') ?? 'performance') === 'performance' &&
+            (row as Record<string, unknown>)['pilot'] !== true,
         }),
-        { baseline: 0, shared: 0, savings: 0, fee: 0, gain: 0 }
+        {
+          baseline: 0,
+          shared: 0,
+          savings: 0,
+          fee: 0,
+          gain: 0,
+          baselineLabel: null,
+          baselineKind: null,
+          performanceOnly: true,
+        }
       )
     : null;
 
-  const feeValue = scenario.cost_params?.platform_fee_rate?.value;
   const ownLotIds = new Set(assignments.map(({ lot_id }) => lot_id));
   const sellBy =
     scenario.lots
@@ -149,8 +194,8 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
     otherShipperCount,
     products,
     firstStop: myStops[0] ?? null,
+    routeStops,
     settlement,
-    feeRate: typeof feeValue === 'number' ? feeValue : null,
     tariffs: (plan.settlement_tariffs ?? []).filter(({ product_id }) =>
       productIds.includes(product_id)
     ),
@@ -168,6 +213,18 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
   };
 }
 
+const BASELINE_KIND_LABEL: Record<string, string> = {
+  air_solo: '혼자 항공',
+  sea_solo: '혼자 해상',
+  mixed: '혼자 보낼 때',
+};
+
+export const baselineRowLabel = ({ baselineKind }: MySettlementT) =>
+  BASELINE_KIND_LABEL[baselineKind ?? ''] ?? '혼자 항공';
+
+export const myShareRate = ({ performanceOnly, savings, gain }: MySettlementT) =>
+  performanceOnly && savings > 0 ? gain / savings : null;
+
 export const myPendingConfirmations = (orders: ShipperOrderT[], own: OwnScopeT) => {
   const ownShippers = new Set(own.shipperIds);
 
@@ -175,10 +232,7 @@ export const myPendingConfirmations = (orders: ShipperOrderT[], own: OwnScopeT) 
     .filter(order => order.status === 'proposed')
     .flatMap(order =>
       order.shipper_confirmations
-        .filter(
-          ({ status, shipper_id }) =>
-            status === 'pending' && (ownShippers.size === 0 || ownShippers.has(shipper_id))
-        )
+        .filter(({ status, shipper_id }) => status === 'pending' && ownShippers.has(shipper_id))
         .map(confirmation => ({ order, confirmation }))
     );
 };

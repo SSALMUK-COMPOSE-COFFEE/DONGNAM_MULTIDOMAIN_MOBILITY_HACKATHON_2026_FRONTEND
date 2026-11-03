@@ -1,6 +1,8 @@
 import { cn } from 'cn';
 import { CheckIcon, PlaneIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
 
+import { lotLabelFrom } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { fmtDay, fmtMonthDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import type { ShipperLotPreviewT } from '@/types/saas-shipper';
 
@@ -10,8 +12,8 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
       <section className="m2-card" aria-label="등록 결과">
         <h2 className="m2-h2">등록 결과</h2>
         <div className="m2-sub">
-          출하를 등록하면 자동으로 채운 판매기한·로트 번호와 실을 수 있는 배, 항공 가능 여부가
-          여기에 나옵니다.
+          출하를 등록하면 자동으로 채운 판매기한과 실을 수 있는 배, 항공 가능 여부가 여기에
+          나옵니다.
         </div>
       </section>
     );
@@ -27,7 +29,7 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
         <span className="m2-chip m2-chip-ok">등록됨</span>
       </div>
       <div className="m2-sub mt-0">
-        {resolved.product_name} <span className="m2-num">{lot.pallets}</span>팔레트 ·{' '}
+        {resolved.product_name} <span className="m2-num">{lot.pallets}</span>파렛트 ·{' '}
         {resolved.packhouse_name} → {resolved.destination_name} · 출하{' '}
         <span className="m2-num">{fmtDay(lot.ready_date)}</span>
       </div>
@@ -38,8 +40,8 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
           <b>{fmtMonthDay(lot.sell_by_date)}</b>
         </div>
         <div>
-          <span>로트 번호</span>
-          <b className="m2-mono">{lot.id}</b>
+          <span>출하 이름</span>
+          <b title={lot.id}>{lotLabelFrom(resolved.product_name, lot.ready_date, lot.pallets)}</b>
         </div>
       </div>
 
@@ -48,7 +50,7 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
       {hints.sea_options.map(option => (
         <div
           key={option.container_id}
-          className="m2-block flex items-center gap-3"
+          className="m2-block flex items-center gap-3 max-[767.98px]:flex-wrap"
           style={
             option.container_id === earliestId ? { boxShadow: '0 0 0 1.5px var(--m2-brand)' } : {}
           }
@@ -67,10 +69,12 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
               )}
             </div>
             {!option.feasible && option.reasons.length > 0 && (
-              <div className="m2-sub mt-0.5 text-[12px]">{option.reasons.join(' · ')}</div>
+              <div className="m2-sub mt-0.5 text-[12px]">
+                {plainWords(option.reasons.join(' · '))}
+              </div>
             )}
           </div>
-          <span className="m2-num flex-none text-right text-[12.5px] text-m2-ink-2">
+          <span className="m2-num flex-none text-right text-[12.5px] text-m2-ink-2 max-[767.98px]:basis-full max-[767.98px]:pl-7 max-[767.98px]:text-left">
             출항 {fmtDay(option.etd)} · 도착 {fmtDay(option.arrival_date)}
             {option.pull_forward_days > 0 ? ` · ${option.pull_forward_days}일 당김` : ''}
           </span>
@@ -83,19 +87,19 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
           항공{' '}
           {hints.air.feasible
             ? `가능 · ${fmtDay(hints.air.arrival_date)} 도착`
-            : `불가${hints.air.reason ? ` · ${hints.air.reason}` : ''}`}
+            : `불가${hints.air.reason ? ` · ${plainWords(hints.air.reason)}` : ''}`}
         </div>
       </div>
       {hints.warnings.length > 0 && (
         <div className="m2-note m2-note-warn">
           <TriangleAlertIcon size={14} />
-          <div>{hints.warnings.join(' · ')}</div>
+          <div>{plainWords(hints.warnings.join(' · '))}</div>
         </div>
       )}
       {defaults_applied.length > 0 && (
         <ul className="m2-sub mt-3 list-disc pl-4 text-[12px]">
           {defaults_applied.map(item => (
-            <li key={item}>{item}</li>
+            <li key={item}>{plainWords(item)}</li>
           ))}
         </ul>
       )}

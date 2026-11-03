@@ -8,6 +8,8 @@ import {
   REQUEST_KIND_LABEL,
   REQUEST_STATUS_LABEL,
 } from '@/app/(saas)/app/shipper/_components/labels';
+import type { LotLabelMapT } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { errorDetail } from '@/app/(saas)/app/shipper/_components/query-state';
 import { fmtMonthDayTime } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import {
@@ -24,13 +26,27 @@ export type RequestItemT = {
   request: ShipperRequestT;
 };
 
+const NO_LABELS: LotLabelMapT = new Map();
+
+const requestTextOf = (request: ShipperRequestT, labels: LotLabelMapT) => {
+  const plain: unknown = (request as Record<string, unknown>).plain_text;
+
+  return plainWords(typeof plain === 'string' && plain.trim() ? plain : request.text, labels);
+};
+
 const requestStatusLabel = (request: ShipperRequestT) =>
   request.status === 'pending' ? '마감' : REQUEST_STATUS_LABEL[request.status];
 
 const awaitingForwarderLabel = (order: ShipperOrderT) =>
   order.status === 'forwarder_confirmed' ? '포워더 회신 대기' : '포워더 확정 대기';
 
-export function RequestList({ items, emptyText }: { items: RequestItemT[]; emptyText: string }) {
+type RequestListPropsT = {
+  items: RequestItemT[];
+  emptyText: string;
+  labels?: LotLabelMapT;
+};
+
+export function RequestList({ items, emptyText, labels = NO_LABELS }: RequestListPropsT) {
   const answer = useAnswerShipperRequest();
 
   if (items.length === 0) return <p className="m2-sub mt-0">{emptyText}</p>;
@@ -57,20 +73,22 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
         return (
           <li
             key={`${order.order_id}:${request.request_id}`}
-            className="m2-block flex items-start gap-4"
+            className="m2-block flex items-start gap-4 max-[767.98px]:flex-col max-[767.98px]:gap-2.5"
             style={canAnswer ? { boxShadow: '0 0 0 1.5px var(--m2-brand)' } : {}}
           >
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="m2-chip">{REQUEST_KIND_LABEL[request.kind]}</span>
-                <span className="font-semibold">{request.counterparty}</span>
+                <span className="font-semibold">{plainWords(request.counterparty)}</span>
                 {!isRequestAddressedToShipper(request) && (
                   <span className="m2-sub mt-0">포워더가 회신 기록</span>
                 )}
                 <span className="m2-sub mt-0">{request.channel}</span>
               </div>
               {item.planLabel && <p className="m2-sub mt-0">{item.planLabel}</p>}
-              <p className="text-[13.5px]">{request.text}</p>
+              <p className="text-[13.5px] [overflow-wrap:anywhere]">
+                {requestTextOf(request, labels)}
+              </p>
               <p className="m2-sub mt-0 flex flex-wrap gap-x-5">
                 <span>
                   기한{' '}
@@ -79,10 +97,10 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
                 {request.container_id && <span className="m2-num">{request.container_id}</span>}
                 {request.pallets_before !== request.pallets_after && (
                   <span className="m2-num">
-                    {request.pallets_before} → {request.pallets_after}팔레트
+                    {request.pallets_before} → {request.pallets_after}파렛트
                   </span>
                 )}
-                {request.note && <span>메모 {request.note}</span>}
+                {request.note && <span>메모 {plainWords(request.note, labels)}</span>}
               </p>
             </div>
             {canAnswer ? (

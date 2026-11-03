@@ -3,7 +3,15 @@
 import { cn } from 'cn';
 import Link from 'next/link';
 
+import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { LotStatusChip } from '@/app/(saas)/app/shipper/_components/lot-status-chip';
+import {
+  CARD_HIDE,
+  CARD_MAIN,
+  CARD_PUSH,
+  CARD_TABLE,
+  MOBILE_ONLY,
+} from '@/app/(saas)/app/shipper/_components/mobile';
 import type { MyPlanT } from '@/app/(saas)/app/shipper/_components/my-plan';
 import { EmptyState, QueryError } from '@/app/(saas)/app/shipper/_components/query-state';
 import { fmtDay, fmtMonthDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
@@ -11,7 +19,7 @@ import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-path
 import { useMapLinkTarget } from '@/components/map-link';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ShipperCatalogT, ShipperLotT } from '@/types/saas-shipper';
-import { getPortName, getProductName } from '@/utils/scenario';
+import { getPortName } from '@/utils/scenario';
 
 const HOME_LOT_LIMIT = 6;
 
@@ -28,27 +36,32 @@ function LotRow({
 }) {
   const { className: linkClassName, ...link } = useMapLinkTarget(keys);
   const packhouse = catalog?.packhouses.find(({ id }) => id === lot.packhouse);
+  const portName = catalog ? getPortName(catalog, lot.destination) : lot.destination;
 
   return (
     <tr
       {...link}
       tabIndex={0}
+      title={lot.id}
       className={cn(lot.status === 'cancelled' && 'is-dis', linkClassName)}
     >
-      <td>
+      <td className={CARD_MAIN}>
         <div className="m2-who">
-          {catalog ? getProductName(catalog, lot.product_id) : lot.product_id}
+          {lotLabel(lot, catalog)}
           <small>
-            <span className="m2-mono">{lot.id}</span>
-            {packhouse ? ` · ${packhouse.name}` : ''}
+            {packhouse?.name ?? ''}
+            <span className={MOBILE_ONLY}>
+              {packhouse ? ' · ' : ''}
+              {portName} · 판매기한 {fmtMonthDay(lot.sell_by_date)}
+            </span>
           </small>
         </div>
       </td>
-      <td className="r m2-num">{lot.pallets}</td>
-      <td className="m2-num">{fmtDay(lot.ready_date)}</td>
-      <td>{catalog ? getPortName(catalog, lot.destination) : lot.destination}</td>
-      <td className="m2-num">{fmtMonthDay(lot.sell_by_date)}</td>
-      <td>
+      <td className={cn('r m2-num', CARD_HIDE)}>{lot.pallets}</td>
+      <td className={cn('m2-num', CARD_HIDE)}>{fmtDay(lot.ready_date)}</td>
+      <td className={CARD_HIDE}>{portName}</td>
+      <td className={cn('m2-num', CARD_HIDE)}>{fmtMonthDay(lot.sell_by_date)}</td>
+      <td className={CARD_PUSH}>
         <LotStatusChip status={lot.status} awaitingConfirm={awaitingConfirm} />
       </td>
     </tr>
@@ -109,11 +122,11 @@ export function MyLotsCard({
       )}
       {visible.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="m2-table">
+          <table className={cn('m2-table', CARD_TABLE)}>
             <thead>
               <tr>
                 <th>출하</th>
-                <th className="r">팔레트</th>
+                <th className="r">파렛트</th>
                 <th>준비일</th>
                 <th>목적지</th>
                 <th>판매기한</th>

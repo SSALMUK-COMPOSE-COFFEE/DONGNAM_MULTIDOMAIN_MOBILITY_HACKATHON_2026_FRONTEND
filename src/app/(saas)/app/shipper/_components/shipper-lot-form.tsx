@@ -13,6 +13,8 @@ import {
 } from '@/apis/saas/shipper';
 import { todayIso } from '@/app/(saas)/app/shipper/_components/catalog';
 import { SELL_WINDOW_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
+import { lotLabelFrom } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { errorStatus, toFieldErrors } from '@/app/(saas)/app/shipper/_components/query-state';
 import { fmtDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import { useDebouncedValue } from '@/app/(saas)/app/shipper/_components/use-now';
@@ -186,7 +188,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
     }
 
     return typeof earliestCapacity === 'number'
-      ? `${earliest.container_id} · ${earliestCapacity}팔레트 컨테이너`
+      ? `${earliest.container_id} · ${earliestCapacity}파렛트 컨테이너`
       : earliest.container_id;
   };
 
@@ -203,7 +205,9 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           event.preventDefault();
           createLot.mutate(toRequest(catalog, form), {
             onSuccess: created => {
-              toast.success(`${created.lot.id} 출하를 등록했습니다.`);
+              toast.success(
+                `${lotLabelFrom(created.resolved.product_name, created.lot.ready_date, created.lot.pallets)} 출하를 등록했습니다.`
+              );
               onCreated?.(created);
             },
             onError: error => {
@@ -240,8 +244,8 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           index={2}
           label={
             product
-              ? `수량 (팔레트, 1팔레트 약 ${product.pallet_kg.toLocaleString('ko-KR')}kg)`
-              : '수량 (팔레트)'
+              ? `수량 (파렛트, 1파렛트 약 ${product.pallet_kg.toLocaleString('ko-KR')}kg)`
+              : '수량 (파렛트)'
           }
           htmlFor={`${fieldId}-pallets`}
           error={errorOf('pallets')}
@@ -254,7 +258,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           >
             <button
               type="button"
-              aria-label="한 팔레트 줄이기"
+              aria-label="한 파렛트 줄이기"
               className="h-full w-11 flex-none border-0 bg-transparent text-[18px] text-m2-ink-2 disabled:opacity-40"
               disabled={form.pallets <= 1}
               onClick={() => setPallets(form.pallets - 1)}
@@ -274,7 +278,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
             />
             <button
               type="button"
-              aria-label="한 팔레트 늘리기"
+              aria-label="한 파렛트 늘리기"
               className="h-full w-11 flex-none border-0 bg-transparent text-[18px] text-m2-ink-2 disabled:opacity-40"
               disabled={form.pallets >= palletLimit}
               onClick={() => setPallets(form.pallets + 1)}
@@ -394,7 +398,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
         {(previewData?.hints.warnings.length ?? 0) > 0 && (
           <div className="m2-note m2-note-warn mt-0">
             <TriangleAlertIcon size={14} />
-            <div>{previewData?.hints.warnings.join(' · ')}</div>
+            <div>{plainWords(previewData?.hints.warnings.join(' · ') ?? '')}</div>
           </div>
         )}
         {otherErrors.length > 0 && (

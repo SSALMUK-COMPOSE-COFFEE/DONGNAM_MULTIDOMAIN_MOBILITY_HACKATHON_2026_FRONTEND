@@ -1,12 +1,19 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
-import { toast } from 'sonner';
 
-import { toastSaasError } from '@/apis/saas/errors';
-import { postShipperOrderConfirm, useInvalidateShipperPlan } from '@/apis/saas/shipper';
-import type { MyPlanT, OwnScopeT } from '@/app/(saas)/app/shipper/_components/my-plan';
+import {
+  type MyPlanT,
+  type OwnScopeT,
+  baselineRowLabel,
+} from '@/app/(saas)/app/shipper/_components/my-plan';
+import {
+  DecisionButtons,
+  type PendingConfirmationT,
+  RejectForm,
+  useOrderDecision,
+} from '@/app/(saas)/app/shipper/_components/order-decision';
+import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import {
   fmtCount,
   fmtDayTime,
@@ -18,13 +25,9 @@ import {
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import { CompareBars, M2_COLORS, SlotBar } from '@/components/map-hero';
 import { useMapLinkTarget } from '@/components/map-link';
-import type { ShipperOrderT } from '@/types/saas-shipper';
 import { planSessionLabel } from '@/utils/plan-label';
 
-export type PendingConfirmationT = {
-  order: ShipperOrderT;
-  confirmation: ShipperOrderT['shipper_confirmations'][number];
-};
+export type { PendingConfirmationT } from '@/app/(saas)/app/shipper/_components/order-decision';
 
 const OTHER_SLOT_COLOR = '#c3c9d2';
 
@@ -32,9 +35,9 @@ const headlineOf = ({ products, seaPallets, airPallets, voyage }: MyPlanT) => {
   const names = products.map(({ name }) => name).join('·') || '내 출하';
 
   if (seaPallets > 0 && voyage) {
-    return `${names} ${fmtCount(seaPallets)}팔레트가 ${fmtMonthDay(voyage.etd)} ${voyage.vessel_name}에 실립니다`;
+    return `${names} ${fmtCount(seaPallets)}파렛트가 ${fmtMonthDay(voyage.etd)} ${voyage.vessel_name}에 실립니다`;
   }
-  if (airPallets > 0) return `${names} ${fmtCount(airPallets)}팔레트는 항공으로 보냅니다`;
+  if (airPallets > 0) return `${names} ${fmtCount(airPallets)}파렛트는 항공으로 보냅니다`;
 
   return '이 계획에 실린 내 출하가 없습니다';
 };
@@ -73,7 +76,7 @@ function ContainerSlots({ myPlan, own }: { myPlan: MyPlanT; own: OwnScopeT }) {
       <div className="flex items-baseline justify-between gap-2.5">
         <h3 className="m2-h3">컨테이너 안 내 자리</h3>
         <span className="m2-kv m2-num">
-          {fmtCount(container.pallets)} / {fmtCount(container.capacity_pallets)} 팔레트
+          {fmtCount(container.pallets)} / {fmtCount(container.capacity_pallets)} 파렛트
         </span>
       </div>
       <SlotBar
@@ -97,6 +100,7 @@ type ShipperPlanCardPropsT = {
   own: OwnScopeT;
   pending: PendingConfirmationT[] | null;
   showDetailLink?: boolean;
+  showDecision?: boolean;
 };
 
 export function ShipperPlanCard({
@@ -104,31 +108,12 @@ export function ShipperPlanCard({
   own,
   pending,
   showDetailLink = true,
+  showDecision = true,
 }: ShipperPlanCardPropsT) {
   const { session, settlement, firstStop, tariffs } = myPlan;
   const planId = session.plan_id;
-  const invalidatePlan = useInvalidateShipperPlan();
-  const confirm = useMutation({
-    mutationFn: (items: PendingConfirmationT[]) =>
-      Promise.all(
-        items.map(({ order, confirmation }) =>
-          postShipperOrderConfirm(planId, order.order_id, {
-            accept: true,
-            note: null,
-            shipper_id: confirmation.shipper_id,
-          })
-        )
-      ),
-    onSuccess: () => {
-      toast.success('계획을 확정했습니다.');
-    },
-    onSettled: () => {
-      invalidatePlan(planId);
-    },
-    onError: toastSaasError('계획을 확정하지 못했습니다.'),
-  });
-
   const items = pending ?? [];
+  const decision = useOrderDecision(planId, showDecision ? items : []);
   const ordersKnown = pending !== null;
   const isPending = items.length > 0;
   const waitingOthers = ordersKnown && !isPending && session.status === 'pending_confirmation';
@@ -136,7 +121,7 @@ export function ShipperPlanCard({
   const truckNote = firstStop
     ? `집하 트럭 ${firstStop.run.label}가 ${fmtMonthDayTime(firstStop.stop.eta)}에 들릅니다.`
     : '';
-  const condition = conditionOf(myPlan);
+  const condition = plainWords(conditionOf(myPlan));
 
   return (
     <section
@@ -172,7 +157,7 @@ export function ShipperPlanCard({
         <div key={`${order.order_id}:${confirmation.shipper_id}`} className="m2-note">
           <div className="flex min-w-0 flex-col gap-0.5">
             <b className="font-semibold">
-              {confirmation.reason_text.join(' · ') || '계획이 바뀌었습니다'}
+              {plainWords(confirmation.reason_text.join(' · ')) || '계획이 바뀌었습니다'}
             </b>
             <span className="m2-num">
               내 부담 {fmtSignedWon(confirmation.net_cost_delta)} · 기한{' '}
@@ -188,7 +173,12 @@ export function ShipperPlanCard({
         <CompareBars
           className="mt-3.5"
           rows={[
-            { label: '항공 단독', value: fmtWon(settlement.baseline), ratio: 1, tone: 'base' },
+            {
+              label: baselineRowLabel(settlement),
+              value: fmtWon(settlement.baseline),
+              ratio: 1,
+              tone: 'base',
+            },
             {
               label: '공동적재',
               value: fmtWon(settlement.shared),
@@ -201,33 +191,26 @@ export function ShipperPlanCard({
 
       {tariffs.map(tariff => (
         <div key={tariff.product_id} className="m2-sub text-[12px]">
-          팔레트당 {fmtWon(tariff.air_total)} → {fmtWon(tariff.sea_total)}
+          파렛트당 {fmtWon(tariff.air_total)} → {fmtWon(tariff.sea_total)}
           {tariff.assumed_items.length > 0 ? ' · 일부 비용 항목은 가정' : ''}
         </div>
       ))}
 
-      <div className="m2-cfoot max-[720px]:flex-col max-[720px]:items-stretch">
+      <div className="m2-cfoot max-[767.98px]:flex-col max-[767.98px]:items-stretch">
         <div className="m2-sub mt-0">
           {isPending && truckNote ? `확정하면 ${truckNote}` : truckNote}
+          {isPending && !showDecision ? ' 수락·거절은 아래 실행 지시에서 지시마다 합니다.' : ''}
         </div>
-        <div className="flex flex-none gap-2">
+        <div className="flex flex-none flex-wrap gap-2">
           {showDetailLink && (
             <Link href={SHIPPER_PATHS.PLAN(planId)} className="m2-btn m2-btn-sec">
               계획 상세
             </Link>
           )}
-          {isPending && (
-            <button
-              type="button"
-              className="m2-btn m2-btn-pri"
-              disabled={confirm.isPending}
-              onClick={() => confirm.mutate(items)}
-            >
-              {confirm.isPending ? '확정 중' : '계획 확정하기'}
-            </button>
-          )}
+          <DecisionButtons decision={decision} />
         </div>
       </div>
+      <RejectForm decision={decision} />
     </section>
   );
 }

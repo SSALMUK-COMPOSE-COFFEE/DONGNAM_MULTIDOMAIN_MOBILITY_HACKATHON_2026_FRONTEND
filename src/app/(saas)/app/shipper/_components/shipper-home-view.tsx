@@ -10,6 +10,8 @@ import {
   useShipperOrgId,
   useShipperPlan,
 } from '@/apis/saas/shipper';
+import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { MOBILE_STEPS } from '@/app/(saas)/app/shipper/_components/mobile';
 import { MyLotsCard } from '@/app/(saas)/app/shipper/_components/my-lots-card';
 import {
   type MyPlanT,
@@ -46,7 +48,6 @@ import { type StepItemT, Steps } from '@/components/map-hero';
 import { MapLinkProvider } from '@/components/map-link';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import type { ShipperCatalogT, ShipperLotT } from '@/types/saas-shipper';
-import { getProductName } from '@/utils/scenario';
 
 const NEW_LOT_ANCHOR = 'new-lot';
 
@@ -62,14 +63,12 @@ type StepsInputT = {
 const stepsOf = ({ lots, catalog, myPlan, hasPlan, pending, now }: StepsInputT): StepItemT[] => {
   const active = lots.filter(({ status }) => status !== 'cancelled');
   const latest = [...active].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-  const latestLabel = latest
-    ? `${catalog ? getProductName(catalog, latest.product_id) : latest.product_id} ${fmtCount(latest.pallets)}팔레트`
-    : '품목·수량 등 다섯 가지';
+  const latestLabel = latest ? lotLabel(latest, catalog) : '품목·수량 등 다섯 가지';
 
   const register: StepItemT = {
     title: '출하 등록',
     sub: myPlan
-      ? `${myPlan.products.map(({ name }) => name).join('·')} ${fmtCount(myPlan.seaPallets + myPlan.airPallets)}팔레트`
+      ? `${myPlan.products.map(({ name }) => name).join('·')} ${fmtCount(myPlan.seaPallets + myPlan.airPallets)}파렛트`
       : latestLabel,
     state: active.length > 0 || myPlan || hasPlan ? 'done' : 'cur',
   };
@@ -252,6 +251,7 @@ export function ShipperHomeView() {
       </ShipperPageHeader>
 
       <Steps
+        className={MOBILE_STEPS}
         items={stepsOf({
           lots: lots.data ?? [],
           catalog: catalog.data ?? null,

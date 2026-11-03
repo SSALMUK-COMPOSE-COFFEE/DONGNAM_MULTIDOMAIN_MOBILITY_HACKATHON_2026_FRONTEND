@@ -4,13 +4,10 @@ import { ArrowLeftIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
-import { toast } from 'sonner';
 
-import { toastSaasError } from '@/apis/saas/errors';
 import {
-  postShipperOrderConfirm,
-  useInvalidateShipperPlan,
   useShipperCatalog,
+  useShipperLots,
   useShipperPlan,
   useShipperPlanOrders,
 } from '@/apis/saas/shipper';
@@ -19,6 +16,7 @@ import {
   withLocatedPackhouses,
 } from '@/app/(saas)/app/shipper/_components/catalog';
 import { PLAN_STATUS_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
+import { type LotLabelMapT, lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
 import {
   type MyPlanT,
   type OwnScopeT,
@@ -34,19 +32,17 @@ import {
 } from '@/app/(saas)/app/shipper/_components/query-state';
 import { RequestList } from '@/app/(saas)/app/shipper/_components/request-list';
 import { ShipperMapHero } from '@/app/(saas)/app/shipper/_components/shipper-map-hero';
+import { ShipperOrderCard } from '@/app/(saas)/app/shipper/_components/shipper-order-card';
 import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-page-header';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import { ShipperPlanCard } from '@/app/(saas)/app/shipper/_components/shipper-plan-card';
 import { useNowMinute } from '@/app/(saas)/app/shipper/_components/use-now';
-import { ExecutionOrderPanel } from '@/components/execution-order';
 import { MapLinkProvider } from '@/components/map-link';
 import { ContainerCard } from '@/components/plan-detail/container-card';
 import { PlanSummary } from '@/components/plan-detail/plan-summary';
 import { TariffCard } from '@/components/plan-detail/tariff-card';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import { SettlementTable } from '@/components/settlement-table';
-import type { UseConfirmOrderOptionsT } from '@/hooks/useConfirmOrder';
-import type { ShipperOrderT } from '@/types/saas-shipper';
 import { planSessionLabel } from '@/utils/plan-label';
 
 export function PlanDetailView() {
@@ -55,6 +51,7 @@ export function PlanDetailView() {
   const session = useMemo(() => plan.data && withLocatedPackhouses(plan.data), [plan.data]);
   const catalog = useShipperCatalog();
   const orders = useShipperPlanOrders(planId);
+  const lots = useShipperLots();
   const now = useNowMinute();
   const own: OwnScopeT = useMemo(() => ownScopeOf(catalog.data), [catalog.data]);
   const myPlan = useMemo(
@@ -63,6 +60,10 @@ export function PlanDetailView() {
   );
   const pending = orders.data ? myPendingConfirmations(orders.data, own) : null;
   const viewerShipperId = viewerShipperIdOf(catalog.data);
+  const labels = useMemo(
+    () => lotLabelMap(lots.data, catalog.data ?? null),
+    [lots.data, catalog.data]
+  );
   const backLink = (
     <Link href={SHIPPER_PATHS.PLANS} className="m2-btn m2-btn-sec">
       <ArrowLeftIcon size={16} />
@@ -150,11 +151,17 @@ export function PlanDetailView() {
             </SectionErrorBoundary>
 
             <SectionErrorBoundary message="계획 카드를 그리지 못했습니다." className="h-64">
-              <ShipperPlanCard myPlan={myPlan} own={own} pending={pending} showDetailLink={false} />
+              <ShipperPlanCard
+                myPlan={myPlan}
+                own={own}
+                pending={pending}
+                showDetailLink={false}
+                showDecision={false}
+              />
             </SectionErrorBoundary>
 
             <SectionErrorBoundary message="운송계획을 그리지 못했습니다." className="h-96">
-              <div className="@container flex flex-col gap-4">
+              <div className="@container flex min-w-0 flex-col gap-4 overflow-x-auto">
                 <PlanSummary plan={session.plan} showAirLots />
                 <div className="grid grid-cols-1 gap-4 @min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(0,440px)]">
                   <div className="flex min-w-0 flex-col gap-4">
@@ -185,7 +192,7 @@ export function PlanDetailView() {
             </SectionErrorBoundary>
 
             <SectionErrorBoundary message="실행 지시를 그리지 못했습니다." className="h-64">
-              <PlanOrders planId={plan.data.plan_id} viewerShipperId={viewerShipperId} />
+              <PlanOrders planId={plan.data.plan_id} own={own} labels={labels} />
             </SectionErrorBoundary>
           </>
         )}
@@ -197,7 +204,15 @@ export function PlanDetailView() {
 const headlineTitle = ({ voyage, destinationName }: MyPlanT) =>
   voyage ? `${voyage.vessel_name} → ${destinationName}` : '운송계획 상세';
 
-function PlanOrders({ planId, viewerShipperId }: { planId: string; viewerShipperId: string }) {
+function PlanOrders({
+  planId,
+  own,
+  labels,
+}: {
+  planId: string;
+  own: OwnScopeT;
+  labels: LotLabelMapT;
+}) {
   const orders = useShipperPlanOrders(planId);
 
   if (orders.isError) {
@@ -225,16 +240,17 @@ function PlanOrders({ planId, viewerShipperId }: { planId: string; viewerShipper
           </div>
           <EmptyState
             title="확인할 실행 지시가 없습니다"
-            description="취소·항공 전환으로 계획이 바뀌면 여기서 수락합니다."
+            description="취소·항공 전환으로 계획이 바뀌면 여기서 수락하거나 거절합니다."
           />
         </section>
       ) : (
         latestFirst.map(order => (
-          <ShipperOrderPanel
+          <ShipperOrderCard
             key={order.order_id}
             planId={planId}
             order={order}
-            viewerShipperId={viewerShipperId}
+            own={own}
+            labels={labels}
           />
         ))
       )}
@@ -243,43 +259,12 @@ function PlanOrders({ planId, viewerShipperId }: { planId: string; viewerShipper
         <div className="m2-card-h">
           <h2 className="m2-h2">요청 응답</h2>
         </div>
-        <RequestList items={requestItems} emptyText="내 출하와 관련된 요청이 없습니다." />
+        <RequestList
+          items={requestItems}
+          labels={labels}
+          emptyText="내 출하와 관련된 요청이 없습니다."
+        />
       </section>
     </div>
-  );
-}
-
-function ShipperOrderPanel({
-  planId,
-  order,
-  viewerShipperId,
-}: {
-  planId: string;
-  order: ShipperOrderT;
-  viewerShipperId: string;
-}) {
-  const invalidatePlan = useInvalidateShipperPlan();
-  const confirmOptions: UseConfirmOrderOptionsT = {
-    confirmFn: ({ accept, note, shipper_id }) =>
-      postShipperOrderConfirm(planId, order.order_id, {
-        accept,
-        note: note ?? null,
-        shipper_id: shipper_id ?? null,
-      }),
-    onSuccess: (_updated, { accept }) => {
-      invalidatePlan(planId);
-      toast.success(accept ? '실행 지시를 수락했습니다.' : '실행 지시를 거절했습니다.');
-    },
-    onError: toastSaasError('실행 지시에 응답하지 못했습니다.'),
-  };
-
-  return (
-    <ExecutionOrderPanel
-      planId={planId}
-      order={order}
-      role="shipper"
-      viewerShipperId={viewerShipperId}
-      confirmOptions={confirmOptions}
-    />
   );
 }
