@@ -20,8 +20,13 @@ const PLAIN_WORDS: [RegExp, string][] = [
   [/\bETA\b/g, '도착'],
 ];
 
+export const so2Text = (text: string) => text.replace(/SO2/g, 'SO₂');
+
 export const plainWords = (text: string, labels?: LotLabelMapT) => {
-  const plain = PLAIN_WORDS.reduce((value, [pattern, word]) => value.replace(pattern, word), text);
+  const plain = PLAIN_WORDS.reduce(
+    (value, [pattern, word]) => value.replace(pattern, word),
+    so2Text(text)
+  );
 
   return labels ? withLotLabels(plain, labels) : plain;
 };

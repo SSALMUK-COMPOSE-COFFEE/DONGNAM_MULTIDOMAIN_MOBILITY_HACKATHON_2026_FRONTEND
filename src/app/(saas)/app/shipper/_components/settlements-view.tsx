@@ -63,8 +63,8 @@ const baselineKindOf = (row: ShipperSettlementT) =>
   textOf(row, 'baseline_kind') ?? (billingRuleOf(row) === 'usage_fee' ? 'sea_solo' : 'air_solo');
 
 const baselineLabelOf = (row: ShipperSettlementT) =>
-  textOf(row, 'savings_baseline_label') ??
   textOf(row, 'baseline_label') ??
+  textOf(row, 'savings_baseline_label') ??
   BASELINE_KIND_LABEL[baselineKindOf(row)] ??
   '단독 항공 대비';
 

@@ -224,7 +224,7 @@ export function ShipperMapHero({
           <RouteStops myPlan={myPlan} />
         </>
       }
-      placeLabel={place => `내 선과장 · ${place.name}`}
+      placeLabel={place => (narrow ? place.name : `내 선과장 · ${place.name}`)}
       placeSublabel={placeSublabel}
       portSublabel={
         firstStop

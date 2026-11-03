@@ -236,7 +236,7 @@ function ShipperRow({ shipper, scenario }: { shipper: ShipperDeltaT; scenario: S
   return (
     <li className="flex flex-col gap-0.5 border-t border-m2-line pt-2 text-[12.5px] first:border-t-0 first:pt-0">
       <p className="font-semibold text-m2-ink">{getShipperShortName(scenario, shipperId)}</p>
-      <div className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-2 gap-y-0.5">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5">
         <span className="text-m2-muted">운송비</span>
         <span className={cn('m2-num', TONE_CLASS[burden.tone])}>{burden.text}</span>
         {settlement && (
@@ -253,7 +253,7 @@ function ShipperRow({ shipper, scenario }: { shipper: ShipperDeltaT; scenario: S
         )}
         {hasShareChange(shipper) && (
           <>
-            <span className="text-m2-muted">파렛트당 몫</span>
+            <span className="text-m2-muted">컨테이너 파렛트당 몫</span>
             <span className="m2-num">
               {manwonShort(shareBefore)} → {manwonShort(shareAfter)} ({signedPercent(pct)})
             </span>

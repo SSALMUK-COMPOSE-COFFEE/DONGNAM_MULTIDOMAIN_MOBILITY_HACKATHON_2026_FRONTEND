@@ -67,6 +67,8 @@ export const monthDay = (date: string | null | undefined) =>
 export const ratioPercent = (part: number, whole: number, digits = 1) =>
   whole > 0 ? `${((part / whole) * 100).toFixed(digits)}%` : EMPTY;
 
+export const so2Text = (text: string) => text.replace(/SO2/g, 'SO₂');
+
 type ProductLikeT = { name: string; so2_treated: boolean };
 
 export const productShortName = (product: ProductLikeT | null | undefined, fallback: string) => {

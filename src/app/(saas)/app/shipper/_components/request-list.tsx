@@ -28,10 +28,38 @@ export type RequestItemT = {
 
 const NO_LABELS: LotLabelMapT = new Map();
 
+const palletsNote = (pallets: number) => (pallets > 0 ? ` (${pallets}파렛트)` : '');
+
+const changeNote = (before: number, after: number) =>
+  before !== after && before > 0 && after > 0
+    ? ` (${before} → ${after}파렛트)`
+    : palletsNote(after);
+
+const summaryOf = ({ kind, pallets_before: before, pallets_after: after }: ShipperRequestT) => {
+  switch (kind) {
+    case 'booking_amendment':
+      return `배 예약 내용을 바꿉니다${changeNote(before, after)}.`;
+    case 'booking_cancel':
+      return `배 예약을 취소합니다${palletsNote(before)}.`;
+    case 'booking_new':
+      return `새 배를 예약합니다${palletsNote(after)}.`;
+    case 'reefer_plug':
+      return '항구에서 냉장 컨테이너 전원을 연결합니다.';
+    case 'cy_entry':
+      return `컨테이너를 항구에 들여놓습니다${palletsNote(after)}.`;
+    case 'air_booking':
+      return `항공편을 예약합니다${palletsNote(after)}.`;
+    case 'air_cancel':
+      return `항공 예약을 취소합니다${palletsNote(before)}.`;
+    default:
+      return `요청을 처리합니다${palletsNote(after)}.`;
+  }
+};
+
 const requestTextOf = (request: ShipperRequestT, labels: LotLabelMapT) => {
   const plain: unknown = (request as Record<string, unknown>).plain_text;
 
-  return plainWords(typeof plain === 'string' && plain.trim() ? plain : request.text, labels);
+  return typeof plain === 'string' && plain.trim() ? plainWords(plain, labels) : summaryOf(request);
 };
 
 const requestStatusLabel = (request: ShipperRequestT) =>
@@ -89,6 +117,16 @@ export function RequestList({ items, emptyText, labels = NO_LABELS }: RequestLis
               <p className="text-[13.5px] [overflow-wrap:anywhere]">
                 {requestTextOf(request, labels)}
               </p>
+              {request.text.trim() && (
+                <details className="text-[12.5px] text-m2-muted">
+                  <summary className="w-fit cursor-pointer font-semibold text-m2-brand-ink">
+                    원문 보기
+                  </summary>
+                  <p className="mt-1 [overflow-wrap:anywhere]">
+                    {plainWords(request.text, labels)}
+                  </p>
+                </details>
+              )}
               <p className="m2-sub mt-0 flex flex-wrap gap-x-5">
                 <span>
                   기한{' '}

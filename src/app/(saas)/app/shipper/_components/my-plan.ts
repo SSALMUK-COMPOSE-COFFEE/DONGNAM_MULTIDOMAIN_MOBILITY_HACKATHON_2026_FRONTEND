@@ -145,8 +145,8 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
           gain: sum.gain + row.shipper_gain,
           baselineLabel:
             sum.baselineLabel ??
-            stringField(row, 'savings_baseline_label') ??
-            stringField(row, 'baseline_label'),
+            stringField(row, 'baseline_label') ??
+            stringField(row, 'savings_baseline_label'),
           baselineKind: sum.baselineKind ?? stringField(row, 'baseline_kind'),
           performanceOnly:
             sum.performanceOnly &&

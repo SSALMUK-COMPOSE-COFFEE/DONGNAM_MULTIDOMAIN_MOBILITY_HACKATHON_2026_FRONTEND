@@ -13,6 +13,7 @@ import {
 import { Polyline, useMap } from 'react-kakao-maps-sdk';
 
 import KakaoMap from '@/components/kakao-map';
+import { type LayoutLabelT, layoutLabels } from '@/components/map-hero/label-layout';
 import {
   M2_COLORS,
   type MapSceneT,
@@ -702,7 +703,25 @@ function SceneOverlays({
     });
     entriesRef.current = created.map(({ entry }) => entry);
 
+    const labels = specs.map((spec, index): LayoutLabelT => {
+      const element = created[index].entry.element;
+      const pinLabel = element.querySelector<HTMLElement>('.m2-pin-label');
+
+      return pinLabel
+        ? { label: pinLabel, anchor: element, side: spec.side, gap: spec.kind === 'port' ? 6 : 5 }
+        : { label: element, anchor: null, side: null, gap: 0 };
+    });
+    let frame = 0;
+    const relayout = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => layoutLabels(map.getNode(), labels));
+    };
+    kakao.maps.event.addListener(map, 'idle', relayout);
+    relayout();
+
     return () => {
+      cancelAnimationFrame(frame);
+      kakao.maps.event.removeListener(map, 'idle', relayout);
       created.forEach(({ overlay }) => overlay.setMap(null));
       entriesRef.current = [];
     };

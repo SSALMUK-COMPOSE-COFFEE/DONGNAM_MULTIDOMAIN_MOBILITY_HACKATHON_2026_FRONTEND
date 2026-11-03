@@ -13,7 +13,7 @@ import {
   QueryError,
 } from '@/app/(saas)/app/shipper/_components/query-state';
 import { RequestList } from '@/app/(saas)/app/shipper/_components/request-list';
-import { fmtMonthDayTime, fmtSignedWon } from '@/app/(saas)/app/shipper/_components/shipper-format';
+import { fmtBurden, fmtMonthDayTime } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import {
   isRequestAnswerable,
@@ -76,7 +76,7 @@ export function RequestsView() {
     orders.flatMap(order =>
       order.requests.map(request => ({
         planId: plan.plan_id,
-        planLabel: planOptionLabel(plan),
+        planLabel: planOptionLabel({ ...plan, plan_id: '' }),
         order,
         request,
       }))
@@ -128,9 +128,9 @@ export function RequestsView() {
                 </p>
                 {mine.map(({ shipper_id, reason_text, net_cost_delta, deadline }) => (
                   <p key={shipper_id} className="m2-sub mt-0">
-                    {plainWords(reason_text.join(' · '), labels)} · 부담{' '}
-                    <span className="m2-num text-m2-ink">{fmtSignedWon(net_cost_delta)}</span> ·
-                    기한 <span className="m2-num">{fmtMonthDayTime(deadline)}</span>
+                    {plainWords(reason_text.join(' · '), labels)} · 내 비용{' '}
+                    <span className="m2-num text-m2-ink">{fmtBurden(net_cost_delta)}</span> · 기한{' '}
+                    <span className="m2-num">{fmtMonthDayTime(deadline)}</span>
                   </p>
                 ))}
               </div>

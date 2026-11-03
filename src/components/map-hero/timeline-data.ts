@@ -357,70 +357,99 @@ export function timelineFromScene(
     (session?.scenario.lots ?? []).map(lot => [lot.id, lot.ready_date ?? null])
   );
 
-  const readyGroups = new Map<
-    string,
-    { at: string; tone: string; color: string; parts: Map<string, number>; keys: Set<string> }
-  >();
+  type DayGroupT = {
+    at: string;
+    colors: Set<string>;
+    air: boolean;
+    sea: boolean;
+    parts: Map<string, number>;
+    airParts: Map<string, number>;
+    keys: Set<string>;
+  };
+  const dayGroups = new Map<number, DayGroupT>();
+  const groupOf = (at: string) => {
+    const ms = Date.parse(at);
+    const day = Number.isNaN(ms) ? Number.NaN : kstDayStart(ms);
+    const existing = dayGroups.get(day);
+    if (existing) {
+      if (Date.parse(at) < Date.parse(existing.at)) existing.at = at;
+      return existing;
+    }
+    const group: DayGroupT = {
+      at,
+      colors: new Set<string>(),
+      air: false,
+      sea: false,
+      parts: new Map<string, number>(),
+      airParts: new Map<string, number>(),
+      keys: new Set<string>(),
+    };
+    dayGroups.set(day, group);
+    return group;
+  };
+
   scene.runs.forEach(run =>
     run.stops.forEach(stop => {
-      const groupKey = `${stop.readyAt}|${run.tone}`;
-      const group = readyGroups.get(groupKey) ?? {
-        at: stop.readyAt,
-        tone: run.tone,
-        color: run.color,
-        parts: new Map<string, number>(),
-        keys: new Set<string>(),
-      };
+      const group = groupOf(stop.readyAt);
       const place = placeByKey.get(stop.packhouseId);
       const name = place && !place.anonymous ? place.shortName : OTHER_LABEL;
       if (place && !place.anonymous) group.keys.add(stop.packhouseId);
       group.keys.add(run.key);
+      group.sea = true;
+      group.colors.add(run.color);
       group.parts.set(name, (group.parts.get(name) ?? 0) + stop.pallets);
-      readyGroups.set(groupKey, group);
     })
   );
 
-  const readyMarks: TimelineMarkT[] = [...readyGroups.entries()].map(([groupKey, group]) => {
-    const parts = [...group.parts.entries()];
-    const label = parts.map(([name, pallets]) => `${name} ${pallets}`).join(' · ');
-    const total = parts.reduce((sum, [, pallets]) => sum + pallets, 0);
-    const shortLabels = [
-      ...(parts.length > 1 ? [`${parts[0][0]} 외 ${parts.length - 1} · ${total}`] : []),
-      ...(parts.length > 1 ? [`${parts[0][0]} 외 ${parts.length - 1}`] : []),
-      `${total}P`,
-    ];
-    return {
-      key: `ready:${groupKey}`,
-      at: group.at,
-      label,
-      color: group.color,
-      keys: [...group.keys],
-      title: `${kstDayLabel(group.at)} ${kstHourMinute(group.at)} 출하 준비 · ${label}`,
-      shortLabels,
-    };
-  });
-
-  const airMarks: TimelineMarkT[] = scene.air.flatMap(item => {
+  scene.air.forEach(item => {
     const readyDate = item.readyDate ?? lotReady.get(item.lotId) ?? null;
-    if (!readyDate) return [];
-    const at = `${readyDate.slice(0, 10)}${READY_TIME}`;
+    if (!readyDate) return;
+    const group = groupOf(`${readyDate.slice(0, 10)}${READY_TIME}`);
     const place = item.packhouseId ? placeByKey.get(item.packhouseId) : null;
     const fallbackName = item.anonymous ? OTHER_LABEL : shortPlaceName(item.name);
     const name = place && !place.anonymous ? place.shortName : fallbackName;
-    const label = `${name} ${item.pallets} → 항공`;
-    return [
-      {
-        key: item.key,
-        at,
-        label,
-        color: M2_COLORS.warn,
-        textColor: M2_COLORS.warnInk,
-        shortLabels: [`항공 ${item.pallets}`, `${item.pallets}P`],
-        keys: [item.key, item.lotId, 'air', ...(item.packhouseId ? [item.packhouseId] : [])],
-        title: `${kstDayLabel(at)} 출하 준비 · ${label}`,
-      },
-    ];
+    group.air = true;
+    group.airParts.set(name, (group.airParts.get(name) ?? 0) + item.pallets);
+    [item.key, item.lotId, 'air', ...(item.packhouseId ? [item.packhouseId] : [])].forEach(key =>
+      group.keys.add(key)
+    );
   });
+
+  const markColor = (group: DayGroupT) => {
+    if (!group.sea) return { color: M2_COLORS.warn, textColor: M2_COLORS.warnInk };
+    if (group.colors.size === 1 && !group.air) return { color: [...group.colors][0] };
+
+    return { color: M2_COLORS.ink };
+  };
+
+  const readyMarks: TimelineMarkT[] = [...dayGroups.entries()]
+    .filter(([day]) => !Number.isNaN(day))
+    .map(([day, group]) => {
+      const seaParts = [...group.parts.entries()];
+      const airParts = [...group.airParts.entries()];
+      const label = [
+        ...seaParts.map(([name, pallets]) => `${name} ${pallets}`),
+        ...airParts.map(([name, pallets]) => `${name} ${pallets} → 항공`),
+      ].join(' · ');
+      const names = [...seaParts, ...airParts];
+      const total = names.reduce((sum, [, pallets]) => sum + pallets, 0);
+      const airTotal = airParts.reduce((sum, [, pallets]) => sum + pallets, 0);
+      const shortLabels = [
+        ...(names.length > 1 ? [`${names[0][0]} 외 ${names.length - 1} · ${total}`] : []),
+        ...(names.length > 1 ? [`${names[0][0]} 외 ${names.length - 1}`] : []),
+        ...(!group.sea ? [`항공 ${airTotal}`] : []),
+        `${total}P`,
+      ];
+      return {
+        key: `ready:${day}`,
+        at: group.at,
+        label,
+        ...markColor(group),
+        keys: [...group.keys],
+        title: `${kstDayLabel(group.at)} ${kstHourMinute(group.at)} 출하 준비 · ${label}`,
+        shortLabels,
+      };
+    });
 
   const bars: TimelineBarT[] = scene.runs.map(run => ({
     key: `${run.voyageId}|${run.key}`,
@@ -434,7 +463,6 @@ export function timelineFromScene(
 
   const times = [
     ...readyMarks.map(({ at }) => Date.parse(at)),
-    ...airMarks.map(({ at }) => Date.parse(at)),
     ...bars.flatMap(({ start, end }) => [Date.parse(start), Date.parse(end)]),
   ].filter(ms => !Number.isNaN(ms));
   const lane = scene.seaLane;
@@ -490,12 +518,12 @@ export function timelineFromScene(
     : [];
 
   const rows: TimelineRowT[] = [];
-  if (readyMarks.length + airMarks.length > 0) {
+  if (readyMarks.length > 0) {
     rows.push({
       key: 'ready',
       label: '출하 준비',
       kind: 'marks',
-      items: [...readyMarks, ...airMarks],
+      items: readyMarks,
     });
   }
   if (bars.length > 0) rows.push({ key: 'runs', label: '집하 트럭', kind: 'bars', items: bars });

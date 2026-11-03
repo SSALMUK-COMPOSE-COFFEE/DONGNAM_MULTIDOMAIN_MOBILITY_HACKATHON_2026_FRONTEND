@@ -15,11 +15,11 @@ import {
 } from '@/app/(saas)/app/shipper/_components/order-decision';
 import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import {
+  fmtBurden,
   fmtCount,
   fmtDayTime,
   fmtMonthDay,
   fmtMonthDayTime,
-  fmtSignedWon,
   fmtWon,
 } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
@@ -145,7 +145,7 @@ export function ShipperPlanCard({
             </span>
           )}
           <span className="m2-sub mt-0 truncate">
-            {planSessionLabel(session)} · v{session.version}
+            {planSessionLabel({ ...session, plan_id: '' })} · v{session.version}
           </span>
         </div>
       </div>
@@ -160,7 +160,7 @@ export function ShipperPlanCard({
               {plainWords(confirmation.reason_text.join(' · ')) || '계획이 바뀌었습니다'}
             </b>
             <span className="m2-num">
-              내 부담 {fmtSignedWon(confirmation.net_cost_delta)} · 기한{' '}
+              내 비용 {fmtBurden(confirmation.net_cost_delta)} · 기한{' '}
               {fmtDayTime(confirmation.deadline)}
             </span>
           </div>

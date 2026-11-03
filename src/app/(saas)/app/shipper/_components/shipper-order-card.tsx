@@ -14,7 +14,7 @@ import {
   useOrderDecision,
 } from '@/app/(saas)/app/shipper/_components/order-decision';
 import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
-import { fmtDayTime, fmtSignedWon } from '@/app/(saas)/app/shipper/_components/shipper-format';
+import { fmtBurden, fmtDayTime } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import type { ShipperOrderT } from '@/types/saas-shipper';
 
 const ORDER_STATUS: Record<ShipperOrderT['status'], { label: string; tone: string }> = {
@@ -101,7 +101,7 @@ export function ShipperOrderCard({ planId, order, own, labels }: ShipperOrderCar
                   )}
                   {isMine && (
                     <p className="m2-sub m2-num mt-0">
-                      내 부담 {fmtSignedWon(delta)} · 기한 {fmtDayTime(confirmation.deadline)}
+                      내 비용 {fmtBurden(delta)} · 기한 {fmtDayTime(confirmation.deadline)}
                     </p>
                   )}
                   {isMine && confirmation.note && (

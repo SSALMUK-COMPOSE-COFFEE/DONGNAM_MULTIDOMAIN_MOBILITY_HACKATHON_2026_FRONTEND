@@ -1,15 +1,17 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { cn } from 'cn';
 import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
-import { useDemoLogin } from '@/apis/saas/auth';
+import { meQueryOptions, useDemoLogin } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
 import { roleLinkKeys, useShowcaseScene } from '@/app/(auth)/_components/use-showcase-scene';
 import { useMapLinkTarget } from '@/components/map-link';
-import { ORG_TYPES, SAAS_ROUTES } from '@/consts/route-saas';
+import { ORG_TYPES, SAAS_ROUTES, roleHome } from '@/consts/route-saas';
 import { DEMO_FORWARDER_ORGS, DEMO_PLATFORM_ORG, DEMO_SHIPPER_ORGS } from '@/consts/sandbox-saas';
 import type { OrgType } from '@/types/saas';
 
@@ -81,6 +83,7 @@ function RoleButton({
 export function DemoLoginPanel() {
   const demoLogin = useDemoLogin();
   const enterApp = useEnterApp();
+  const session = useQuery({ ...meQueryOptions(), enabled: false }).data ?? null;
   const { scene } = useShowcaseScene();
   const [chosen, setChosen] = useState<OrgType | null>(null);
   const [shipperOrgId, setShipperOrgId] = useState<string>(DEMO_SHIPPER_ORGS[0].org_id);
@@ -102,6 +105,18 @@ export function DemoLoginPanel() {
       { onSuccess: enterApp }
     );
   };
+
+  if (session) {
+    return (
+      <div className="flex flex-col gap-2.5">
+        <p className="m2-sub mt-0">{session.active_org.org_name} 계정으로 들어갔습니다.</p>
+        <Link href={roleHome(session.active_org.org_type)} className="m2-btn m2-btn-sec self-start">
+          내 화면으로
+          <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2.5">

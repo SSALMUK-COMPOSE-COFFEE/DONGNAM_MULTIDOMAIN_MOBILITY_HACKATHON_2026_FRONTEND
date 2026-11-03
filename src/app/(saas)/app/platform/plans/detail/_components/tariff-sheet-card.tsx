@@ -6,7 +6,7 @@ import {
   billingRuleLabel,
   usageFeePerPalletOf,
 } from '@/app/(saas)/app/platform/_components/billing';
-import { won } from '@/app/(saas)/app/platform/_components/m2-format';
+import { so2Text, won } from '@/app/(saas)/app/platform/_components/m2-format';
 import { CompareBars } from '@/components/map-hero';
 import type { ScenarioT, TariffSheetT } from '@/types/api';
 import { getProductName } from '@/utils/scenario';
@@ -27,7 +27,9 @@ export function TariffSheetCard({
   return (
     <section className="m2-card">
       <div className="m2-card-h">
-        <h2 className="m2-h2">{getProductName(scenario, tariff.product_id)} 1파렛트 정산표</h2>
+        <h2 className="m2-h2">
+          {so2Text(getProductName(scenario, tariff.product_id))} 1파렛트 정산표
+        </h2>
         <div className="flex flex-wrap justify-end gap-1.5">
           {billing.pilot ? <span className="m2-chip m2-chip-ok">시범 항차</span> : null}
           <span className={cn('m2-chip', billingChipClass(rule))}>{feeLabel}</span>

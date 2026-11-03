@@ -14,7 +14,7 @@ import {
 import { todayIso } from '@/app/(saas)/app/shipper/_components/catalog';
 import { SELL_WINDOW_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
 import { lotLabelFrom } from '@/app/(saas)/app/shipper/_components/lot-label';
-import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
+import { plainWords, so2Text } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { errorStatus, toFieldErrors } from '@/app/(saas)/app/shipper/_components/query-state';
 import { fmtDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import { useDebouncedValue } from '@/app/(saas)/app/shipper/_components/use-now';
@@ -234,7 +234,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
                   className="m2-dot"
                   style={{ background: item.so2_treated ? M2_COLORS.grape : M2_COLORS.berry }}
                 />
-                <span className="truncate">{item.name}</span>
+                <span className="truncate">{so2Text(item.name)}</span>
               </button>
             ))}
           </div>

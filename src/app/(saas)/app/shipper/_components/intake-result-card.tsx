@@ -2,7 +2,7 @@ import { cn } from 'cn';
 import { CheckIcon, PlaneIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
 
 import { lotLabelFrom } from '@/app/(saas)/app/shipper/_components/lot-label';
-import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
+import { plainWords, so2Text } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { fmtDay, fmtMonthDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import type { ShipperLotPreviewT } from '@/types/saas-shipper';
 
@@ -29,7 +29,7 @@ export function IntakeResultCard({ preview }: { preview: ShipperLotPreviewT | nu
         <span className="m2-chip m2-chip-ok">등록됨</span>
       </div>
       <div className="m2-sub mt-0">
-        {resolved.product_name} <span className="m2-num">{lot.pallets}</span>파렛트 ·{' '}
+        {so2Text(resolved.product_name)} <span className="m2-num">{lot.pallets}</span>파렛트 ·{' '}
         {resolved.packhouse_name} → {resolved.destination_name} · 출하{' '}
         <span className="m2-num">{fmtDay(lot.ready_date)}</span>
       </div>

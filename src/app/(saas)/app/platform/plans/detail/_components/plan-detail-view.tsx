@@ -167,7 +167,7 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
       />
 
       <SectionErrorBoundary message="계획 상세를 그리지 못했습니다." className="h-96">
-        <div className="m2-grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
+        <div className="m2-grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] max-[1400px]:grid-cols-1">
           <div className="m2-col">
             <PlanLotsCard session={session} runs={scene.runs} />
             <ShipperSavingsCard session={session} />

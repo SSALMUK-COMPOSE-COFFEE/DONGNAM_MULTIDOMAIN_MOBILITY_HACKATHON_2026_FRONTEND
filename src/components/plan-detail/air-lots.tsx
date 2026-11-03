@@ -11,12 +11,20 @@ type AirLotsPropsT = {
   plan: Pick<PlanT, 'assignments'>;
   scenario: ScenarioT;
   viewerShipperId?: string;
+  lotLabel?: (lotId: string) => string;
+  productLabel?: (productName: string) => string;
 };
 
 export const getAirAssignments = (plan: Pick<PlanT, 'assignments'>) =>
   plan.assignments.filter(({ mode }) => mode === 'air');
 
-export function AirLots({ plan, scenario, viewerShipperId }: AirLotsPropsT) {
+export function AirLots({
+  plan,
+  scenario,
+  viewerShipperId,
+  lotLabel,
+  productLabel,
+}: AirLotsPropsT) {
   const airAssignments = getAirAssignments(plan);
 
   if (airAssignments.length === 0) return null;
@@ -53,9 +61,17 @@ export function AirLots({ plan, scenario, viewerShipperId }: AirLotsPropsT) {
                   ? getShipperShortName(scenario, shipper_id)
                   : getOtherShipperLabel(scenario, shipper_id)}
               </span>
-              <span>{getProductName(scenario, product_id)}</span>
+              <span>
+                {productLabel
+                  ? productLabel(getProductName(scenario, product_id))
+                  : getProductName(scenario, product_id)}
+              </span>
               <span className="num">{pallets}파렛트</span>
-              {isOwn && <span className="num text-muted-foreground">{lot_id}</span>}
+              {isOwn && (
+                <span className="num text-muted-foreground">
+                  {lotLabel ? lotLabel(lot_id) : lot_id}
+                </span>
+              )}
             </li>
           );
         })}

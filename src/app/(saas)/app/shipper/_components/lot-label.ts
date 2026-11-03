@@ -1,6 +1,8 @@
 import type { ShipperCatalogT } from '@/types/saas-shipper';
 import { getProductName } from '@/utils/scenario';
 
+const so2Text = (text: string) => text.replace(/SO2/g, 'SO₂');
+
 type LotLikeT = {
   id: string;
   product_id: string;
@@ -21,9 +23,16 @@ export const lotLabelFrom = (
 ) => {
   const day = paddedMonthDay(readyDate);
 
-  return [`${product}${day ? ` ${day}` : ''}`, `${pallets.toLocaleString('ko-KR')}파렛트`].join(
-    ' · '
-  );
+  return [
+    `${so2Text(product)}${day ? ` ${day}` : ''}`,
+    `${pallets.toLocaleString('ko-KR')}파렛트`,
+  ].join(' · ');
+};
+
+export const lotDayLabel = (readyDate: string | null | undefined) => {
+  const day = paddedMonthDay(readyDate);
+
+  return day ? `내 출하 ${day}` : '내 출하';
 };
 
 export const lotLabel = (lot: LotLikeT, catalog: ShipperCatalogT | null) =>

@@ -16,7 +16,11 @@ import {
   withLocatedPackhouses,
 } from '@/app/(saas)/app/shipper/_components/catalog';
 import { PLAN_STATUS_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
-import { type LotLabelMapT, lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
+import {
+  type LotLabelMapT,
+  lotDayLabel,
+  lotLabelMap,
+} from '@/app/(saas)/app/shipper/_components/lot-label';
 import {
   type MyPlanT,
   type OwnScopeT,
@@ -24,6 +28,7 @@ import {
   myPendingConfirmations,
   ownScopeOf,
 } from '@/app/(saas)/app/shipper/_components/my-plan';
+import { so2Text } from '@/app/(saas)/app/shipper/_components/plain-words';
 import {
   CardSkeleton,
   EmptyState,
@@ -38,6 +43,7 @@ import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-path
 import { ShipperPlanCard } from '@/app/(saas)/app/shipper/_components/shipper-plan-card';
 import { useNowMinute } from '@/app/(saas)/app/shipper/_components/use-now';
 import { MapLinkProvider } from '@/components/map-link';
+import { AirLots } from '@/components/plan-detail/air-lots';
 import { ContainerCard } from '@/components/plan-detail/container-card';
 import { PlanSummary } from '@/components/plan-detail/plan-summary';
 import { TariffCard } from '@/components/plan-detail/tariff-card';
@@ -64,6 +70,14 @@ export function PlanDetailView() {
     () => lotLabelMap(lots.data, catalog.data ?? null),
     [lots.data, catalog.data]
   );
+  const airLotLabel = (lotId: string) => {
+    const lot =
+      lots.data?.find(({ id }) => id === lotId) ??
+      session?.scenario.lots.find(({ id }) => id === lotId) ??
+      null;
+
+    return lotDayLabel(lot ? lot.ready_date : null);
+  };
   const backLink = (
     <Link href={SHIPPER_PATHS.PLANS} className="m2-btn m2-btn-sec">
       <ArrowLeftIcon size={16} />
@@ -86,7 +100,7 @@ export function PlanDetailView() {
               {PLAN_STATUS_LABEL[plan.data.status] ?? plan.data.status}
             </span>
             <span className="m2-num">
-              {planSessionLabel(plan.data)} · v{plan.data.version}
+              {planSessionLabel({ ...plan.data, plan_id: '' })} · v{plan.data.version}
             </span>
             <span>다른 화주는 익명으로 보입니다</span>
           </span>
@@ -169,7 +183,13 @@ export function PlanDetailView() {
                       plan={session.plan}
                       scenario={session.scenario}
                       viewerShipperId={viewerShipperId}
-                      showAirLots
+                    />
+                    <AirLots
+                      plan={session.plan}
+                      scenario={session.scenario}
+                      viewerShipperId={viewerShipperId}
+                      lotLabel={lotId => airLotLabel(lotId)}
+                      productLabel={so2Text}
                     />
                     <SettlementTable
                       containerSettlements={session.plan.container_settlements ?? []}

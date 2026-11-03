@@ -1,3 +1,5 @@
+import { burdenWords } from '@/components/replan-alternatives/money-words';
+
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'] as const;
 const EMPTY = '–';
@@ -69,5 +71,8 @@ export const fmtSignedWon = (krw: number | null | undefined) => {
 
   return `${krw > 0 ? '+' : '−'}${Math.abs(Math.round(krw)).toLocaleString('ko-KR')}원`;
 };
+
+export const fmtBurden = (krw: number | null | undefined) =>
+  typeof krw === 'number' && Number.isFinite(krw) ? burdenWords(krw).text : EMPTY;
 
 export const fmtCount = (value: number) => value.toLocaleString('ko-KR');

@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { usePlatformReplanFlow } from '@/apis/saas/platform';
 import { ContainerBlock } from '@/app/(saas)/app/platform/_components/container-plan-card';
+import { so2Text } from '@/app/(saas)/app/platform/_components/m2-format';
 import { containerViews } from '@/app/(saas)/app/platform/_components/plan-model';
 import { SegTabs } from '@/app/(saas)/app/platform/_components/seg-tabs';
 import { PlatformOrderCard } from '@/app/(saas)/app/platform/plans/detail/_components/platform-order-card';
@@ -108,7 +109,8 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
                     ({ lot_id, shipper_id, product_id, pallets: lotPallets, container_id }) => (
                       <SelectItem key={lot_id} value={lot_id}>
                         {getShipperShortName(scenario, shipper_id)}{' '}
-                        {getProductName(scenario, product_id)} {lotPallets}파렛트 · {container_id}
+                        {so2Text(getProductName(scenario, product_id))} {lotPallets}파렛트 ·{' '}
+                        {container_id}
                       </SelectItem>
                     )
                   )}

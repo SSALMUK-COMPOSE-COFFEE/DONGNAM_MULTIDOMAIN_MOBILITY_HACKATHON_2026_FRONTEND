@@ -7,7 +7,7 @@ export const CARD_MAIN = 'max-[767.98px]:basis-full';
 
 export const CARD_PUSH = 'max-[767.98px]:ml-auto';
 
-export const CARD_HIDE = 'max-[767.98px]:hidden';
+export const CARD_HIDE = 'max-[767.98px]:hidden!';
 
 export const MOBILE_ONLY = 'hidden max-[767.98px]:inline';
 
