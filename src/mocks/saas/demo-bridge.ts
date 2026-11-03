@@ -22,6 +22,9 @@ export const demoPlan = (planId: string) =>
 
 export const demoCreatePlan = () => callDemo<PlanSessionT>('POST', '/api/plans', {});
 
+export const demoReset = () =>
+  callDemo<{ cleared_sessions: number }>('POST', '/api/demo/reset', {});
+
 export const demoOrders = (planId: string) =>
   callDemo<ExecutionOrderT[]>('GET', `/api/plans/${encodeURIComponent(planId)}/orders`);
 

@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
-import { orgKeys } from '@/apis/saas/keys';
+import { analysisKeys, orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
 import { SAAS_API_BASE } from '@/consts/api-saas';
 import { mockingReady } from '@/mocks/ready';
@@ -497,19 +497,28 @@ export const usePlatformReplanFlow = (planId: string) => {
   const queryClient = useQueryClient();
   const orgId = usePlatformOrgId();
 
+  const [external, setExternal] = useState<{
+    planId: string;
+    result: ReplanResponseT;
+  } | null>(null);
+  const externalReplan = external?.planId === planId ? external.result : null;
+
   const replan = useMutation({
     mutationFn: (event: PlanEventT) => postPlatformPlanEvent(planId, event),
     onError: toastSaasError('재최적화하지 못했습니다.'),
   });
 
+  const replanResult = externalReplan ?? replan.data ?? null;
+
   const apply = useMutation({
     mutationFn: (alternativeId: AlternativeIdT) =>
-      postPlatformPlanApply(planId, { alternativeId, replanId: replan.data?.replan_id ?? '' }),
+      postPlatformPlanApply(planId, { alternativeId, replanId: replanResult?.replan_id ?? '' }),
     onSuccess: updated => {
       queryClient.setQueryData(platformKeys.plan(orgId, planId), updated);
       queryClient.invalidateQueries({ queryKey: platformKeys.planOrders(orgId, planId) });
       queryClient.invalidateQueries({ queryKey: platformKeys.plans(orgId), exact: true });
       queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
+      queryClient.invalidateQueries({ queryKey: analysisKeys.plan(orgId, planId) });
       toast.success('대안을 적용했습니다. 화주·포워더 확정을 기다립니다.');
     },
     onError: toastSaasError('대안을 적용하지 못했습니다.'),
@@ -518,12 +527,19 @@ export const usePlatformReplanFlow = (planId: string) => {
   const { data: orders } = useQuery(platformPlanOrdersQueryOptions(orgId, planId));
 
   return {
-    replanResult: replan.data ?? null,
+    replanResult,
     isReplanning: replan.isPending,
     runReplan: (event: PlanEventT) => {
       apply.reset();
+      setExternal(null);
       replan.mutate(event);
     },
+    loadExternalReplan: (result: ReplanResponseT | null) => {
+      apply.reset();
+      replan.reset();
+      setExternal(result?.plan_id === planId ? { planId, result } : null);
+    },
+    isExternalReplan: externalReplan !== null,
     appliedId: apply.isSuccess ? apply.variables : null,
     applyingId: apply.isPending ? apply.variables : null,
     applyAlternative: (alternativeId: AlternativeIdT) => apply.mutate(alternativeId),

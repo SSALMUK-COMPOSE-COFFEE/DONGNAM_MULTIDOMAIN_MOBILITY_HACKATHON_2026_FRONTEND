@@ -881,6 +881,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/auth/active-org": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Switch Active Org */
+        put: operations["switch_active_org_test_api_auth_active_org_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/auth/logout": {
         parameters: {
             query?: never;
@@ -1294,6 +1311,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/sandbox/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset World */
+        post: operations["reset_world_test_api_saas_sandbox_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/public/showcase": {
         parameters: {
             query?: never;
@@ -1315,6 +1349,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActiveOrgRequest */
+        ActiveOrgRequest: {
+            /** Org Id */
+            org_id: string;
+        };
         /** AddLotEvent */
         AddLotEvent: {
             /**
@@ -1323,6 +1362,8 @@ export interface components {
              */
             type: "add_lot";
             lot: components["schemas"]["Lot"];
+            /** Occurred At */
+            occurred_at?: string | null;
         };
         /** AirHint */
         AirHint: {
@@ -1411,6 +1452,8 @@ export interface components {
             type: "air_switch";
             /** Lot Id */
             lot_id: string;
+            /** Occurred At */
+            occurred_at?: string | null;
         };
         /** AirSwitchProposal */
         AirSwitchProposal: {
@@ -1760,6 +1803,8 @@ export interface components {
              * @default default
              */
             scenario_id: string;
+            /** Plan Id */
+            plan_id?: string | null;
         };
         /** BenchmarkResult */
         BenchmarkResult: {
@@ -1770,6 +1815,34 @@ export interface components {
             replan: components["schemas"]["ReplanBenchmark"] | null;
             /** Solve Ms */
             solve_ms: number;
+        };
+        /** BillingParams */
+        BillingParams: {
+            /**
+             * @default {
+             *       "value": 20000,
+             *       "unit": "원/파렛트",
+             *       "source": "가정: 기획서 ㅍ3 8-1 파렛트 이용료 2만 원(이미 배로 가는 품목은 성과보수 대신 이용료)"
+             *     }
+             */
+            usage_fee_per_pallet_krw: components["schemas"]["Quantity"];
+            /** Usage Fee Products */
+            usage_fee_products?: string[];
+            /**
+             * Usage Fee Source
+             * @default 기획서 ㅍ3 8-1: 포도처럼 이미 배로 가는 품목은 성과보수 없이 파렛트 이용료만 받는다
+             */
+            usage_fee_source: string;
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
+            /**
+             * Pilot Source
+             * @default 기획서 ㅍ3 8-1: 첫 항차 무료 시범. 켜면 수수료 0원, 원래 금액은 함께 싣는다
+             */
+            pilot_source: string;
         };
         /** Binding */
         Binding: {
@@ -1894,6 +1967,8 @@ export interface components {
             type: "cancel";
             /** Lot Id */
             lot_id: string;
+            /** Occurred At */
+            occurred_at?: string | null;
         };
         /** CancellationCharge */
         CancellationCharge: {
@@ -1927,6 +2002,19 @@ export interface components {
             fee: number;
             /** Transfers */
             transfers: components["schemas"]["CancellationTransfer"][];
+            /** Recipient Kind */
+            recipient_kind?: ("shippers" | "consolidator" | "mixed") | null;
+            /**
+             * Consolidator
+             * @default platform
+             * @enum {string}
+             */
+            consolidator: "platform" | "forwarder";
+            /**
+             * Consolidator Amount
+             * @default 0
+             */
+            consolidator_amount: number;
             /** Rule */
             rule: string;
             /** Source */
@@ -2232,6 +2320,43 @@ export interface components {
              * @enum {string}
              */
             basis: "tariff" | "operational" | "mixed";
+            /**
+             * Billing Rule
+             * @default performance
+             * @enum {string}
+             */
+            billing_rule: "performance" | "usage_fee" | "mixed";
+            /**
+             * Performance Fee
+             * @default 0
+             */
+            performance_fee: number;
+            /**
+             * Usage Fee
+             * @default 0
+             */
+            usage_fee: number;
+            /**
+             * Baseline Kind
+             * @default air_solo
+             * @enum {string}
+             */
+            baseline_kind: "air_solo" | "sea_solo" | "mixed";
+            /**
+             * Baseline Label
+             * @default 단독 항공 대비
+             */
+            baseline_label: string;
+            /**
+             * Savings Baseline Label
+             * @default 단독 항공 대비
+             */
+            savings_baseline_label: string;
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
         };
         /** CostBreakdown */
         CostBreakdown: {
@@ -2408,6 +2533,7 @@ export interface components {
             pallet_tariffs?: {
                 [key: string]: components["schemas"]["PalletTariff"];
             };
+            billing?: components["schemas"]["BillingParams"];
         };
         /** CreatePlanRequest */
         CreatePlanRequest: {
@@ -2498,6 +2624,8 @@ export interface components {
              * @enum {string}
              */
             source: "manual" | "해수부" | "예측";
+            /** Occurred At */
+            occurred_at?: string | null;
         };
         /** DelayForecast */
         DelayForecast: {
@@ -2557,6 +2685,10 @@ export interface components {
             free_lot_ids: string[];
             /** Fixed Lot Ids */
             fixed_lot_ids: string[];
+            /** Fixed Reasons */
+            fixed_reasons?: components["schemas"]["FixedLot"][];
+            /** Occurred At */
+            occurred_at?: string | null;
             /** Alternatives */
             alternatives: components["schemas"]["Alternative"][];
             /** Recommended Id */
@@ -2867,6 +2999,31 @@ export interface components {
             /** Source */
             source: string;
         };
+        /** FixedLot */
+        FixedLot: {
+            /** Lot Id */
+            lot_id: string;
+            /**
+             * Reason Code
+             * @enum {string}
+             */
+            reason_code: "truck_departed" | "dispatch_executed";
+            /** Reason */
+            reason: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Truck Id */
+            truck_id: string;
+            /** Trip */
+            trip: number;
+            /** Packhouse Id */
+            packhouse_id: string;
+            /**
+             * Departure
+             * Format: date-time
+             */
+            departure: string;
+        };
         /** ForecastOptions */
         ForecastOptions: {
             /**
@@ -2938,6 +3095,16 @@ export interface components {
             fee?: number | null;
             /** Transfers */
             transfers: components["schemas"]["ForwarderCancellationTransfer"][];
+            /** Recipient Kind */
+            recipient_kind?: ("shippers" | "consolidator" | "mixed") | null;
+            /**
+             * Consolidator
+             * @default platform
+             * @enum {string}
+             */
+            consolidator: "platform" | "forwarder";
+            /** Consolidator Amount */
+            consolidator_amount?: number | null;
             /** Rule */
             rule: string;
             /** Source */
@@ -4257,6 +4424,8 @@ export interface components {
             /** Containers */
             containers: components["schemas"]["ContainerFill"][];
             cancellation?: components["schemas"]["CancellationCharge"] | null;
+            /** Route Changes */
+            route_changes?: components["schemas"]["RouteChange"][];
         };
         /** PlanListItem */
         PlanListItem: {
@@ -4453,6 +4622,33 @@ export interface components {
             platform_fee_krw: number;
             /** Shippers */
             shippers: components["schemas"]["PlatformShipperShare"][];
+            /**
+             * Performance Fee Krw
+             * @description 환급 전 금액. fee_before_refund_krw = performance_fee_krw + usage_fee_krw(시범 항차 제외)
+             * @default 0
+             */
+            performance_fee_krw: number;
+            /**
+             * Usage Fee Krw
+             * @description 환급 전 금액. fee_before_refund_krw = performance_fee_krw + usage_fee_krw(시범 항차 제외)
+             * @default 0
+             */
+            usage_fee_krw: number;
+            /**
+             * Fee Before Refund Krw
+             * @default 0
+             */
+            fee_before_refund_krw: number;
+            /**
+             * Quality Refund Krw
+             * @default 0
+             */
+            quality_refund_krw: number;
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
         };
         /** PlatformShipperShare */
         PlatformShipperShare: {
@@ -4464,6 +4660,55 @@ export interface components {
             saving_krw: number;
             /** Fee Krw */
             fee_krw: number;
+            /**
+             * Billing Rule
+             * @default performance
+             * @enum {string}
+             */
+            billing_rule: "performance" | "usage_fee" | "mixed";
+            /**
+             * Performance Fee Krw
+             * @description 환급 전 금액. fee_before_refund_krw = performance_fee_krw + usage_fee_krw(시범 항차 제외)
+             * @default 0
+             */
+            performance_fee_krw: number;
+            /**
+             * Usage Fee Krw
+             * @description 환급 전 금액. fee_before_refund_krw = performance_fee_krw + usage_fee_krw(시범 항차 제외)
+             * @default 0
+             */
+            usage_fee_krw: number;
+            /**
+             * Fee Before Refund Krw
+             * @default 0
+             */
+            fee_before_refund_krw: number;
+            /**
+             * Quality Refund Krw
+             * @default 0
+             */
+            quality_refund_krw: number;
+            /**
+             * Baseline Kind
+             * @default air_solo
+             * @enum {string}
+             */
+            baseline_kind: "air_solo" | "sea_solo" | "mixed";
+            /**
+             * Baseline Label
+             * @default
+             */
+            baseline_label: string;
+            /**
+             * Savings Baseline Label
+             * @default
+             */
+            savings_baseline_label: string;
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
         };
         /** Port */
         Port: {
@@ -4830,6 +5075,43 @@ export interface components {
              * @enum {string}
              */
             basis: "tariff" | "operational" | "mixed";
+            /**
+             * Billing Rule
+             * @default performance
+             * @enum {string}
+             */
+            billing_rule: "performance" | "usage_fee" | "mixed";
+            /**
+             * Performance Fee
+             * @default 0
+             */
+            performance_fee: number;
+            /**
+             * Usage Fee
+             * @default 0
+             */
+            usage_fee: number;
+            /**
+             * Baseline Kind
+             * @default air_solo
+             * @enum {string}
+             */
+            baseline_kind: "air_solo" | "sea_solo" | "mixed";
+            /**
+             * Baseline Label
+             * @default 단독 항공 대비
+             */
+            baseline_label: string;
+            /**
+             * Savings Baseline Label
+             * @default 단독 항공 대비
+             */
+            savings_baseline_label: string;
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
             /** Fee Before Refund */
             fee_before_refund: number;
             /** Quality Refund */
@@ -4879,6 +5161,8 @@ export interface components {
             lot_id: string;
             /** New Pallets */
             new_pallets: number;
+            /** Occurred At */
+            occurred_at?: string | null;
         };
         /** RegisteredDevice */
         RegisteredDevice: {
@@ -5001,6 +5285,10 @@ export interface components {
             free_lot_ids: string[];
             /** Fixed Lot Ids */
             fixed_lot_ids: string[];
+            /** Fixed Reasons */
+            fixed_reasons?: components["schemas"]["FixedLot"][];
+            /** Occurred At */
+            occurred_at?: string | null;
             /** Alternatives */
             alternatives: components["schemas"]["Alternative"][];
             /** Recommended Id */
@@ -5095,6 +5383,67 @@ export interface components {
             destination_port_id: string;
             /** Destination Name */
             destination_name: string;
+        };
+        /** RouteChange */
+        RouteChange: {
+            /** Voyage Id */
+            voyage_id: string;
+            /** Truck Id */
+            truck_id: string;
+            /**
+             * Change
+             * @enum {string}
+             */
+            change: "added" | "removed" | "changed";
+            /** Packhouses Before */
+            packhouses_before: string[];
+            /** Packhouses After */
+            packhouses_after: string[];
+            /** Packhouses Added */
+            packhouses_added: string[];
+            /** Packhouses Removed */
+            packhouses_removed: string[];
+            /** Lot Ids Before */
+            lot_ids_before: string[];
+            /** Lot Ids After */
+            lot_ids_after: string[];
+            /** Trips Before */
+            trips_before: number;
+            /** Trips After */
+            trips_after: number;
+            /** Departure Before */
+            departure_before: string | null;
+            /** Departure After */
+            departure_after: string | null;
+            /** Km Before */
+            km_before: number;
+            /** Km After */
+            km_after: number;
+            /** Cost Before */
+            cost_before: number;
+            /** Cost After */
+            cost_after: number;
+        };
+        /** SandboxResetBlocked */
+        SandboxResetBlocked: {
+            /** Detail */
+            detail: string;
+        };
+        /** SandboxResetResponse */
+        SandboxResetResponse: {
+            /**
+             * Scope
+             * @default sandbox
+             * @constant
+             */
+            scope: "sandbox";
+            /** Orgs */
+            orgs: number;
+            /**
+             * Reset At
+             * Format: date-time
+             */
+            reset_at: string;
         };
         /** Scenario */
         Scenario: {
@@ -5389,6 +5738,43 @@ export interface components {
              * @enum {string}
              */
             basis: "tariff" | "operational" | "mixed";
+            /**
+             * Billing Rule
+             * @default performance
+             * @enum {string}
+             */
+            billing_rule: "performance" | "usage_fee" | "mixed";
+            /**
+             * Performance Fee
+             * @default 0
+             */
+            performance_fee: number;
+            /**
+             * Usage Fee
+             * @default 0
+             */
+            usage_fee: number;
+            /**
+             * Baseline Kind
+             * @default air_solo
+             * @enum {string}
+             */
+            baseline_kind: "air_solo" | "sea_solo" | "mixed";
+            /**
+             * Baseline Label
+             * @default 단독 항공 대비
+             */
+            baseline_label: string;
+            /**
+             * Savings Baseline Label
+             * @default 단독 항공 대비
+             */
+            savings_baseline_label: string;
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
         };
         /** SettlementPreview */
         SettlementPreview: {
@@ -5444,6 +5830,18 @@ export interface components {
             total_fee: number;
             /** Total Savings */
             total_savings: number;
+            /**
+             * Total Performance Fee
+             * @description 환급 전 금액. total_fee_before_refund = total_performance_fee + total_usage_fee(시범 항차 제외)
+             * @default 0
+             */
+            total_performance_fee: number;
+            /**
+             * Total Usage Fee
+             * @description 환급 전 금액. total_fee_before_refund = total_performance_fee + total_usage_fee(시범 항차 제외)
+             * @default 0
+             */
+            total_usage_fee: number;
             /** Containers */
             containers: components["schemas"]["ContainerSettlement"][];
             /** Tariffs */
@@ -5713,6 +6111,43 @@ export interface components {
              * @enum {string}
              */
             basis: "tariff" | "operational" | "mixed";
+            /**
+             * Billing Rule
+             * @default performance
+             * @enum {string}
+             */
+            billing_rule: "performance" | "usage_fee" | "mixed";
+            /**
+             * Performance Fee
+             * @default 0
+             */
+            performance_fee: number;
+            /**
+             * Usage Fee
+             * @default 0
+             */
+            usage_fee: number;
+            /**
+             * Baseline Kind
+             * @default air_solo
+             * @enum {string}
+             */
+            baseline_kind: "air_solo" | "sea_solo" | "mixed";
+            /**
+             * Baseline Label
+             * @default 단독 항공 대비
+             */
+            baseline_label: string;
+            /**
+             * Savings Baseline Label
+             * @default 단독 항공 대비
+             */
+            savings_baseline_label: string;
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
             /** Fee Before Refund */
             fee_before_refund: number;
             /** Quality Refund */
@@ -6111,6 +6546,17 @@ export interface components {
             fee_per_pallet: number;
             /** Shipper Share Per Pallet */
             shipper_share_per_pallet: number;
+            /**
+             * Billing Rule
+             * @default performance
+             * @enum {string}
+             */
+            billing_rule: "performance" | "usage_fee";
+            /**
+             * Pilot
+             * @default false
+             */
+            pilot: boolean;
             /** Sea Loss Risk Short Window */
             sea_loss_risk_short_window: number;
             /** Sea Total Short Window */
@@ -7273,6 +7719,7 @@ export interface operations {
         parameters: {
             query?: {
                 include_lots?: boolean;
+                scope?: "demo" | "sandbox";
             };
             header?: never;
             path?: never;
@@ -7286,7 +7733,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResetResponse"];
+                    "application/json": components["schemas"]["ResetResponse"] | components["schemas"]["SandboxResetResponse"];
                 };
             };
             /** @description Validation Error */
@@ -7454,6 +7901,7 @@ export interface operations {
         parameters: {
             query?: {
                 scenario_id?: string;
+                plan_id?: string | null;
                 forwarder_share?: number;
                 ops_cost_per_voyage?: number;
                 variable_cost_per_pallet?: number;
@@ -7488,6 +7936,7 @@ export interface operations {
         parameters: {
             query?: {
                 scenario_id?: string;
+                plan_id?: string | null;
                 base_fee_mode?: "deducted" | "additive";
                 grape_rule?: "usage_fee" | "performance" | "solo_baseline";
                 variable_cost_per_pallet?: number;
@@ -8547,6 +8996,39 @@ export interface operations {
             };
         };
     };
+    switch_active_org_test_api_auth_active_org_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActiveOrgRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     logout_test_api_auth_logout_post: {
         parameters: {
             query?: never;
@@ -9437,6 +9919,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_world_test_api_saas_sandbox_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SandboxResetResponse"];
+                };
+            };
+            /** @description 데모(sandbox) 조직에서만 데모 세계를 초기화할 수 있습니다 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직전 초기화 뒤 60초가 지나지 않았습니다 */
+            429: {
+                headers: {
+                    /** @description 다시 시도할 수 있을 때까지 남은 초 */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SandboxResetBlocked"];
                 };
             };
         };

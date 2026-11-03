@@ -1,0 +1,193 @@
+{
+  "scenario_id": "default",
+  "methods": [
+    {
+      "method": "optimizer",
+      "label": "최적화(CP-SAT)",
+      "description": "전 로트·전 컨테이너를 한 번에 풀어 총비용 최소. 화주별 절감 보장(해상 몫 ≤ 항공) 제약 포함",
+      "containers_used": 2,
+      "avg_fill": 0.875,
+      "sea_pallets": 35,
+      "air_pallets": 2,
+      "unassigned_lots": 0,
+      "unassigned_pallets": 0,
+      "total_baseline_cost": 36585635,
+      "total_shipper_cost": 26267058,
+      "total_savings": 10318577,
+      "total_fee": 2579644,
+      "total_operational_baseline_cost": 38302570,
+      "total_operational_cost": 28315511,
+      "total_operational_savings": 9987059,
+      "collection_basis": "route",
+      "total_collection_estimate": 1424222,
+      "total_collection_route": 2354984,
+      "shippers_with_loss": 0,
+      "constraint_violations": 0,
+      "violation_details": [],
+      "solve_ms": 7,
+      "locations": {
+        "lot-jinju-sb-1": "CA-01",
+        "lot-miryang-sb-1": "CA-01",
+        "lot-miryang-sb-2": "AIR",
+        "lot-pohang-gr-1": "CA-02",
+        "lot-sancheong-sb-1": "CA-01",
+        "lot-sangju-gr-1": "CA-02"
+      }
+    },
+    {
+      "method": "fcfs",
+      "label": "수작업 ① 선착순 채우기",
+      "description": "출하일 순으로 ETD가 빠른 첫 컨테이너 중 자리·품목 궁합·마감이 맞는 곳에 싣는다. 당겨 싣기 없음, 어디에도 안 맞을 때만 항공",
+      "containers_used": 3,
+      "avg_fill": 0.6167,
+      "sea_pallets": 37,
+      "air_pallets": 0,
+      "unassigned_lots": 0,
+      "unassigned_pallets": 0,
+      "total_baseline_cost": 36585635,
+      "total_shipper_cost": 25769058,
+      "total_savings": 10816577,
+      "total_fee": 2704144,
+      "total_operational_baseline_cost": 38302570,
+      "total_operational_cost": 36148028,
+      "total_operational_savings": 2154542,
+      "collection_basis": "route",
+      "total_collection_estimate": 1279943,
+      "total_collection_route": 2425751,
+      "shippers_with_loss": 0,
+      "constraint_violations": 0,
+      "violation_details": [],
+      "solve_ms": 7,
+      "locations": {
+        "lot-jinju-sb-1": "CA-02",
+        "lot-miryang-sb-1": "CA-02",
+        "lot-miryang-sb-2": "CA-03",
+        "lot-pohang-gr-1": "CA-01",
+        "lot-sancheong-sb-1": "CA-02",
+        "lot-sangju-gr-1": "CA-01"
+      }
+    },
+    {
+      "method": "greedy",
+      "label": "수작업 ② 건별 최저비용",
+      "description": "출하일 순으로 로트마다 '이미 연 컨테이너 합류 / 새 컨테이너 / 항공' 중 그 시점 총비용이 가장 낮은 쪽을 고른다. 뒤에 올 로트는 모른다(근시안 견적)",
+      "containers_used": 1,
+      "avg_fill": 0.9,
+      "sea_pallets": 18,
+      "air_pallets": 19,
+      "unassigned_lots": 0,
+      "unassigned_pallets": 0,
+      "total_baseline_cost": 36585635,
+      "total_shipper_cost": 30500058,
+      "total_savings": 6085577,
+      "total_fee": 1521394,
+      "total_operational_baseline_cost": 38302570,
+      "total_operational_cost": 32216993,
+      "total_operational_savings": 6085577,
+      "collection_basis": "route",
+      "total_collection_estimate": 2523197,
+      "total_collection_route": 3087430,
+      "shippers_with_loss": 0,
+      "constraint_violations": 0,
+      "violation_details": [],
+      "solve_ms": 16,
+      "locations": {
+        "lot-jinju-sb-1": "AIR",
+        "lot-miryang-sb-1": "AIR",
+        "lot-miryang-sb-2": "AIR",
+        "lot-pohang-gr-1": "CA-01",
+        "lot-sancheong-sb-1": "AIR",
+        "lot-sangju-gr-1": "CA-01"
+      }
+    },
+    {
+      "method": "solo",
+      "label": "수작업 ③ 화주 단독",
+      "description": "화주마다 전용 컨테이너(항차별)와 항공 중 싼 쪽. 합적 없음. 컨테이너 수 제한 없이 가정",
+      "containers_used": 1,
+      "avg_fill": 0.65,
+      "sea_pallets": 13,
+      "air_pallets": 24,
+      "unassigned_lots": 0,
+      "unassigned_pallets": 0,
+      "total_baseline_cost": 36585635,
+      "total_shipper_cost": 34508860,
+      "total_savings": 2076775,
+      "total_fee": 519194,
+      "total_operational_baseline_cost": 38302570,
+      "total_operational_cost": 36225795,
+      "total_operational_savings": 2076775,
+      "collection_basis": "route",
+      "total_collection_estimate": 2775035,
+      "total_collection_route": 2930813,
+      "shippers_with_loss": 0,
+      "constraint_violations": 0,
+      "violation_details": [],
+      "solve_ms": 66,
+      "locations": {
+        "lot-jinju-sb-1": "AIR",
+        "lot-miryang-sb-1": "AIR",
+        "lot-miryang-sb-2": "AIR",
+        "lot-pohang-gr-1": "AIR",
+        "lot-sancheong-sb-1": "AIR",
+        "lot-sangju-gr-1": "sh-sangju/V-2611A/1"
+      }
+    }
+  ],
+  "replan": {
+    "event": {
+      "type": "reduce",
+      "lot_id": "lot-sancheong-sb-1",
+      "new_pallets": 3
+    },
+    "recommended_id": "pull_forward",
+    "rows": [
+      {
+        "id": "pull_forward",
+        "label": "당겨 채우기",
+        "role": "recommended",
+        "feasible": true,
+        "total_cost": 26355122,
+        "cost_vs_manual": -1293950,
+        "total_savings": 10019777,
+        "total_fee": 2504944,
+        "container_fill": {
+          "CA-01": 17,
+          "CA-02": 18
+        },
+        "summary": "이동: lot-miryang-sb-2 2파렛트 항공→CA-01(1일 당김) / 적재: CA-01 17/20"
+      },
+      {
+        "id": "next_voyage",
+        "label": "다음 배 이월",
+        "role": "other",
+        "feasible": false,
+        "total_cost": 14207788,
+        "cost_vs_manual": -13441284,
+        "total_savings": 6085577,
+        "total_fee": 1521394,
+        "container_fill": {
+          "CA-02": 18
+        },
+        "summary": "이동: lot-jinju-sb-1 8파렛트 CA-01→미배정, lot-sancheong-sb-1 3파렛트 CA-01→미배정, lot-miryang-sb-1 4파렛트 CA-01→미배정"
+      },
+      {
+        "id": "sail_as_is",
+        "label": "그대로 출항",
+        "role": "manual",
+        "feasible": true,
+        "total_cost": 27649072,
+        "cost_vs_manual": 0,
+        "total_savings": 9820577,
+        "total_fee": 2455144,
+        "container_fill": {
+          "CA-01": 15,
+          "CA-02": 18
+        },
+        "summary": "적재: CA-01 15/20"
+      }
+    ],
+    "improvement_vs_manual": 1293950
+  },
+  "solve_ms": 110
+}

@@ -1,0 +1,278 @@
+{
+  "lot-jinju-sb-1": {
+    "scenario_id": "default",
+    "lot_id": "lot-jinju-sb-1",
+    "shipper_id": "sh-jinju",
+    "product_id": "strawberry",
+    "pallets": 8,
+    "kg": 3320.0,
+    "plan_mode": "sea",
+    "sea": {
+      "feasible": true,
+      "in_plan": true,
+      "container_id": "CA-01",
+      "voyage_id": "V-2611A",
+      "pull_forward_days": 0,
+      "container_pallets_after": 17,
+      "cost": {
+        "freight": 1328000,
+        "inland": 3480000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 952000,
+        "total": 5760000,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "air": {
+      "feasible": true,
+      "cost": {
+        "freight": 6640000,
+        "inland": 160000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 952000,
+        "total": 7752000,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "cheaper": "sea",
+    "sea_savings": 1992000
+  },
+  "lot-sancheong-sb-1": {
+    "scenario_id": "default",
+    "lot_id": "lot-sancheong-sb-1",
+    "shipper_id": "sh-sancheong",
+    "product_id": "strawberry",
+    "pallets": 5,
+    "kg": 2075.0,
+    "plan_mode": "sea",
+    "sea": {
+      "feasible": true,
+      "in_plan": true,
+      "container_id": "CA-01",
+      "voyage_id": "V-2611A",
+      "pull_forward_days": 0,
+      "container_pallets_after": 17,
+      "cost": {
+        "freight": 830000,
+        "inland": 2175000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 595000,
+        "total": 3600000,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "air": {
+      "feasible": true,
+      "cost": {
+        "freight": 4150000,
+        "inland": 100000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 595000,
+        "total": 4845000,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "cheaper": "sea",
+    "sea_savings": 1245000
+  },
+  "lot-miryang-sb-1": {
+    "scenario_id": "default",
+    "lot_id": "lot-miryang-sb-1",
+    "shipper_id": "sh-miryang",
+    "product_id": "strawberry",
+    "pallets": 4,
+    "kg": 1660.0,
+    "plan_mode": "sea",
+    "sea": {
+      "feasible": true,
+      "in_plan": true,
+      "container_id": "CA-01",
+      "voyage_id": "V-2611A",
+      "pull_forward_days": 0,
+      "container_pallets_after": 17,
+      "cost": {
+        "freight": 664000,
+        "inland": 1740000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 476000,
+        "total": 2880000,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "air": {
+      "feasible": true,
+      "cost": {
+        "freight": 3320000,
+        "inland": 80000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 476000,
+        "total": 3876000,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "cheaper": "sea",
+    "sea_savings": 996000
+  },
+  "lot-miryang-sb-2": {
+    "scenario_id": "default",
+    "lot_id": "lot-miryang-sb-2",
+    "shipper_id": "sh-miryang",
+    "product_id": "strawberry",
+    "pallets": 2,
+    "kg": 830.0,
+    "plan_mode": "air",
+    "sea": {
+      "feasible": true,
+      "in_plan": false,
+      "container_id": "CA-01",
+      "voyage_id": "V-2611A",
+      "pull_forward_days": 1,
+      "container_pallets_after": 19,
+      "cost": {
+        "freight": 332000,
+        "inland": 870000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 536800,
+        "total": 1738800,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "air": {
+      "feasible": true,
+      "cost": {
+        "freight": 1660000,
+        "inland": 40000,
+        "handling": 0,
+        "collection": 0,
+        "storage": 0,
+        "loss_risk": 238000,
+        "total": 1938000,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "cheaper": "sea",
+    "sea_savings": 199200
+  },
+  "lot-sangju-gr-1": {
+    "scenario_id": "default",
+    "lot_id": "lot-sangju-gr-1",
+    "shipper_id": "sh-sangju",
+    "product_id": "grape_so2",
+    "pallets": 13,
+    "kg": 5395.0,
+    "plan_mode": "sea",
+    "sea": {
+      "feasible": true,
+      "in_plan": true,
+      "container_id": "CA-02",
+      "voyage_id": "V-2611A",
+      "pull_forward_days": 0,
+      "container_pallets_after": 18,
+      "cost": {
+        "freight": 3293333,
+        "inland": 0,
+        "handling": 3250000,
+        "collection": 830813,
+        "storage": 117000,
+        "loss_risk": 1041537,
+        "total": 8532683,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "air": {
+      "feasible": true,
+      "cost": {
+        "freight": 11604645,
+        "inland": 0,
+        "handling": 0,
+        "collection": 1137500,
+        "storage": 58500,
+        "loss_risk": 325480,
+        "total": 13126125,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "cheaper": "sea",
+    "sea_savings": 4593442
+  },
+  "lot-pohang-gr-1": {
+    "scenario_id": "default",
+    "lot_id": "lot-pohang-gr-1",
+    "shipper_id": "sh-pohang",
+    "product_id": "grape_so2",
+    "pallets": 5,
+    "kg": 2075.0,
+    "plan_mode": "sea",
+    "sea": {
+      "feasible": true,
+      "in_plan": true,
+      "container_id": "CA-02",
+      "voyage_id": "V-2611A",
+      "pull_forward_days": 0,
+      "container_pallets_after": 18,
+      "cost": {
+        "freight": 1266667,
+        "inland": 0,
+        "handling": 1250000,
+        "collection": 594117,
+        "storage": 45000,
+        "loss_risk": 400591,
+        "total": 3556375,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "air": {
+      "feasible": true,
+      "cost": {
+        "freight": 4463325,
+        "inland": 0,
+        "handling": 0,
+        "collection": 437500,
+        "storage": 22500,
+        "loss_risk": 125185,
+        "total": 5048510,
+        "collection_estimate": null,
+        "collection_route": null
+      },
+      "reason": null
+    },
+    "cheaper": "sea",
+    "sea_savings": 1492135
+  }
+}

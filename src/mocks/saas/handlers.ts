@@ -14,7 +14,24 @@ import intakeStrawberryFixture from '@/mocks/fixtures/intake-strawberry.json';
 import planSessionFixture from '@/mocks/fixtures/plan-session.json';
 import twinFixture from '@/mocks/fixtures/twin.json';
 import { createAnonymizer } from '@/mocks/saas/anonymize';
-import { demoConfirm, demoCreatePlan, demoOrders, demoPlan } from '@/mocks/saas/demo-bridge';
+import {
+  demoConfirm,
+  demoCreatePlan,
+  demoOrders,
+  demoPlan,
+  demoReset,
+} from '@/mocks/saas/demo-bridge';
+import airSeaFixture from '@/mocks/saas/fixtures/air-sea.json';
+import arrivalFixture from '@/mocks/saas/fixtures/arrival.json';
+import benchmarkFixture from '@/mocks/saas/fixtures/benchmark.json';
+import delayForecastNormalFixture from '@/mocks/saas/fixtures/delay-forecast-normal.json';
+import delayForecastTyphoonFixture from '@/mocks/saas/fixtures/delay-forecast-typhoon.json';
+import fuelShockPlanFixture from '@/mocks/saas/fixtures/fuel-shock-plan.json';
+import lossRatesFixture from '@/mocks/saas/fixtures/loss-rates.json';
+import provenanceFixture from '@/mocks/saas/fixtures/provenance.json';
+import scheduleCheckFixture from '@/mocks/saas/fixtures/schedule-check.json';
+import settlementPreviewFixture from '@/mocks/saas/fixtures/settlement-preview.json';
+import ulsanCongestionFixture from '@/mocks/saas/fixtures/ulsan-congestion.json';
 import {
   MOCK_ORGS,
   type MockOrgT,
@@ -24,6 +41,7 @@ import {
   meOf,
 } from '@/mocks/saas/orgs';
 import {
+  type MockArrivalT,
   type MockBindingT,
   type MockDeviceT,
   type MockLotStatusT,
@@ -34,6 +52,7 @@ import {
   mockDb,
   nowIso,
   readSession,
+  resetMockDb,
   saveAccount,
   shipperOrgOfLot,
   writeSession,
@@ -54,8 +73,23 @@ import type {
   SignupOrgType,
   SignupRequest,
 } from '@/types/saas';
+import type {
+  AirSeaComparisonT,
+  ArrivalRequestT,
+  ArrivalSettlementResultT,
+  BenchmarkResultT,
+  DelayForecastRequestT,
+  DelayForecastResponseT,
+  LossTableT,
+  PlatformFuelShockResultT,
+  PortCongestionT,
+  ProvenanceCatalogT,
+  ScheduleCheckResponseT,
+  SettlementPreviewT,
+} from '@/types/saas-analysis';
 import type { PlanPreviewT } from '@/types/saas-platform';
 import type { ShowcaseT } from '@/types/saas-public';
+import type { SandboxResetT } from '@/types/saas-sandbox';
 
 const api = (path: string) => `${SAAS_API_BASE}${path}`;
 
@@ -863,7 +897,7 @@ const platformHandlers = [
 
     await delay(400);
     const { scenario, plan, routes } = previewSession;
-    const preview: PlanPreviewT = { scenario, plan, routes };
+    const preview = { scenario, plan, routes } as unknown as PlanPreviewT;
 
     return HttpResponse.json(preview);
   }),
@@ -1121,6 +1155,303 @@ const publicHandlers = [
   ),
 ];
 
+const FIXTURE_PLAN_ID = 'mock-plan';
+const SANDBOX_RESET_COOLDOWN_MS = 60_000;
+
+const forPlan = <T>(fixture: unknown, planId: string): T =>
+  JSON.parse(
+    JSON.stringify(fixture).replaceAll(`"${FIXTURE_PLAN_ID}"`, JSON.stringify(planId))
+  ) as T;
+
+const airSeaByLot = airSeaFixture as unknown as Record<string, AirSeaComparisonT>;
+const arrivalByLot = arrivalFixture as unknown as Record<string, ArrivalSettlementResultT>;
+const LOT_NOT_FOUND = '로트를 찾을 수 없습니다';
+
+type QualitySettlementT = ArrivalSettlementResultT['settlement_before'];
+
+const baseSettlements = new Map(
+  Object.values(arrivalByLot).map(item => [item.shipper_id, item.settlement_before])
+);
+const settlementPreview = settlementPreviewFixture as unknown as SettlementPreviewT;
+
+let lastSandboxResetAt = 0;
+
+const platformPlanRequest = (request: Request, planId: string) => {
+  if (!isSaasRequest(request)) return null;
+
+  const principal = authorize(request, 'platform');
+  if (principal instanceof Response) return principal;
+  if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
+
+  return principal;
+};
+
+const settlementPreviewFor = (planId: string, org: MockOrgT): SettlementPreviewT => {
+  const preview = forPlan<SettlementPreviewT>(settlementPreview, planId);
+  if (org.org_type !== 'shipper') return preview;
+
+  const lots = preview.lots.filter(lot => org.shipper_ids.includes(lot.shipper_id));
+
+  return {
+    ...preview,
+    lots,
+    total_refund_change: lots.reduce((sum, lot) => sum + lot.refund_change, 0),
+  };
+};
+
+const roundRate = (value: number) => Math.round(value * 1e6) / 1e6;
+
+const withRefund = (settlement: QualitySettlementT, refund: number): QualitySettlementT => ({
+  ...settlement,
+  fee: settlement.fee_before_refund - refund,
+  shipper_gain: settlement.shipper_gain - settlement.quality_refund + refund,
+  quality_refund: refund,
+});
+
+const refundOf = (inspections: Map<string, MockArrivalT>, shipperId: string, fee: number) => {
+  const excess = [...inspections.values()]
+    .filter(item => item.shipper_id === shipperId)
+    .reduce((sum, item) => sum + item.excess_loss_value, 0);
+
+  return { refund: Math.min(Math.max(fee, 0), excess), excess };
+};
+
+const platformFeeOf = (inspections: Map<string, MockArrivalT>) =>
+  [...baseSettlements.values()].reduce(
+    (sum, settlement) =>
+      sum +
+      settlement.fee_before_refund -
+      refundOf(inspections, settlement.shipper_id, settlement.fee_before_refund).refund,
+    0
+  );
+
+const recordArrival = (
+  planId: string,
+  basis: ArrivalSettlementResultT,
+  body: ArrivalRequestT
+): ArrivalSettlementResultT => {
+  const inspections = mockDb.arrivals.get(planId) ?? new Map<string, MockArrivalT>();
+  const inspectedRate = body.inspected_loss_pct / 100;
+  const excessRate = Math.max(0, inspectedRate - basis.planned_loss_rate);
+  const excessValue = Math.round(basis.lot_value * excessRate);
+  const updated = new Map(inspections).set(basis.lot_id, {
+    shipper_id: basis.shipper_id,
+    excess_loss_value: excessValue,
+  });
+  const settlement = baseSettlements.get(basis.shipper_id) ?? basis.settlement_before;
+  const fee = settlement.fee_before_refund;
+  const before = refundOf(inspections, basis.shipper_id, fee);
+  const after = refundOf(updated, basis.shipper_id, fee);
+  const platformBefore = platformFeeOf(inspections);
+  const platformAfter = platformFeeOf(updated);
+  mockDb.arrivals.set(planId, updated);
+
+  return {
+    ...basis,
+    plan_id: planId,
+    inspected_loss_rate: roundRate(inspectedRate),
+    excess_loss_rate: roundRate(excessRate),
+    excess_loss_value: excessValue,
+    shipper_excess_loss_total: after.excess,
+    refund_cap: Math.max(fee, 0),
+    refund_before: before.refund,
+    refund_after: after.refund,
+    refund_change: after.refund - before.refund,
+    capped: after.excess > after.refund,
+    uncovered_loss: after.excess - after.refund,
+    settlement_before: withRefund(settlement, before.refund),
+    settlement_after: withRefund(settlement, after.refund),
+    platform_fee_before: platformBefore,
+    platform_fee_after: platformAfter,
+    platform_net_change: platformAfter - platformBefore,
+    note: body.note ?? null,
+  };
+};
+
+const analysisHandlers = [
+  http.post(api('/analysis/fuel-shock'), async ({ request }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+
+    const body = (await request.json()) as { plan_id?: string | null };
+    if (body.plan_id && !canReadPlan(body.plan_id, principal.org)) {
+      return fail(404, '계획을 찾을 수 없습니다');
+    }
+    await delay(400);
+
+    return HttpResponse.json(
+      forPlan<PlatformFuelShockResultT>(fuelShockPlanFixture, body.plan_id ?? FIXTURE_PLAN_ID)
+    );
+  }),
+
+  http.post(api('/analysis/benchmark'), async ({ request }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+
+    const body = (await request.json()) as { plan_id?: string | null };
+    if (body.plan_id && !canReadPlan(body.plan_id, principal.org)) {
+      return fail(404, '계획을 찾을 수 없습니다');
+    }
+    await delay(300);
+
+    return HttpResponse.json(benchmarkFixture as unknown as BenchmarkResultT);
+  }),
+
+  http.post(api('/compare/air-vs-sea'), async ({ request }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request);
+    if (principal instanceof Response) return principal;
+
+    const { org } = principal;
+    if (org.org_type === 'forwarder') {
+      return fail(403, '포워더는 항공·해상 비용 비교를 사용할 수 없습니다');
+    }
+
+    const body = (await request.json()) as { lot_id: string; plan_id?: string | null };
+    const isShipper = org.org_type === 'shipper';
+    if (isShipper && !body.plan_id) {
+      return fail(403, '화주는 자기 계획의 출하만 비교할 수 있습니다');
+    }
+    if (body.plan_id && !canReadPlan(body.plan_id, org)) {
+      return fail(404, '계획을 찾을 수 없습니다');
+    }
+    const comparison = airSeaByLot[body.lot_id];
+    if (!comparison) return fail(404, LOT_NOT_FOUND);
+    if (isShipper && !org.shipper_ids.includes(comparison.shipper_id)) {
+      return fail(404, LOT_NOT_FOUND);
+    }
+
+    return HttpResponse.json(comparison);
+  }),
+
+  http.post(api('/plans/:planId/delay-forecast'), async ({ request, params }) => {
+    const planId = String(params.planId);
+    const principal = platformPlanRequest(request, planId);
+    if (principal === null) return;
+    if (principal instanceof Response) return principal;
+
+    const body = (await request.json().catch(() => ({}))) as DelayForecastRequestT | null;
+    const typhoon = body?.preset === 'typhoon' || body?.weather === 'typhoon';
+    await delay(600);
+
+    return HttpResponse.json(
+      forPlan<DelayForecastResponseT>(
+        typhoon ? delayForecastTyphoonFixture : delayForecastNormalFixture,
+        planId
+      )
+    );
+  }),
+
+  http.post(api('/plans/:planId/schedule-check'), async ({ request, params }) => {
+    const planId = String(params.planId);
+    const principal = platformPlanRequest(request, planId);
+    if (principal === null) return;
+    if (principal instanceof Response) return principal;
+    await delay(300);
+
+    return HttpResponse.json(forPlan<ScheduleCheckResponseT>(scheduleCheckFixture, planId));
+  }),
+
+  http.post(api('/plans/:planId/settlement/arrival'), async ({ request, params }) => {
+    const planId = String(params.planId);
+    const principal = platformPlanRequest(request, planId);
+    if (principal === null) return;
+    if (principal instanceof Response) return principal;
+
+    const body = (await request.json()) as ArrivalRequestT;
+    if (!(body.inspected_loss_pct >= 0 && body.inspected_loss_pct <= 100)) {
+      return fail(422, '검수 손실률은 0~100% 범위여야 합니다');
+    }
+    const basis = arrivalByLot[body.lot_id];
+    if (!basis) return fail(422, '계획에 없는 로트입니다');
+
+    return HttpResponse.json(recordArrival(planId, basis, body));
+  }),
+
+  http.get(api('/coldchain/containers/:containerId/settlement-preview'), ({ request, params }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request);
+    if (principal instanceof Response) return principal;
+    if (principal.org.org_type === 'forwarder') {
+      return fail(403, '포워더는 정산 금액을 볼 수 없습니다');
+    }
+
+    const planId = new URL(request.url).searchParams.get('plan_id') ?? planIds()[0] ?? '';
+    if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
+    if (params.containerId !== settlementPreview.container_id) {
+      return fail(404, `센서 기록이 없는 컨테이너입니다: ${String(params.containerId)}`);
+    }
+
+    return HttpResponse.json(settlementPreviewFor(planId, principal.org));
+  }),
+
+  http.get(api('/vessels/ulsan/congestion'), ({ request }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request);
+    if (principal instanceof Response) return principal;
+
+    const congestion = ulsanCongestionFixture as unknown as PortCongestionT;
+    const includeVessels = new URL(request.url).searchParams.get('include_vessels') !== 'false';
+
+    return HttpResponse.json(includeVessels ? congestion : { ...congestion, vessels: [] });
+  }),
+
+  http.get(api('/data/provenance'), ({ request }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request);
+    if (principal instanceof Response) return principal;
+
+    return HttpResponse.json(provenanceFixture as unknown as ProvenanceCatalogT);
+  }),
+
+  http.get(api('/quality/loss-rates'), ({ request }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request);
+    if (principal instanceof Response) return principal;
+
+    return HttpResponse.json(lossRatesFixture as unknown as LossTableT);
+  }),
+];
+
+const sandboxHandlers = [
+  http.post(api('/saas/sandbox/reset'), async ({ request }) => {
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+    if (!principal.org.sandbox)
+      return fail(403, '데모(sandbox) 조직에서만 데모 세계를 초기화할 수 있습니다');
+
+    const now = Date.now();
+    if (now - lastSandboxResetAt < SANDBOX_RESET_COOLDOWN_MS) {
+      const wait = Math.ceil((SANDBOX_RESET_COOLDOWN_MS - (now - lastSandboxResetAt)) / 1000);
+
+      return HttpResponse.json(
+        { detail: `방금 초기화했습니다. ${wait}초 뒤에 다시 시도하세요` },
+        { status: 429, headers: { 'Retry-After': String(wait) } }
+      );
+    }
+    lastSandboxResetAt = now;
+    resetMockDb();
+    await demoReset();
+
+    const body: SandboxResetT = {
+      scope: 'sandbox',
+      orgs: MOCK_ORGS.filter(org => org.sandbox).length,
+      reset_at: nowIso(),
+    };
+
+    return HttpResponse.json(body);
+  }),
+];
+
 export const saasHandlers = [
   ...authHandlers,
   ...publicHandlers,
@@ -1129,6 +1460,8 @@ export const saasHandlers = [
   ...platformHandlers,
   ...forwarderHandlers,
   ...deviceHandlers,
+  ...analysisHandlers,
+  ...sandboxHandlers,
   ...coldchainHandlers,
   ...streamHandlers,
 ];

@@ -1,0 +1,1131 @@
+{
+  "scenario_id": "default",
+  "scope": "Sources recorded in repository data; not external source verification",
+  "counts": {
+    "assumption_or_derived": 56,
+    "demo_or_business_rule": 11,
+    "cited_unverified": 5
+  },
+  "entries": [
+    {
+      "path": "scenario.products[strawberry]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "strawberry",
+        "name": "딸기",
+        "temp_min_c": 0.0,
+        "temp_max_c": 2.0,
+        "o2_pct": 10.0,
+        "co2_pct": 15.0,
+        "shelf_life_days": 7,
+        "so2_treated": false,
+        "pallet_kg": 415.0
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.products[grape_so2]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "grape_so2",
+        "name": "샤인머스캣 (SO2 처리)",
+        "temp_min_c": -0.5,
+        "temp_max_c": 0.0,
+        "o2_pct": null,
+        "co2_pct": null,
+        "shelf_life_days": 45,
+        "so2_treated": true,
+        "pallet_kg": 415.0
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.packhouses[ph-jinju]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "ph-jinju",
+        "name": "진주 딸기 APC",
+        "region": "경남 진주",
+        "lat": 35.18,
+        "lon": 128.11
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.packhouses[ph-sancheong]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "ph-sancheong",
+        "name": "산청 딸기 APC",
+        "region": "경남 산청",
+        "lat": 35.42,
+        "lon": 127.87
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.packhouses[ph-miryang]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "ph-miryang",
+        "name": "밀양 딸기 APC",
+        "region": "경남 밀양",
+        "lat": 35.5,
+        "lon": 128.75
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.packhouses[ph-sangju]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "ph-sangju",
+        "name": "상주 포도 APC",
+        "region": "경북 상주",
+        "lat": 36.41,
+        "lon": 128.16
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.packhouses[ph-pohang]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "ph-pohang",
+        "name": "포항 포도 APC",
+        "region": "경북 포항",
+        "lat": 36.02,
+        "lon": 129.34
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.ports[KRPUS]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "KRPUS",
+        "name": "부산신항",
+        "unlocode": "KRPUS",
+        "lat": 35.08,
+        "lon": 128.83
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.ports[KRPUS].gate_peak_windows[0]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 부산신항 게이트 시간대별 반입량 공개 자료 미확인. 출근 직후 반입 차량 집중",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "start": "07:00:00",
+        "end": "10:00:00",
+        "label": "오전 반입 집중"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.ports[KRPUS].gate_peak_windows[1]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 부산신항 게이트 시간대별 반입량 공개 자료 미확인. 18시 CY 마감 직전 반입 차량 집중",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "start": "15:00:00",
+        "end": "18:00:00",
+        "label": "CY 마감 직전 반입 집중"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.ports[HKHKG]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "HKHKG",
+        "name": "홍콩항",
+        "unlocode": "HKHKG",
+        "lat": 22.3,
+        "lon": 114.17
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.shippers[sh-jinju]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "sh-jinju",
+        "name": "진주 딸기 수출농가 A",
+        "packhouse_id": "ph-jinju"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.shippers[sh-sancheong]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "sh-sancheong",
+        "name": "산청 딸기 수출농가 B",
+        "packhouse_id": "ph-sancheong"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.shippers[sh-miryang]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "sh-miryang",
+        "name": "밀양 딸기 수출농가 C",
+        "packhouse_id": "ph-miryang"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.shippers[sh-sangju]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "sh-sangju",
+        "name": "상주 포도 수출농가 D",
+        "packhouse_id": "ph-sangju"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.shippers[sh-pohang]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "sh-pohang",
+        "name": "포항 포도 수출농가 E",
+        "packhouse_id": "ph-pohang"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.lots[lot-jinju-sb-1]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "lot-jinju-sb-1",
+        "shipper_id": "sh-jinju",
+        "product_id": "strawberry",
+        "pallets": 8,
+        "ready_date": "2026-11-16",
+        "destination": "HKHKG",
+        "sell_by_date": "2026-11-23",
+        "sell_window": "normal"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.lots[lot-sancheong-sb-1]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "lot-sancheong-sb-1",
+        "shipper_id": "sh-sancheong",
+        "product_id": "strawberry",
+        "pallets": 5,
+        "ready_date": "2026-11-16",
+        "destination": "HKHKG",
+        "sell_by_date": "2026-11-23",
+        "sell_window": "normal"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.lots[lot-miryang-sb-1]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "lot-miryang-sb-1",
+        "shipper_id": "sh-miryang",
+        "product_id": "strawberry",
+        "pallets": 4,
+        "ready_date": "2026-11-16",
+        "destination": "HKHKG",
+        "sell_by_date": "2026-11-23",
+        "sell_window": "normal"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.lots[lot-miryang-sb-2]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "lot-miryang-sb-2",
+        "shipper_id": "sh-miryang",
+        "product_id": "strawberry",
+        "pallets": 2,
+        "ready_date": "2026-11-18",
+        "destination": "HKHKG",
+        "sell_by_date": "2026-11-25",
+        "sell_window": "normal"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.lots[lot-sangju-gr-1]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "lot-sangju-gr-1",
+        "shipper_id": "sh-sangju",
+        "product_id": "grape_so2",
+        "pallets": 13,
+        "ready_date": "2026-11-15",
+        "destination": "HKHKG",
+        "sell_by_date": "2026-12-30",
+        "sell_window": "normal"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.lots[lot-pohang-gr-1]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "lot-pohang-gr-1",
+        "shipper_id": "sh-pohang",
+        "product_id": "grape_so2",
+        "pallets": 5,
+        "ready_date": "2026-11-15",
+        "destination": "HKHKG",
+        "sell_by_date": "2026-12-30",
+        "sell_window": "normal"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.voyages[V-2611A]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "V-2611A",
+        "vessel_name": "MV FRESH HARMONY",
+        "terminal": "부산신항 2부두",
+        "origin": "KRPUS",
+        "destination": "HKHKG",
+        "etd": "2026-11-18T18:00:00+09:00",
+        "cy_cutoff": "2026-11-17T18:00:00+09:00",
+        "transit_days": 3.0,
+        "original_etd": null
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.voyages[V-2611B]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "V-2611B",
+        "vessel_name": "MV COLD BRIDGE",
+        "terminal": "부산신항 2부두",
+        "origin": "KRPUS",
+        "destination": "HKHKG",
+        "etd": "2026-11-21T18:00:00+09:00",
+        "cy_cutoff": "2026-11-20T18:00:00+09:00",
+        "transit_days": 3.0,
+        "original_etd": null
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.containers[CA-01]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "CA-01",
+        "voyage_id": "V-2611A",
+        "kind": "40RH-CA",
+        "capacity_pallets": 20
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.containers[CA-02]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "CA-02",
+        "voyage_id": "V-2611A",
+        "kind": "40RH-CA",
+        "capacity_pallets": 20
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.containers[CA-03]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "CA-03",
+        "voyage_id": "V-2611B",
+        "kind": "40RH-CA",
+        "capacity_pallets": 20
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.trucks[RT-01]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "RT-01",
+        "depot_id": "KRPUS",
+        "capacity_pallets": 16
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.trucks[RT-02]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "RT-02",
+        "depot_id": "KRPUS",
+        "capacity_pallets": 16
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.trucks[RT-03]",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "id": "RT-03",
+        "depot_id": "KRPUS",
+        "capacity_pallets": 10
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.sea_freight_per_container_krw",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "제안서 나-1·라: 딸기 1파렛트 운임만 비교 시 해상이 항공(89.2만 원)보다 66.4만 원 싸다 → 파렛트당 22.8만 원 × 20파렛트",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 4560000.0,
+        "unit": "원/컨테이너"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.sea_ancillary_per_container_krw",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "가정: CA 가스 세팅·리퍼 전력·THC·통관·현지 하역. 제안서 기준값(실운영 30% 절감, 물류신문 2023.2 / 딸기 1파렛트 절감 24.9만 원)에 맞춘 보정값",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 4500000.0,
+        "unit": "원/컨테이너"
+      },
+      "recorded_dates": ["2023.2"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.air_freight_per_kg_krw",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "제안서 가: 딸기 1파렛트(415kg) 항공 운임 89.2만 원(2026.4 할증 이전, 한국농어민신문 2026.4) ÷ 415kg = 2,151원/kg에서 유류할증료 470원/kg을 뺀 기본 운임",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 1681.0,
+        "unit": "원/kg"
+      },
+      "recorded_dates": ["2026.4", "2026.4"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.air_fuel_surcharge_per_kg_krw",
+      "kind": "cited_unverified",
+      "recorded_source": "한국농어민신문 2026.4: 항공 유류할증료 kg당 470원(2026.4.16 인상 전). 인상 후 2,060원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 470.0,
+        "unit": "원/kg"
+      },
+      "recorded_dates": ["2026.4", "2026.4.16"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.reefer_truck_cost_per_km_krw",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 2000.0,
+        "unit": "원/km"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.reefer_truck_fixed_per_route_krw",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 트럭 대당 고정비 미반영(0). 값을 넣으면 VRPTW 차량 고정비와 집하비 배분에 함께 들어간다",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.0,
+        "unit": "원/대"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.truck_capacity_pallets",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 시나리오 냉장트럭 RT-01·RT-02 용량",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 16.0,
+        "unit": "파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.road_distance_factor",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 직선거리 대비 도로거리 배율",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 1.3,
+        "unit": "배"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.air_trucking_km",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 경남 산지→인천공항 차로 약 5시간(경향신문 2023.7)",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 350.0,
+        "unit": "km"
+      },
+      "recorded_dates": ["2023.7"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.storage_per_pallet_day_krw",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 3000.0,
+        "unit": "원/파렛트·일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.terminal_reefer_plug_per_container_day",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 부산항 터미널 리퍼 전원·모니터링료 공개 자료 없음. 선박 지연으로 늘어난 터미널 대기일에만 매긴다",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 50000.0,
+        "unit": "원/컨테이너·일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.air_storage_days",
+      "kind": "cited_unverified",
+      "recorded_source": "SBS 2023.1: 인천공항에서 하루 반 정도 보관",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 1.5,
+        "unit": "일"
+      },
+      "recorded_dates": ["2023.1"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.air_transit_days",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 부산→홍콩 항공 3시간 30분(fluentcargo) + 통관",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.5,
+        "unit": "일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.unassigned_penalty_per_pallet_krw",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 모델 내부 페널티(실제 비용 아님)",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 10000000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.platform_fee_rate",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "제안서 라: 화주 절감액의 25% 성과보수, 화주가 75% 보유",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.25,
+        "unit": "비율"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.strawberry.value_per_kg_krw",
+      "kind": "cited_unverified",
+      "recorded_source": "경남일보 2025.3: 진주 금실딸기 2.5t 약 4,500만 원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 18000.0,
+        "unit": "원/kg"
+      },
+      "recorded_dates": ["2025.3"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.strawberry.sea_base_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "JLST 6권 2호(2025.6) 부산→홍콩 딸기 실증: 단전 없음 1~2%(모의) 중앙값",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.015,
+        "unit": "비율"
+      },
+      "recorded_dates": ["2025.6"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.strawberry.loss_rate_per_wait_day",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: JLST 6권 2호(2025.6) 부산→홍콩 딸기 실증 단전 있음 6~8%와 없음 1~2%의 차이 5.5%p를 문전 6일로 나눈 하루 증가분",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.009,
+        "unit": "비율/일"
+      },
+      "recorded_dates": ["2025.6"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.strawberry.max_sea_loss_rate",
+      "kind": "cited_unverified",
+      "recorded_source": "JLST 6권 2호(2025.6) 부산→홍콩 딸기 실증: 단전 있음 6~8%(실측) 상한",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.08,
+        "unit": "비율"
+      },
+      "recorded_dates": ["2025.6"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.strawberry.early_harvest_loss_rate_per_day",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 출하를 하루 당길 때 숙도 미달·선별 손실",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.02,
+        "unit": "비율/일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.strawberry.air_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 항공 운송 손실(공개 실측 없음)",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.01,
+        "unit": "비율"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.grape_so2.value_per_kg_krw",
+      "kind": "assumption_or_derived",
+      "recorded_source": "KATI 2025 포도 수출 8,574만 달러 ÷ 9,949t, 환율 1,400원 가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 12066.0,
+        "unit": "원/kg"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.grape_so2.sea_base_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 포도는 CA 보관성 약 3주(이데일리 2024.5)로 딸기보다 낮게 둠",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.01,
+        "unit": "비율"
+      },
+      "recorded_dates": ["2024.5"],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.grape_so2.loss_rate_per_wait_day",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.002,
+        "unit": "비율/일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.grape_so2.max_sea_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.05,
+        "unit": "비율"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.grape_so2.early_harvest_loss_rate_per_day",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.01,
+        "unit": "비율/일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.product_costs.grape_so2.air_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.005,
+        "unit": "비율"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.default_product_cost.value_per_kg_krw",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 15000.0,
+        "unit": "원/kg"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.default_product_cost.sea_base_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.015,
+        "unit": "비율"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.default_product_cost.loss_rate_per_wait_day",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.009,
+        "unit": "비율/일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.default_product_cost.max_sea_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.08,
+        "unit": "비율"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.default_product_cost.early_harvest_loss_rate_per_day",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.02,
+        "unit": "비율/일"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.default_product_cost.air_loss_rate",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 0.01,
+        "unit": "비율"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.air_freight",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "제안서 정산표(팀 확정값): 딸기 1파렛트 홍콩 항공 운임 83.0만 원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 830000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.air_inland",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "제안서 정산표(팀 확정값): 항공 내륙·장비·보관 2.0만 원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 20000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.air_loss_risk",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "가정: 제안서 정산표 시연값. 항공 품질손실 위험 11.9만 원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 119000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.sea_freight",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "제안서 정산표(팀 확정값): 해상 운임 16.6만 원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 166000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.sea_inland",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "가정: 제안서 정산표 시연값. 해상 내륙·장비·보관(집하·CA 장비·리퍼 전원·보관) 43.5만 원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 435000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.sea_loss_risk",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "가정: 제안서 정산표 시연값. 해상 품질손실 위험 11.9만 원",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 119000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.sea_loss_risk_short_window",
+      "kind": "demo_or_business_rule",
+      "recorded_source": "가정: 제안서 정산표 시연값. 판매 기간이 짧은 화주의 해상 품질손실 위험 119.1만 원(해상 179.2만 원 > 항공 96.9만 원 → 항공)",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 1191000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.pallet_tariffs.strawberry.air_rate_basis_per_kg",
+      "kind": "cited_unverified",
+      "recorded_source": "정산표 항공 운임의 기준 요율(기본 운임 1,681 + 유류할증 470원/kg). 요율이 바뀌면 차이 × 파렛트 kg를 항공 운임에 더한다",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 2151.0,
+        "unit": "원/kg"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    },
+    {
+      "path": "scenario.cost_params.billing.usage_fee_per_pallet_krw",
+      "kind": "assumption_or_derived",
+      "recorded_source": "가정: 기획서 ㅍ3 8-1 파렛트 이용료 2만 원(이미 배로 가는 품목은 성과보수 대신 이용료)",
+      "verification_status": "not_independently_verified",
+      "values": {
+        "value": 20000.0,
+        "unit": "원/파렛트"
+      },
+      "recorded_dates": [],
+      "recorded_urls": []
+    }
+  ],
+  "assets": [
+    {
+      "path": "history/mof-busan-departures.json",
+      "sha256": "fec8c7cb4db959b4d6882d57160ff726645309952d9bcdd357bff92a3fa82e9b",
+      "bytes": 1089632,
+      "kind": "external_snapshot",
+      "metadata": {
+        "source": "해수부 선박입출항(VsslEtrynd5) 부산항 출항 신고: 출항예정일시 대비 출항일시",
+        "updated_at": "2026-10-30T14:06:47.719868Z",
+        "start": "2026-08-31",
+        "end": "2026-10-30",
+        "count": 3514
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "quality/seed-observations.json",
+      "sha256": "822f97fc8a6d17ddae0175c6873c71a850e9843deb09aba9a5c5b2817170ab70",
+      "bytes": 2562,
+      "kind": "simulation",
+      "metadata": {
+        "label": "가정/시드: 실제 도착 검수 기록이 아니다. JLST 6권 2호(2025.6) 부산→홍콩 딸기 실증 수치와 제안서·시나리오 가정값을 관측 형태로 옮긴 출발점이다"
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "scenarios/default.json",
+      "sha256": "41ca6c76ea0fad71c5b3cd14c34067fc46d077666a0a0d24a77682934b34a91d",
+      "bytes": 14393,
+      "kind": "simulation",
+      "metadata": {},
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "scenarios/fuel-shock.json",
+      "sha256": "d516885368e59ff5faeb3913d80da45ef68145dc4b286a7006e53af89fe0eb4c",
+      "bytes": 15151,
+      "kind": "simulation",
+      "metadata": {},
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/demo/movements.json",
+      "sha256": "d5514db56c50cafe63615909af128abbf96ff6ba4cdd853488fd20e24f167872",
+      "bytes": 1817,
+      "kind": "simulation",
+      "metadata": {},
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261027-I.json",
+      "sha256": "a4340be05bc9b3b4df41ad986c592e94172668c5cbdca0e21610f60f5633eee0",
+      "bytes": 59798,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:10.858157Z",
+        "count": 93
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261027-O.json",
+      "sha256": "a5f3af4170ab5df32f97b697ac1f8819830e16a62e7d1e84907c0ebb1be3b006",
+      "bytes": 64484,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:12.448444Z",
+        "count": 98
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261028-I.json",
+      "sha256": "41a662fe9adaaed090139e202e0e18ce9f947bc805ba2ea3d799bd5086241600",
+      "bytes": 60025,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:14.182861Z",
+        "count": 95
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261028-O.json",
+      "sha256": "ff66fe9d5bfde33877c54384ed59d21b63de71040f26d8d9725718a3548e7717",
+      "bytes": 69761,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:16.524329Z",
+        "count": 108
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261029-I.json",
+      "sha256": "4f900a6383b3ab71485dbbc94cfbeb1caf18535a3304d11997e39d8a6fca1088",
+      "bytes": 65303,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:18.849335Z",
+        "count": 104
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261029-O.json",
+      "sha256": "f53a2ad1b4ee8a68be24fb96c55951769964da9967e73664712900cb868286c4",
+      "bytes": 61282,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:20.513277Z",
+        "count": 94
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261030-I.json",
+      "sha256": "62d8bcd5697cac4b57d7e24675b74beb24ba29a6d5967bea01728102726e1b4a",
+      "bytes": 76729,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:22.866079Z",
+        "count": 127
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/mof/20261030-O.json",
+      "sha256": "c2a2f65342850a34fa404b9efbaa5296e03d8b847aa6a5726ded3ab27791c5ef",
+      "bytes": 72467,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T09:11:25.157514Z",
+        "count": 112
+      },
+      "verification_status": "not_independently_verified"
+    },
+    {
+      "path": "snapshots/ulsan/positions.json",
+      "sha256": "ead7e854ad997aeaca5d1b5fe07f2c9a809eba72881ea936000162ebd1f1fd33",
+      "bytes": 177015,
+      "kind": "external_snapshot",
+      "metadata": {
+        "fetched_at": "2026-10-30T14:20:46.548941Z",
+        "count": 572
+      },
+      "verification_status": "not_independently_verified"
+    }
+  ],
+  "limitations": [
+    "Scenario shipments, coordinates, schedules and contract prices are demonstration inputs.",
+    "Quality seed observations are not actual arrival inspection records.",
+    "Published figures, converted estimates and contractual assumptions must not be presented as one measured dataset.",
+    "Recorded dates are publication/reference dates, not proof that a price is currently valid."
+  ]
+}

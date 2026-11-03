@@ -45,6 +45,11 @@ export type MockDeviceT = {
   binding: MockBindingT | null;
 };
 
+export type MockArrivalT = {
+  shipper_id: string;
+  excess_loss_value: number;
+};
+
 type MockSessionT = {
   org: MockOrgT;
   email: string;
@@ -139,7 +144,7 @@ const seedDevices = (): Map<string, MockDeviceT[]> =>
     ],
   ]);
 
-export const mockDb = {
+const seedDb = () => ({
   lots: seedLots(),
   planLots: new Map<string, Set<string>>([
     [initialSession.plan_id, new Set(initialSession.scenario.lots.map(lot => lot.id))],
@@ -148,8 +153,13 @@ export const mockDb = {
   forwarders: new Map<string, string>([[initialSession.plan_id, DEFAULT_FORWARDER_ORG_ID]]),
   devices: seedDevices(),
   answers: new Map<string, MockRequestAnswerT>(),
+  arrivals: new Map<string, Map<string, MockArrivalT>>(),
   lotSeq: 0,
-};
+});
+
+export const mockDb = seedDb();
+
+export const resetMockDb = () => Object.assign(mockDb, seedDb());
 
 export const nowIso = () => new Date().toISOString();
 

@@ -1,0 +1,26 @@
+{
+  "plan_id": "mock-plan",
+  "source": "해수부",
+  "checked_voyage_ids": ["V-2611A"],
+  "movement_count": 114,
+  "changes": [
+    {
+      "voyage_id": "V-2611A",
+      "vessel_name": "MV FRESH HARMONY",
+      "call_sign": "D5FH1",
+      "planned_etd": "2026-11-18T18:00:00+09:00",
+      "observed_etd": "2026-11-19T06:00:00+09:00",
+      "delta_hours": 12.0,
+      "source": "해수부 선박입출항"
+    }
+  ],
+  "events": [
+    {
+      "type": "delay",
+      "voyage_id": "V-2611A",
+      "new_etd": "2026-11-19T06:00:00+09:00",
+      "new_cy_cutoff": null,
+      "source": "해수부"
+    }
+  ]
+}

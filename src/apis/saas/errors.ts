@@ -30,6 +30,7 @@ export const saasErrorReason = (error: unknown): string | null => {
   const status = saasErrorStatus(error);
   if (status === 403) return '이 조직 권한으로는 할 수 없는 작업입니다.';
   if (status === 422) return '요청 값을 서버가 받아들이지 않았습니다.';
+  if (status === 429) return '요청이 너무 잦습니다. 잠시 뒤 다시 시도하세요.';
   if (isAxiosError(error) && !error.response) return '서버에 연결하지 못했습니다.';
 
   return null;

@@ -1,0 +1,42 @@
+{
+  "plan_id": "mock-plan",
+  "container_id": "CA-01",
+  "lots": [
+    {
+      "lot_id": "lot-jinju-sb-1",
+      "shipper_id": "sh-jinju",
+      "planned_loss_rate": 0.01593,
+      "predicted_loss_rate": 0.066015,
+      "excess_loss_value": 2993080,
+      "refund_before": 0,
+      "refund_after": 498000,
+      "refund_change": 498000,
+      "capped": true
+    },
+    {
+      "lot_id": "lot-sancheong-sb-1",
+      "shipper_id": "sh-sancheong",
+      "planned_loss_rate": 0.01593,
+      "predicted_loss_rate": 0.066015,
+      "excess_loss_value": 1870675,
+      "refund_before": 0,
+      "refund_after": 311250,
+      "refund_change": 311250,
+      "capped": true
+    },
+    {
+      "lot_id": "lot-miryang-sb-1",
+      "shipper_id": "sh-miryang",
+      "planned_loss_rate": 0.01593,
+      "predicted_loss_rate": 0.066015,
+      "excess_loss_value": 1496540,
+      "refund_before": 0,
+      "refund_after": 249000,
+      "refund_change": 249000,
+      "capped": true
+    }
+  ],
+  "total_refund_change": 1058250,
+  "rule": "트윈 예상 손실률을 도착 검수 손실률 대신 넣어 품질 사후정산을 미리 계산한다. 저장하지 않는다. 실제 환급은 도착 검수(POST /settlement/arrival)로 확정한다",
+  "note": "도착 검수 전 예상치. 계획 손실 가정을 넘는 손실액만큼 성과보수에서 뺀다(하한 0)"
+}
