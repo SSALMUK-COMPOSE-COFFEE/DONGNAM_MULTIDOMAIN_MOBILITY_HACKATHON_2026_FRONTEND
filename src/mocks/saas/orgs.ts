@@ -1,3 +1,4 @@
+import { DEMO_EMAIL_DOMAIN } from '@/consts/sandbox-saas';
 import type { Me, Membership, OrgType } from '@/types/saas';
 
 export type MockOrgT = {
@@ -5,57 +6,68 @@ export type MockOrgT = {
   org_type: OrgType;
   org_name: string;
   shipper_ids: string[];
+  sandbox: boolean;
 };
-
-export const DEMO_EMAIL_DOMAIN = 'demo.freshswitch.ssalhub.xyz';
-export const DEMO_PASSWORD = 'freshswitch-demo';
 
 export const PLATFORM_ORG_ID = 'freshswitch';
 export const DEFAULT_FORWARDER_ORG_ID = 'forwarder-dongnam';
 
 export const MOCK_ORGS: MockOrgT[] = [
-  { org_id: PLATFORM_ORG_ID, org_type: 'platform', org_name: '프레시스위치', shipper_ids: [] },
+  {
+    org_id: PLATFORM_ORG_ID,
+    org_type: 'platform',
+    org_name: '프레시스위치',
+    shipper_ids: [],
+    sandbox: true,
+  },
   {
     org_id: 'shipper-jinju',
     org_type: 'shipper',
     org_name: '진주 딸기 수출농가 A',
     shipper_ids: ['sh-jinju'],
+    sandbox: true,
   },
   {
     org_id: 'shipper-sancheong',
     org_type: 'shipper',
     org_name: '산청 딸기 수출농가 B',
     shipper_ids: ['sh-sancheong'],
+    sandbox: true,
   },
   {
     org_id: 'shipper-miryang',
     org_type: 'shipper',
     org_name: '밀양 딸기 수출농가 C',
     shipper_ids: ['sh-miryang'],
+    sandbox: true,
   },
   {
     org_id: 'shipper-sangju',
     org_type: 'shipper',
     org_name: '상주 포도 수출농가 D',
     shipper_ids: ['sh-sangju'],
+    sandbox: true,
   },
   {
     org_id: 'shipper-pohang',
     org_type: 'shipper',
     org_name: '포항 포도 수출농가 E',
     shipper_ids: ['sh-pohang'],
+    sandbox: true,
   },
   {
     org_id: DEFAULT_FORWARDER_ORG_ID,
     org_type: 'forwarder',
-    org_name: '동남 포워딩',
+    org_name: '동남 콜드체인 포워딩',
     shipper_ids: [],
+    sandbox: true,
   },
   {
     org_id: 'forwarder-sinhang',
     org_type: 'forwarder',
-    org_name: '신항 로지스틱스',
+    org_name: '신항 해운 포워딩',
     shipper_ids: [],
+    sandbox: true,
   },
 ];
 
@@ -75,6 +87,7 @@ const membershipOf = (org: MockOrgT): Membership => ({
   org_type: org.org_type,
   org_name: org.org_name,
   role: 'admin',
+  sandbox: org.sandbox,
 });
 
 export const meOf = (org: MockOrgT, email = demoEmail(org.org_id), name = org.org_name): Me => {

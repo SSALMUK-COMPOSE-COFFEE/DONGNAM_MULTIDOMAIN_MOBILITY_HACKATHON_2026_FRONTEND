@@ -2576,6 +2576,8 @@ export interface components {
              * @enum {string}
              */
             org_type: "platform" | "shipper" | "forwarder";
+            /** Org Id */
+            org_id?: string | null;
         };
         /** DemoStatus */
         DemoStatus: {
@@ -4002,6 +4004,11 @@ export interface components {
             org_name: string;
             /** Role */
             role: string;
+            /**
+             * Sandbox
+             * @default false
+             */
+            sandbox: boolean;
         };
         /** OrgSummary */
         OrgSummary: {

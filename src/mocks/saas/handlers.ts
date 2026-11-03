@@ -8,14 +8,13 @@ import {
   SAAS_HEADERS,
   SAAS_REQUESTED_WITH,
 } from '@/consts/api-saas';
+import { DEMO_EMAIL_DOMAIN } from '@/consts/sandbox-saas';
 import alertsFixture from '@/mocks/fixtures/alerts.json';
 import intakeStrawberryFixture from '@/mocks/fixtures/intake-strawberry.json';
 import twinFixture from '@/mocks/fixtures/twin.json';
 import { createAnonymizer } from '@/mocks/saas/anonymize';
 import { demoConfirm, demoCreatePlan, demoOrders, demoPlan } from '@/mocks/saas/demo-bridge';
 import {
-  DEMO_EMAIL_DOMAIN,
-  DEMO_PASSWORD,
   MOCK_ORGS,
   type MockOrgT,
   PLATFORM_ORG_ID,
@@ -395,26 +394,25 @@ const authHandlers = [
     const { email, password } = (await request.json()) as LoginRequest;
     const account = findAccount(email);
     if (account) {
-      if (account.password !== password) return fail(401, '이메일 또는 비밀번호가 맞지 않습니다');
+      if (account.password !== password)
+        return fail(401, '이메일 또는 비밀번호가 올바르지 않습니다');
 
       return startSession(account.org, email, account.name);
     }
 
-    const [orgId, domain] = email.split('@');
-    const org = findOrg(orgId);
-    if (!org || domain !== DEMO_EMAIL_DOMAIN || password !== DEMO_PASSWORD) {
-      return fail(401, '이메일 또는 비밀번호가 맞지 않습니다');
-    }
-
-    return startSession(org, email, org.org_name);
+    return fail(401, '이메일 또는 비밀번호가 올바르지 않습니다');
   }),
 
   http.post(api(SAAS_ENDPOINTS.AUTH_DEMO_LOGIN), async ({ request }) => {
     const csrf = csrfFailure(request);
     if (csrf) return csrf;
 
-    const { org_type } = (await request.json()) as DemoLoginRequest & { org_id?: string };
-    const org = firstOrgOfType(org_type);
+    const { org_type, org_id } = (await request.json()) as DemoLoginRequest;
+    const org = org_id
+      ? (MOCK_ORGS.find(
+          item => item.sandbox && item.org_id === org_id && item.org_type === org_type
+        ) ?? null)
+      : firstOrgOfType(org_type);
     if (!org) return fail(404, '데모 계정이 없습니다');
 
     await delay(200);
@@ -443,6 +441,7 @@ const authHandlers = [
       org_type: body.org_type,
       org_name: body.org_name,
       shipper_ids: [],
+      sandbox: false,
     };
     MOCK_ORGS.push(org);
     saveAccount({ org, email: body.email, name: body.name, password: body.password });
