@@ -1,138 +1,134 @@
 'use client';
 
 import Link from 'next/link';
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
 
 import { usePlatformSettlements } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
+import { won, wonNumber } from '@/app/(saas)/app/platform/_components/m2-format';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
+import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { StatTile } from '@/app/(saas)/app/platform/_components/stat-tile';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import type { PlatformSettlementT } from '@/types/saas-platform';
-import { formatManwon } from '@/utils/format';
 import { formatKstMonthDayTime } from '@/utils/kst';
 import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 const sumBy = (rows: PlatformSettlementT[], pick: (row: PlatformSettlementT) => number) =>
   rows.reduce((total, row) => total + pick(row), 0);
 
+function SettlementShell({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <PlatformHeader
+        eyebrow="정산"
+        title="화주가 아낀 돈에서만 성과보수를 받습니다"
+        sub="계획별 화주 총비용 절감액과 성과보수, 화주에게 돌아간 몫입니다."
+      />
+      {children}
+    </>
+  );
+}
+
 export function SettlementView() {
   const { data, isPending, isError, error, refetch, isFetching } = usePlatformSettlements();
 
   if (isError) {
     return (
-      <QueryError
-        error={error}
-        subject="정산 내역을"
-        onRetry={() => refetch()}
-        isRetrying={isFetching}
-      />
+      <SettlementShell>
+        <QueryError
+          error={error}
+          subject="정산 내역을"
+          onRetry={() => refetch()}
+          isRetrying={isFetching}
+        />
+      </SettlementShell>
     );
   }
-  if (isPending) return <Skeleton className="h-96" />;
+  if (isPending) {
+    return (
+      <SettlementShell>
+        <Skeleton className="h-96 rounded-[18px]" />
+      </SettlementShell>
+    );
+  }
   if (data.length === 0) {
     return (
-      <EmptyState
-        title="아직 정산할 계획이 없습니다"
-        description="공동적재 계획을 만들면 화주별 절감액과 성과보수가 계산됩니다."
-      />
+      <SettlementShell>
+        <EmptyState
+          title="아직 정산할 계획이 없습니다"
+          description="공동적재 계획을 만들면 화주별 절감액과 성과보수가 계산됩니다."
+        />
+      </SettlementShell>
     );
   }
 
   const totalSaving = sumBy(data, ({ total_saving_krw }) => total_saving_krw);
   const totalFee = sumBy(data, ({ platform_fee_krw }) => platform_fee_krw);
+  const feeRatio = totalSaving > 0 ? Math.round((totalFee / totalSaving) * 100) : null;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-3 gap-6">
-        <StatTile label="화주 총비용 절감" value={formatManwon(totalSaving)} unit="만 원" />
+    <SettlementShell>
+      <div className="mb-4 grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
+        <StatTile label="화주 총비용 절감" value={wonNumber(totalSaving)} unit="원" />
         <StatTile
           label="플랫폼 성과보수"
-          value={formatManwon(totalFee)}
-          unit="만 원"
-          note="절감액의 25%"
+          value={wonNumber(totalFee)}
+          unit="원"
+          note={feeRatio === null ? '' : `절감액의 ${feeRatio}%`}
         />
-        <StatTile
-          label="화주에게 돌아간 몫"
-          value={formatManwon(totalSaving - totalFee)}
-          unit="만 원"
-        />
+        <StatTile label="화주에게 돌아간 몫" value={wonNumber(totalSaving - totalFee)} unit="원" />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            계획별 정산
-            <span className="ml-2 text-base font-medium text-muted-foreground">만 원</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>항차 · 화주</TableHead>
-                <TableHead>출항</TableHead>
-                <TableHead className="text-right">절감</TableHead>
-                <TableHead className="text-right">성과보수 25%</TableHead>
-                <TableHead className="text-right">화주 몫</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      <section className="m2-card">
+        <div className="m2-card-h">
+          <h2 className="m2-h2">계획별 정산</h2>
+          <span className="m2-chip">원 단위</span>
+        </div>
+        <div className="-mx-2.5 overflow-x-auto px-2.5">
+          <table className="m2-table">
+            <thead>
+              <tr>
+                <th>항차 · 화주</th>
+                <th>출항</th>
+                <th className="r">절감</th>
+                <th className="r">성과보수</th>
+                <th className="r">화주 몫</th>
+              </tr>
+            </thead>
+            <tbody>
               {data.map(row => (
                 <Fragment key={row.plan_id}>
-                  <TableRow className="bg-panel font-bold hover:bg-panel">
-                    <TableCell>
+                  <tr className="font-semibold [&>td]:bg-[rgba(15,27,51,0.025)]">
+                    <td>
                       <Link
                         href={PLATFORM_PATHS.PLAN(row.plan_id)}
-                        className="text-navy hover:text-brand"
+                        className="text-m2-ink hover:text-m2-brand-ink hover:underline"
                       >
                         {row.vessel ?? NO_VESSEL_LABEL}
                       </Link>
-                    </TableCell>
-                    <TableCell className="num">{formatKstMonthDayTime(row.departure)}</TableCell>
-                    <TableCell className="text-right num text-ok">
-                      {formatManwon(row.total_saving_krw)}
-                    </TableCell>
-                    <TableCell className="text-right num">
-                      {formatManwon(row.platform_fee_krw)}
-                    </TableCell>
-                    <TableCell className="text-right num">
-                      {formatManwon(row.total_saving_krw - row.platform_fee_krw)}
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                    <td className="m2-num">{formatKstMonthDayTime(row.departure)}</td>
+                    <td className="r m2-num text-m2-ok-ink">{won(row.total_saving_krw)}</td>
+                    <td className="r m2-num">{won(row.platform_fee_krw)}</td>
+                    <td className="r m2-num">{won(row.total_saving_krw - row.platform_fee_krw)}</td>
+                  </tr>
                   {row.shippers.map(share => (
-                    <TableRow key={`${row.plan_id}-${share.shipper_id}`}>
-                      <TableCell className="pl-8">
-                        {share.shipper_org_name ?? share.shipper_id}
-                      </TableCell>
-                      <TableCell />
-                      <TableCell className="text-right num">
-                        {formatManwon(share.saving_krw)}
-                      </TableCell>
-                      <TableCell className="text-right num">
-                        {formatManwon(share.fee_krw)}
-                      </TableCell>
-                      <TableCell className="text-right num">
-                        {formatManwon(share.saving_krw - share.fee_krw)}
-                      </TableCell>
-                    </TableRow>
+                    <tr key={`${row.plan_id}-${share.shipper_id}`}>
+                      <td className="pl-6">{share.shipper_org_name ?? share.shipper_id}</td>
+                      <td />
+                      <td className="r m2-num">{won(share.saving_krw)}</td>
+                      <td className="r m2-num">{won(share.fee_krw)}</td>
+                      <td className="r m2-num">{won(share.saving_krw - share.fee_krw)}</td>
+                    </tr>
                   ))}
                 </Fragment>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </SettlementShell>
   );
 }

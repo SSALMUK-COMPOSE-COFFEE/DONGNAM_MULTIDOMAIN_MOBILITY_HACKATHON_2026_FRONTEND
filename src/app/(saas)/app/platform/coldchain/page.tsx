@@ -10,11 +10,11 @@ export default function PlatformColdchainPage() {
   return (
     <>
       <PlatformHeader
-        eyebrow="플랫폼 운영 · 콜드체인 관제"
-        headline="컨테이너 품온 · 전원을"
-        highlight="실시간으로"
+        eyebrow="콜드체인 관제"
+        title="컨테이너 품온 · 전원을 실시간으로"
+        sub="센서 측정값, 자동 조치, 알림 스트림을 계획의 컨테이너별로 봅니다."
       />
-      <Suspense fallback={<Skeleton className="h-96" />}>
+      <Suspense fallback={<Skeleton className="h-96 rounded-[18px]" />}>
         <ColdchainView />
       </Suspense>
     </>

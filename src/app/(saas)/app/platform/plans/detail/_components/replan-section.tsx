@@ -7,8 +7,6 @@ import { usePlatformReplanFlow } from '@/apis/saas/platform';
 import { ContainerLoadBar } from '@/components/container-load-bar';
 import { ExecutionOrderPanel } from '@/components/execution-order';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -67,17 +65,17 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
     kind === 'air_switch' ? `${shipperName} 항공으로 돌리고 다시 짜기` : reduceLabel;
 
   return (
-    <div className="@container flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>재최적화</CardTitle>
-          <CardDescription>
+    <div className="@container flex flex-col gap-4">
+      <section className="m2-card">
+        <div className="mb-4">
+          <h2 className="m2-h2">재최적화</h2>
+          <p className="m2-sub">
             화주 취소·감축이나 항공 전환이 생기면 세 가지 안을 다시 계산해 고릅니다.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 items-start gap-10 @min-[960px]:grid-cols-[400px_minmax(0,1fr)]">
+          </p>
+        </div>
+        <div className="grid grid-cols-1 items-start gap-8 @min-[960px]:grid-cols-[360px_minmax(0,1fr)]">
           {seaLots.length === 0 ? (
-            <p className="text-muted-foreground">해상으로 가는 로트가 없어 바꿀 대상이 없습니다.</p>
+            <p className="m2-sub mt-0">해상으로 가는 로트가 없어 바꿀 대상이 없습니다.</p>
           ) : (
             <div className="flex flex-col gap-5">
               <Tabs value={kind} onValueChange={value => setKind(value as ChangeKindT)}>
@@ -105,54 +103,57 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
 
               {kind === 'reduce' && (
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">
-                    <span className="num">{lot?.pallets}</span> →
+                  <span className="text-m2-muted">
+                    <span className="m2-num">{lot?.pallets}</span> →
                   </span>
                   <div className="flex items-center gap-3">
-                    <Button
-                      size="icon"
-                      variant="outline"
+                    <button
+                      type="button"
+                      className="m2-btn m2-btn-sec w-10 px-0"
                       aria-label="한 파렛트 줄이기"
                       disabled={pallets <= 0}
                       onClick={() => setNewPallets(pallets - 1)}
                     >
-                      <MinusIcon />
-                    </Button>
-                    <span className="w-10 text-center text-3xl font-bold num">{pallets}</span>
-                    <Button
-                      size="icon"
-                      variant="outline"
+                      <MinusIcon size={16} />
+                    </button>
+                    <output className="m2-num w-10 text-center text-[24px] font-bold">
+                      {pallets}
+                    </output>
+                    <button
+                      type="button"
+                      className="m2-btn m2-btn-sec w-10 px-0"
                       aria-label="한 파렛트 늘리기"
                       disabled={pallets >= maxPallets}
                       onClick={() => setNewPallets(pallets + 1)}
                     >
-                      <PlusIcon />
-                    </Button>
-                    <span className="text-muted-foreground">파렛트</span>
+                      <PlusIcon size={16} />
+                    </button>
+                    <span className="text-m2-muted">파렛트</span>
                   </div>
                 </div>
               )}
 
-              <Button
-                size="lg"
+              <button
+                type="button"
+                className="m2-btn m2-btn-pri m2-btn-lg w-full"
                 disabled={!lot || isUnchanged || flow.isReplanning}
                 onClick={runReplan}
               >
                 {flow.isReplanning ? '다시 짜는 중' : actionLabel}
-              </Button>
+              </button>
             </div>
           )}
 
-          <div className="flex flex-col gap-5 border-l border-line pl-10">
-            <h3 className="text-xl font-bold">지금 계획</h3>
+          <div className="flex flex-col gap-4 border-m2-line @min-[960px]:border-l @min-[960px]:pl-8">
+            <h3 className="m2-h3">지금 계획</h3>
             {container ? (
               <ContainerLoadBar container={container} plan={plan} scenario={scenario} />
             ) : (
-              <p className="text-muted-foreground">로트를 고르면 실린 컨테이너를 보여줍니다.</p>
+              <p className="m2-sub mt-0">로트를 고르면 실린 컨테이너를 보여줍니다.</p>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {flow.replanResult && (
         <ReplanAlternatives

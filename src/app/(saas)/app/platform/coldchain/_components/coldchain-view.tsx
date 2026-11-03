@@ -21,9 +21,6 @@ import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { ActionList } from '@/components/action-list';
 import { AlertFeed } from '@/components/alert-feed';
 import { SensorStatusCard } from '@/components/sensor-status-card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -40,17 +37,17 @@ import { planOptionLabel } from '@/utils/plan-label';
 const SAAS_EMPTY_TEXT = '기기를 연결하면 측정값이 들어옵니다.';
 
 const STATUS_STYLE: Record<TwinSummaryT['status'], { label: string; className: string }> = {
-  no_data: { label: '측정값 없음', className: 'bg-slate' },
-  normal: { label: '정상', className: 'bg-ok' },
-  warning: { label: '경고', className: 'bg-air' },
-  critical: { label: '위험', className: 'bg-berry' },
+  no_data: { label: '측정값 없음', className: '' },
+  normal: { label: '정상', className: 'm2-chip-ok' },
+  warning: { label: '경고', className: 'm2-chip-warn' },
+  critical: { label: '위험', className: 'm2-chip-berry' },
 };
 
 const STREAM_LABEL: Record<AlertStreamStatusT, { label: string; className: string }> = {
-  connecting: { label: '연결 중', className: 'bg-slate' },
-  open: { label: '실시간 연결', className: 'bg-ok' },
-  reconnecting: { label: '다시 연결 중', className: 'bg-air' },
-  stopped: { label: '연결 끊김', className: 'bg-berry' },
+  connecting: { label: '연결 중', className: '' },
+  open: { label: '실시간 연결', className: 'm2-chip-ok' },
+  reconnecting: { label: '다시 연결 중', className: 'm2-chip-warn' },
+  stopped: { label: '연결 끊김', className: 'm2-chip-berry' },
 };
 
 export function ColdchainView() {
@@ -76,7 +73,7 @@ export function ColdchainView() {
       />
     );
   }
-  if (plansQuery.isPending) return <Skeleton className="h-96" />;
+  if (plansQuery.isPending) return <Skeleton className="h-96 rounded-[18px]" />;
   if (!planId) {
     return (
       <EmptyState
@@ -87,11 +84,11 @@ export function ColdchainView() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <span className="font-bold">계획</span>
+    <div className="flex flex-col gap-4">
+      <div className="m2-card flex flex-wrap items-center gap-3 py-3.5">
+        <span className="m2-h3">계획</span>
         <Select value={planId} onValueChange={selectPlan}>
-          <SelectTrigger className="w-96">
+          <SelectTrigger aria-label="계획" className="w-96 max-w-full rounded-[12px] bg-white">
             <SelectValue placeholder="계획 선택" />
           </SelectTrigger>
           <SelectContent>
@@ -151,10 +148,10 @@ function PlanColdchain({ planId }: { planId: string }) {
       />
     );
   }
-  if (planQuery.isPending) return <Skeleton className="h-96" />;
+  if (planQuery.isPending) return <Skeleton className="h-96 rounded-[18px]" />;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {summariesQuery.isError && !summariesQuery.data && (
         <QueryError
           error={summariesQuery.error}
@@ -170,7 +167,7 @@ function PlanColdchain({ planId }: { planId: string }) {
           description="해상 배정이 없는 계획은 콜드체인 관제 대상이 아닙니다."
         />
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2">
           {containerIds.map(id => (
             <ContainerTile
               key={id}
@@ -185,25 +182,25 @@ function PlanColdchain({ planId }: { planId: string }) {
 
       {containerId && (
         <div className="@container">
-          <div className="grid grid-cols-1 gap-6 @min-[1000px]:grid-cols-[minmax(0,1fr)_440px]">
+          <div className="grid grid-cols-1 gap-4 @min-[1000px]:grid-cols-[minmax(0,1fr)_400px]">
             <ContainerTwin planId={planId} containerId={containerId} />
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                알림 스트림 <Badge className={stream.className}>{stream.label}</Badge>
+            <div className="flex flex-col gap-4">
+              <div className="m2-card flex flex-wrap items-center gap-2 py-3 text-[12.5px] text-m2-muted">
+                알림 스트림 <span className={cn('m2-chip', stream.className)}>{stream.label}</span>
                 {status === 'stopped' && (
-                  <Button size="sm" variant="outline" onClick={reconnect}>
+                  <button type="button" className="m2-btn m2-btn-sec m2-btn-sm" onClick={reconnect}>
                     다시 연결
-                  </Button>
+                  </button>
                 )}
                 {isSandbox && (
-                  <Button
-                    size="sm"
-                    className="ml-auto"
+                  <button
+                    type="button"
+                    className="m2-btn m2-btn-pri m2-btn-sm ml-auto"
                     disabled={simulation.isPending}
                     onClick={() => simulation.mutate(containerId)}
                   >
                     시뮬레이션 실행
-                  </Button>
+                  </button>
                 )}
               </div>
               <AlertFeed alerts={alerts.filter(alert => alert.container_id === containerId)} />
@@ -231,25 +228,29 @@ function ContainerTile({ containerId, summary, isActive, onSelect }: ContainerTi
       onClick={onSelect}
       aria-pressed={isActive}
       className={cn(
-        'flex flex-col gap-2 rounded-xl border bg-card p-4 text-left hover:bg-panel',
-        isActive && 'ring-2 ring-brand'
+        'm2-block flex flex-col gap-2 text-left',
+        isActive && 'shadow-[0_0_0_2px_var(--m2-brand)]'
       )}
     >
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold">{containerId}</span>
-        <Badge className={style.className}>{style.label}</Badge>
+        <span className="m2-h3 text-[15px]">{containerId}</span>
+        <span className={cn('m2-chip', style.className)}>{style.label}</span>
       </div>
-      <dl className="grid grid-cols-2 gap-x-3 text-sm">
-        <dt className="text-muted-foreground">품온</dt>
-        <dd className="text-right font-bold num">
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[12.5px]">
+        <dt className="text-m2-muted">품온</dt>
+        <dd className="m2-num text-right font-semibold">
           {typeof summary?.temp_c === 'number' ? `${summary.temp_c}℃` : '–'}
         </dd>
-        <dt className="text-muted-foreground">누적 단전</dt>
-        <dd className="text-right font-bold num">{summary?.cumulative_outage_minutes ?? 0}분</dd>
-        <dt className="text-muted-foreground">센서 손실률</dt>
-        <dd className="text-right font-bold num">{formatPercent(summary?.sensor_loss_rate)}</dd>
-        <dt className="text-muted-foreground">열린 조치</dt>
-        <dd className="text-right font-bold num">{summary?.open_actions ?? 0}건</dd>
+        <dt className="text-m2-muted">누적 단전</dt>
+        <dd className="m2-num text-right font-semibold">
+          {summary?.cumulative_outage_minutes ?? 0}분
+        </dd>
+        <dt className="text-m2-muted">센서 손실률</dt>
+        <dd className="m2-num text-right font-semibold">
+          {formatPercent(summary?.sensor_loss_rate)}
+        </dd>
+        <dt className="text-m2-muted">열린 조치</dt>
+        <dd className="m2-num text-right font-semibold">{summary?.open_actions ?? 0}건</dd>
       </dl>
     </button>
   );
@@ -260,7 +261,7 @@ function ContainerTwin({ planId, containerId }: { planId: string; containerId: s
   const twin = twinQuery.data ?? null;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {twinQuery.isError && !twin && (
         <QueryError
           error={twinQuery.error}
@@ -270,23 +271,19 @@ function ContainerTwin({ planId, containerId }: { planId: string; containerId: s
         />
       )}
       {twinQuery.isPending ? (
-        <Skeleton className="h-96" />
+        <Skeleton className="h-96 rounded-[18px]" />
       ) : (
         <SensorStatusCard containerId={containerId} twin={twin} emptyText={SAAS_EMPTY_TEXT} />
       )}
       {twin ? (
         <ActionList actions={twin.actions} />
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>자동 조치</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              기기 관리에서 센서를 이 컨테이너에 연결하면 측정값과 조치가 들어옵니다.
-            </p>
-          </CardContent>
-        </Card>
+        <section className="m2-card">
+          <h2 className="m2-h2">자동 조치</h2>
+          <p className="m2-sub">
+            기기 관리에서 센서를 이 컨테이너에 연결하면 측정값과 조치가 들어옵니다.
+          </p>
+        </section>
       )}
     </div>
   );

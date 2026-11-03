@@ -8,11 +8,11 @@ export default function PlatformDevicesPage() {
   return (
     <>
       <PlatformHeader
-        eyebrow="플랫폼 운영 · 기기 관리"
-        headline="콜드체인 센서를 등록하고"
-        highlight="컨테이너에 연결합니다"
+        eyebrow="설정 · 온도 기기"
+        title="콜드체인 센서를 등록하고 컨테이너에 연결합니다"
+        sub="기기 토큰은 등록할 때 한 번만 보입니다."
       />
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <RegisterDeviceCard />
         <DeviceListCard />
       </div>

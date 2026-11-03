@@ -15,17 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import type { DeviceT } from '@/types/saas-platform';
 import { formatKstMonthDayTime } from '@/utils/kst';
 import { planOptionLabel } from '@/utils/plan-label';
@@ -36,11 +26,12 @@ export function DeviceListCard() {
   const planLabels = new Map(plans?.map(plan => [plan.plan_id, planOptionLabel(plan)]));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>등록한 기기</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <section className="m2-card">
+      <div className="m2-card-h">
+        <h2 className="m2-h2">등록한 기기</h2>
+        {devices ? <span className="m2-chip m2-num">{devices.length}대</span> : null}
+      </div>
+      <div>
         {isError && (
           <QueryError
             error={error}
@@ -49,7 +40,7 @@ export function DeviceListCard() {
             isRetrying={isFetching}
           />
         )}
-        {isPending && <Skeleton className="h-48" />}
+        {isPending && <Skeleton className="h-48 rounded-[14px]" />}
         {devices?.length === 0 && (
           <EmptyState
             title="등록한 기기가 없습니다"
@@ -57,26 +48,28 @@ export function DeviceListCard() {
           />
         )}
         {!!devices?.length && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>기기 ID</TableHead>
-                <TableHead>이름</TableHead>
-                <TableHead>연결</TableHead>
-                <TableHead>마지막 수신</TableHead>
-                <TableHead>등록</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {devices.map(device => (
-                <DeviceRow key={device.device_id} device={device} planLabels={planLabels} />
-              ))}
-            </TableBody>
-          </Table>
+          <div className="-mx-2.5 overflow-x-auto px-2.5">
+            <table className="m2-table">
+              <thead>
+                <tr>
+                  <th>기기 ID</th>
+                  <th>이름</th>
+                  <th>연결</th>
+                  <th>마지막 수신</th>
+                  <th>등록</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {devices.map(device => (
+                  <DeviceRow key={device.device_id} device={device} planLabels={planLabels} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -85,33 +78,35 @@ function DeviceRow({ device, planLabels }: { device: DeviceT; planLabels: Map<st
   const { binding } = device;
 
   return (
-    <TableRow>
-      <TableCell className="font-bold">{device.device_id}</TableCell>
-      <TableCell>{device.name ?? '–'}</TableCell>
-      <TableCell>
+    <tr>
+      <td className="m2-mono font-semibold">{device.device_id}</td>
+      <td>{device.name ?? '–'}</td>
+      <td>
         {binding ? (
           <span>
-            <span className="font-bold">{binding.container_id}</span>
-            <span className="ml-1 text-sm text-muted-foreground">
+            <span className="font-semibold">{binding.container_id}</span>
+            <span className="ml-1.5 text-[12px] text-m2-muted">
               {binding.plan_id ? (planLabels.get(binding.plan_id) ?? binding.plan_id) : '계획 없음'}
             </span>
           </span>
         ) : (
-          <span className="text-muted-foreground">연결 안 됨</span>
+          <span className="text-m2-muted">연결 안 됨</span>
         )}
-      </TableCell>
-      <TableCell className="num">{formatKstMonthDayTime(device.last_seen_at)}</TableCell>
-      <TableCell className="num text-muted-foreground">
-        {formatKstMonthDayTime(device.created_at)}
-      </TableCell>
-      <TableCell>
+      </td>
+      <td className="m2-num">{formatKstMonthDayTime(device.last_seen_at)}</td>
+      <td className="m2-num text-m2-muted">{formatKstMonthDayTime(device.created_at)}</td>
+      <td>
         <div className="flex justify-end gap-2">
           <BindDeviceDialog device={device} />
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button size="sm" variant="outline" disabled={remove.isPending}>
+              <button
+                type="button"
+                className="m2-btn m2-btn-sec m2-btn-sm"
+                disabled={remove.isPending}
+              >
                 삭제
-              </Button>
+              </button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -132,7 +127,7 @@ function DeviceRow({ device, planLabels }: { device: DeviceT; planLabels: Map<st
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   );
 }

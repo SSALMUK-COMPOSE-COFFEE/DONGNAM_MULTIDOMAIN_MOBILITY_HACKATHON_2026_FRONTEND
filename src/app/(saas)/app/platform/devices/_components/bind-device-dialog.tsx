@@ -37,9 +37,9 @@ export function BindDeviceDialog({ device }: { device: DeviceT }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <button type="button" className="m2-btn m2-btn-sec m2-btn-sm">
           {device.binding ? '연결 바꾸기' : '컨테이너 연결'}
-        </Button>
+        </button>
       </DialogTrigger>
       <DialogContent>
         {isOpen && <BindDeviceForm device={device} onDone={() => setIsOpen(false)} />}

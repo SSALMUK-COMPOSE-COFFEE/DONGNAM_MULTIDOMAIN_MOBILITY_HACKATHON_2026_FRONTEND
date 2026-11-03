@@ -15,8 +15,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -40,18 +38,18 @@ export function ForwarderAssignCard({ planId }: { planId: string }) {
   const assignLabel = (assign.isPending && '배정 중') || (current ? '포워더 바꾸기' : '배정하기');
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>포워더 배정</CardTitle>
-        <CardDescription>
+    <section className="m2-card">
+      <div className="mb-3.5">
+        <h2 className="m2-h2">포워더 배정</h2>
+        <p className="m2-sub">
           <AssignmentDescription
             isPending={plansQuery.isPending}
             isKnown={isKnown}
             forwarderName={current?.org_name ?? null}
           />
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex items-center gap-3">
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
         {plansQuery.isError && (
           <QueryError
             error={plansQuery.error}
@@ -68,14 +66,14 @@ export function ForwarderAssignCard({ planId }: { planId: string }) {
             isRetrying={forwardersQuery.isFetching}
           />
         )}
-        {forwardersQuery.isPending && <Skeleton className="h-9 w-80" />}
+        {forwardersQuery.isPending && <Skeleton className="h-10 w-full rounded-[12px]" />}
         {forwardersQuery.data?.length === 0 && (
-          <p className="text-muted-foreground">가입한 포워더 조직이 없습니다.</p>
+          <p className="m2-sub mt-0">가입한 포워더 조직이 없습니다.</p>
         )}
         {!!forwardersQuery.data?.length && plansQuery.isSuccess && (
           <>
             <Select value={forwarderId} onValueChange={setPicked}>
-              <SelectTrigger className="w-80">
+              <SelectTrigger aria-label="포워더" className="min-w-0 flex-1 rounded-[12px] bg-white">
                 <SelectValue placeholder="포워더 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -86,20 +84,22 @@ export function ForwarderAssignCard({ planId }: { planId: string }) {
                 ))}
               </SelectContent>
             </Select>
-            <Button
+            <button
+              type="button"
+              className="m2-btn m2-btn-pri"
               disabled={!forwarderId || forwarderId === current?.org_id || isBusy}
               onClick={() => assign.mutate(forwarderId, { onSuccess: () => setPicked('') })}
             >
               {assignLabel}
-            </Button>
+            </button>
           </>
         )}
         {current && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" disabled={isBusy}>
+              <button type="button" className="m2-btn m2-btn-sec" disabled={isBusy}>
                 배정 해제
-              </Button>
+              </button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -116,8 +116,8 @@ export function ForwarderAssignCard({ planId }: { planId: string }) {
             </AlertDialogContent>
           </AlertDialog>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -136,7 +136,7 @@ function AssignmentDescription({ isPending, isKnown, forwarderName }: Assignment
 
   return (
     <>
-      지금 <span className="font-bold text-navy">{forwarderName}</span>
+      지금 <span className="font-semibold text-m2-ink">{forwarderName}</span>
       {subjectParticle(forwarderName)} 이 항차의 실행 지시를 확정합니다.
     </>
   );

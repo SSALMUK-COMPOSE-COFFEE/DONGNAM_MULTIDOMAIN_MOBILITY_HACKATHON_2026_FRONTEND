@@ -8,7 +8,6 @@ import { useIsSandbox } from '@/apis/saas/auth';
 import { saasErrorDetail, saasErrorReason, saasErrorStatus } from '@/apis/saas/errors';
 import { useRegisterDevice } from '@/apis/saas/platform';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -17,8 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { DEMO_DEVICE_PREFIX } from '@/consts/sandbox-saas';
 import type { RegisteredDeviceT } from '@/types/saas-platform';
 
@@ -70,28 +67,33 @@ export function RegisterDeviceCard() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>기기 등록</CardTitle>
-        <CardDescription>
+    <section className="m2-card">
+      <div className="mb-4">
+        <h2 className="m2-h2">기기 등록</h2>
+        <div className="m2-sub">
           센서 일련번호를 등록하면 기기 토큰이 한 번만 발급됩니다. 기기는 측정값을 보낼 때
-          <code className="mx-1 rounded bg-panel px-1.5 py-0.5 text-xs">X-Device-Token</code>
+          <code className="m2-mono mx-1 rounded-[6px] bg-[rgba(15,27,51,0.05)] px-1.5 py-0.5">
+            X-Device-Token
+          </code>
           헤더에 이 토큰을 넣습니다.
           {isSandbox && (
             <span className="mt-1 block">
               데모 환경에서는{' '}
-              <code className="rounded bg-panel px-1.5 py-0.5 text-xs">{DEMO_DEVICE_PREFIX}</code>로
-              시작하는 기기 ID만 등록할 수 있습니다.
+              <code className="m2-mono rounded-[6px] bg-[rgba(15,27,51,0.05)] px-1.5 py-0.5">
+                {DEMO_DEVICE_PREFIX}
+              </code>
+              로 시작하는 기기 ID만 등록할 수 있습니다.
             </span>
           )}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={submit} className="flex items-end gap-3">
-          <div className="flex flex-1 flex-col gap-2">
-            <Label htmlFor="device-id">기기 ID</Label>
-            <Input
+        </div>
+      </div>
+      <div>
+        <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
+          <div className="m2-field mb-0 min-w-[200px] flex-1">
+            <label htmlFor="device-id">기기 ID</label>
+            <input
               id="device-id"
+              className="m2-inp"
               value={deviceId}
               onChange={event => setDeviceId(event.target.value)}
               placeholder={isSandbox ? `${DEMO_DEVICE_PREFIX}arduino-02` : 'arduino-02'}
@@ -99,29 +101,36 @@ export function RegisterDeviceCard() {
               required
             />
           </div>
-          <div className="flex flex-1 flex-col gap-2">
-            <Label htmlFor="device-name">이름 (선택)</Label>
-            <Input
+          <div className="m2-field mb-0 min-w-[200px] flex-1">
+            <label htmlFor="device-name">이름 (선택)</label>
+            <input
               id="device-name"
+              className="m2-inp"
               value={name}
               onChange={event => setName(event.target.value)}
               placeholder="CA-01 리퍼 센서"
               maxLength={200}
             />
           </div>
-          <Button type="submit" disabled={!trimmedId || prefixBlocked || register.isPending}>
+          <button
+            type="submit"
+            className="m2-btn m2-btn-pri"
+            disabled={!trimmedId || prefixBlocked || register.isPending}
+          >
             {register.isPending ? '등록 중' : '등록'}
-          </Button>
+          </button>
         </form>
         {prefixBlocked && (
-          <p className="mt-3 text-sm text-destructive">
+          <p className="mt-3 text-[12.5px] text-m2-crit">
             데모 환경의 기기 ID는 {DEMO_DEVICE_PREFIX} 로 시작해야 합니다.
           </p>
         )}
         {register.isError && !prefixBlocked && (
-          <p className="mt-3 text-sm text-destructive">{registerErrorMessage(register.error)}</p>
+          <p className="mt-3 text-[12.5px] text-m2-crit" role="alert">
+            {registerErrorMessage(register.error)}
+          </p>
         )}
-      </CardContent>
+      </div>
 
       <Dialog open={!!issued} onOpenChange={isOpen => !isOpen && setIssued(null)}>
         <DialogContent>
@@ -145,6 +154,6 @@ export function RegisterDeviceCard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </section>
   );
 }
