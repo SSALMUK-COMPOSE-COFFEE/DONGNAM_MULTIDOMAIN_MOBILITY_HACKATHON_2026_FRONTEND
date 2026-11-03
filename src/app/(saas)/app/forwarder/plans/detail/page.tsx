@@ -4,6 +4,8 @@ import { ForwarderPageHeader } from '@/app/(saas)/app/forwarder/_components/forw
 import { PlanDetailView } from '@/app/(saas)/app/forwarder/_components/plan-detail-view';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const instant = false;
+
 export default function ForwarderPlanDetailPage() {
   return (
     <>

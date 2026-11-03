@@ -1,6 +1,8 @@
 import { ShipperHomeView } from '@/app/(saas)/app/shipper/_components/shipper-home-view';
 import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-page-header';
 
+export const instant = false;
+
 export default function ShipperHomePage() {
   return (
     <>

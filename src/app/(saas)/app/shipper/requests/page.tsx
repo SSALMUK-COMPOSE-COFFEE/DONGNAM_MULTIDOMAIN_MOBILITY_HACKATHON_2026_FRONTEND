@@ -1,6 +1,8 @@
 import { RequestsView } from '@/app/(saas)/app/shipper/_components/requests-view';
 import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-page-header';
 
+export const instant = false;
+
 export default function ShipperRequestsPage() {
   return (
     <>

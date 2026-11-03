@@ -4,6 +4,8 @@ import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-h
 import { ColdchainView } from '@/app/(saas)/app/platform/coldchain/_components/coldchain-view';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const instant = false;
+
 export default function PlatformColdchainPage() {
   return (
     <>

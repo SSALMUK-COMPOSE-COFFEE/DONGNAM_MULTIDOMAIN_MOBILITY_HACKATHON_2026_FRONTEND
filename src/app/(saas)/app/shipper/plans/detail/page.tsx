@@ -4,6 +4,8 @@ import { PlanDetailView } from '@/app/(saas)/app/shipper/_components/plan-detail
 import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const instant = false;
+
 export default function ShipperPlanDetailPage() {
   return (
     <>

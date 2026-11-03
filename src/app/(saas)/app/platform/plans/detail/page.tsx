@@ -4,6 +4,8 @@ import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-h
 import { PlanDetailView } from '@/app/(saas)/app/platform/plans/detail/_components/plan-detail-view';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const instant = false;
+
 export default function PlatformPlanDetailPage() {
   return (
     <>

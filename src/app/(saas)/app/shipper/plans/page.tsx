@@ -1,6 +1,8 @@
 import { PlansView } from '@/app/(saas)/app/shipper/_components/plans-view';
 import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-page-header';
 
+export const instant = false;
+
 export default function ShipperPlansPage() {
   return (
     <>

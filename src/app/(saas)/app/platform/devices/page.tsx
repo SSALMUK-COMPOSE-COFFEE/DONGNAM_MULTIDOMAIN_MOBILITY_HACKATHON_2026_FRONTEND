@@ -2,6 +2,8 @@ import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-h
 import { DeviceListCard } from '@/app/(saas)/app/platform/devices/_components/device-list-card';
 import { RegisterDeviceCard } from '@/app/(saas)/app/platform/devices/_components/register-device-card';
 
+export const instant = false;
+
 export default function PlatformDevicesPage() {
   return (
     <>

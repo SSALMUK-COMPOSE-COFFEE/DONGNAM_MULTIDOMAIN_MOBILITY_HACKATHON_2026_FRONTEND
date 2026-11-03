@@ -1,6 +1,8 @@
 import { LotPoolView } from '@/app/(saas)/app/platform/_components/lot-pool-view';
 import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 
+export const instant = false;
+
 export default function PlatformHomePage() {
   return (
     <>

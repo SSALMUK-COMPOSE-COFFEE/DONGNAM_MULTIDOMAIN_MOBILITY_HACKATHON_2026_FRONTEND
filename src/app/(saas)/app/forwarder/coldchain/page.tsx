@@ -4,6 +4,8 @@ import { ColdchainView } from '@/app/(saas)/app/forwarder/_components/coldchain-
 import { ForwarderPageHeader } from '@/app/(saas)/app/forwarder/_components/forwarder-page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const instant = false;
+
 export default function ForwarderColdchainPage() {
   return (
     <>
