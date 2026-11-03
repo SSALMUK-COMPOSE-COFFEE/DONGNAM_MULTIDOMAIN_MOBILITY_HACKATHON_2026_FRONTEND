@@ -243,3 +243,24 @@ test('데모 화주 홈 시즌 카드 숫자가 정산 화면 합계와 같고 �
   await expectNoRawLotId(page);
   await expectNoSeriousAxe(page, '내 출하(데모)');
 });
+
+test('화주 정산 화면이 1024·1280·390px에서 가로로 넘치지 않는다', async ({ page }) => {
+  await page.goto(LOGIN_PATH);
+  await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+  await page
+    .getByRole('button', { name: /들어가기/ })
+    .nth(1)
+    .click();
+  await page.waitForURL(/\/test\/app\/shipper/);
+  await menu(page, /^정산/).click();
+  await page.waitForURL(/\/test\/app\/shipper\/settlements/);
+  await expect(page.getByRole('main').first().getByRole('table').first()).toBeVisible();
+
+  for (const width of [1024, 1280, MOBILE_WIDTH]) {
+    await page.setViewportSize({ width, height: 900 });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow, `정산 ${width}px 가로 넘침(px)`).toBeLessThanOrEqual(0);
+  }
+});

@@ -252,7 +252,7 @@ export function SettlementsView() {
           <h2 className="m2-h2">계획별 정산</h2>
           <span className="m2-sub mt-0">원</span>
         </div>
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className={cn('m2-table', CARD_TABLE)}>
             <thead>
               <tr>
