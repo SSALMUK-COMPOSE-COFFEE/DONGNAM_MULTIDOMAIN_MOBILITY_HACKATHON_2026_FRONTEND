@@ -59,3 +59,8 @@ export type ProvenanceCatalogT = {
 
 export type WeatherUseT = SaasSchemaT<'WeatherUse'>;
 export type RemainingRiskVoyageT = SaasSchemaT<'RemainingRisk'>;
+
+export type ScheduleCheckDataSourceT = ScheduleCheckResponseT['data_source'];
+export type DelayAdditionalVoyageT = SaasSchemaT<'VoyageDelay'>;
+export type BenchmarkBasisT = SaasSchemaT<'BenchmarkBasis'>;
+export type BenchmarkMethodBasisGapT = SaasSchemaT<'MethodBasisGap'>;

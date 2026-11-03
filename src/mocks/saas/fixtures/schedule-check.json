@@ -22,5 +22,11 @@
       "new_cy_cutoff": null,
       "source": "해수부"
     }
-  ]
+  ],
+  "data_source": "sandbox_mix",
+  "fetched_at": null,
+  "snapshot_at": "2026-10-29T09:00:00+09:00",
+  "snapshot_name": "20261029-O.json",
+  "demo_mixed": true,
+  "source_note": "시연용 선박 실적 1건을 섞은 결과입니다 (기반: 저장 스냅샷 20261029-O, 목업)"
 }

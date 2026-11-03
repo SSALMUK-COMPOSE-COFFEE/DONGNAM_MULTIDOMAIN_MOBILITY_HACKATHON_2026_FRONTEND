@@ -2402,6 +2402,11 @@ export interface components {
             season_revenue_performance: number;
             /** Season Revenue Proposal Rule */
             season_revenue_proposal_rule: number;
+            /**
+             * Variable Cost Per Pallet
+             * @default 0
+             */
+            variable_cost_per_pallet: number;
             /** Breakeven Pallets */
             breakeven_pallets: number | null;
         };
@@ -2413,6 +2418,22 @@ export interface components {
             pallets: number;
             /** Savings Per Pallet */
             savings_per_pallet: number;
+        };
+        /** BenchmarkBasis */
+        BenchmarkBasis: {
+            /**
+             * Key
+             * @enum {string}
+             */
+            key: "operational" | "settlement";
+            /** Label */
+            label: string;
+            /** Fields */
+            fields: string[];
+            /** Definition */
+            definition: string;
+            /** Source */
+            source: string;
         };
         /** BenchmarkRequest */
         BenchmarkRequest: {
@@ -2433,6 +2454,21 @@ export interface components {
             replan: components["schemas"]["ReplanBenchmark"] | null;
             /** Solve Ms */
             solve_ms: number;
+            /**
+             * Comparison Basis
+             * @default operational
+             * @enum {string}
+             */
+            comparison_basis: "operational" | "settlement";
+            /** Bases */
+            bases?: components["schemas"]["BenchmarkBasis"][];
+            /** Basis Gaps */
+            basis_gaps?: components["schemas"]["MethodBasisGap"][];
+            /**
+             * Settlement Fcfs Explanation
+             * @default
+             */
+            settlement_fcfs_explanation: string;
         };
         /** BillingParams */
         BillingParams: {
@@ -3012,8 +3048,25 @@ export interface components {
             container_cost: number;
             /** Savings */
             savings: number;
+            /**
+             * Operational Savings
+             * @default 0
+             */
+            operational_savings: number;
             /** Margin Per Pallet */
             margin_per_pallet: number;
+            /**
+             * Margin Basis
+             * @default operational
+             * @constant
+             */
+            margin_basis: "operational";
+            /**
+             * Platform Basis
+             * @default performance
+             * @enum {string}
+             */
+            platform_basis: "performance" | "tariff" | "usage_fee" | "mixed";
             /** Breakeven Savings Pallets */
             breakeven_savings_pallets: number | null;
             /** Breakeven Platform Pallets */
@@ -3493,6 +3546,8 @@ export interface components {
             new_etd: string;
             /** New Cy Cutoff */
             new_cy_cutoff?: string | null;
+            /** Additional Voyages */
+            additional_voyages?: components["schemas"]["VoyageDelay"][];
             /**
              * Source
              * @default manual
@@ -5095,6 +5150,39 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** MethodBasisGap */
+        MethodBasisGap: {
+            /** Method */
+            method: string;
+            /** Settlement Savings */
+            settlement_savings: number;
+            /** Operational Savings */
+            operational_savings: number;
+            /** Savings Gap */
+            savings_gap: number;
+            /** Baseline Gap */
+            baseline_gap: number;
+            /** Settlement Cost Gap */
+            settlement_cost_gap: number;
+            /** Tariff Pallets */
+            tariff_pallets: number;
+            /** Tariff Sea Pallets */
+            tariff_sea_pallets: number;
+            /** Settlement Cost Gap Per Tariff Pallet */
+            settlement_cost_gap_per_tariff_pallet: number | null;
+            /** Empty Slot Cost */
+            empty_slot_cost: number;
+            /**
+             * Tariff Settlement Savings
+             * @default 0
+             */
+            tariff_settlement_savings: number;
+            /**
+             * Tariff Empty Slot Cost
+             * @default 0
+             */
+            tariff_empty_slot_cost: number;
+        };
         /** MethodResult */
         MethodResult: {
             /** Method */
@@ -5799,6 +5887,8 @@ export interface components {
             contribution_margin: number;
             /** Empty Slot Cost */
             empty_slot_cost: number;
+            /** Tariff Empty Slot Cost */
+            tariff_empty_slot_cost: number;
             /** Tariff Operational Gap */
             tariff_operational_gap: number;
         };
@@ -5919,6 +6009,8 @@ export interface components {
             assumptions: components["schemas"]["freshswitch_backend__analysis__models__Assumption"][];
             /** Empty Slot Cost */
             empty_slot_cost: number;
+            /** Tariff Empty Slot Cost */
+            tariff_empty_slot_cost: number;
             /** Empty Slot Definition */
             empty_slot_definition: string;
             /** Tariff Operational Gap */
@@ -6031,6 +6123,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Warnings */
+            warnings?: string[];
             /** Shipper Org Id */
             shipper_org_id: string;
             /** Shipper Org Name */
@@ -6811,6 +6905,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Warnings */
+            warnings?: string[];
         };
         /** RemainingRisk */
         RemainingRisk: {
@@ -6834,6 +6930,11 @@ export interface components {
             at_risk_lot_ids: string[];
             /** At Risk Pallets */
             at_risk_pallets: number;
+            /**
+             * Reason
+             * @default 이번 재계획에 반영하지 않음
+             */
+            reason: string;
         };
         /** ReplanBenchmark */
         ReplanBenchmark: {
@@ -7245,6 +7346,24 @@ export interface components {
             changes: components["schemas"]["ScheduleChange"][];
             /** Events */
             events: components["schemas"]["DelayEvent"][];
+            /**
+             * Data Source
+             * @enum {string}
+             */
+            data_source: "live" | "snapshot" | "provided" | "sandbox_mix";
+            /** Fetched At */
+            fetched_at?: string | null;
+            /** Snapshot At */
+            snapshot_at?: string | null;
+            /** Snapshot Name */
+            snapshot_name?: string | null;
+            /**
+             * Demo Mixed
+             * @default false
+             */
+            demo_mixed: boolean;
+            /** Source Note */
+            source_note: string;
         };
         /** SeaHint */
         SeaHint: {
@@ -7344,6 +7463,11 @@ export interface components {
             revenue: number;
             /** Forwarder Share */
             forwarder_share: number;
+            /**
+             * Variable Cost
+             * @default 0
+             */
+            variable_cost: number;
             /** Fixed Cost */
             fixed_cost: number;
             /** Platform Net */
@@ -8912,6 +9036,18 @@ export interface components {
             original_cy_cutoff?: string | null;
             /** Call Sign */
             call_sign?: string | null;
+        };
+        /** VoyageDelay */
+        VoyageDelay: {
+            /** Voyage Id */
+            voyage_id: string;
+            /**
+             * New Etd
+             * Format: date-time
+             */
+            new_etd: string;
+            /** New Cy Cutoff */
+            new_cy_cutoff?: string | null;
         };
         /** VoyageEconomics */
         VoyageEconomics: {
