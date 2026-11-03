@@ -38,7 +38,10 @@ export function RegisterDeviceCard() {
   const register = useRegisterDevice();
   const isSandbox = useIsSandbox();
   const trimmedId = deviceId.trim();
-  const prefixBlocked = isSandbox && !!trimmedId && !trimmedId.startsWith(DEMO_DEVICE_PREFIX);
+  const prefixBlocked =
+    isSandbox &&
+    !!trimmedId &&
+    !trimmedId.toLowerCase().startsWith(DEMO_DEVICE_PREFIX.toLowerCase());
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
