@@ -6,7 +6,11 @@ import { CheckCircle2Icon, CircleIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { type UseConfirmOrderOptionsT, useConfirmOrder } from '@/hooks/useConfirmOrder';
+import {
+  type ConfirmableOrderT,
+  type UseConfirmOrderOptionsT,
+  useConfirmOrder,
+} from '@/hooks/useConfirmOrder';
 import type { ExecutionOrderT } from '@/types/api';
 import { formatSignedManwon } from '@/utils/format';
 
@@ -34,7 +38,7 @@ export type ExecutionOrderRoleT = 'demo' | 'platform' | 'shipper' | 'forwarder';
 
 type ExecutionOrderPanelPropsT = {
   planId: string;
-  order: ExecutionOrderT;
+  order: ConfirmableOrderT;
   role?: ExecutionOrderRoleT;
   viewerShipperId?: string;
   confirmOptions?: UseConfirmOrderOptionsT;
@@ -96,9 +100,11 @@ export function ExecutionOrderPanel({
                 <div className="flex-1 text-sm">
                   <p className="font-bold">{shipper_name}</p>
                   <p className="text-muted-foreground">{reason_text?.join(' · ')}</p>
-                  <p className="num">
-                    부담 {formatSignedManwon(net_cost_delta ?? cost_delta)}만 원
-                  </p>
+                  {typeof (net_cost_delta ?? cost_delta) === 'number' && (
+                    <p className="num">
+                      부담 {formatSignedManwon(net_cost_delta ?? cost_delta)}만 원
+                    </p>
+                  )}
                 </div>
                 {status === 'pending' && canAcceptFor(shipper_id) ? (
                   <Button

@@ -33,9 +33,9 @@ type LotEditDialogPropsT = {
   onClose: () => void;
 };
 
-type EditFormT = Required<
-  Pick<ShipperLotPatchT, 'product' | 'destination' | 'pallets' | 'ready_date' | 'sell_window'>
->;
+type EditFieldT = 'product' | 'destination' | 'pallets' | 'ready_date' | 'sell_window';
+
+type EditFormT = { [K in EditFieldT]-?: NonNullable<ShipperLotPatchT[K]> };
 
 const changedFields = (lot: ShipperLotT, form: EditFormT): ShipperLotPatchT => {
   const patch: ShipperLotPatchT = {};

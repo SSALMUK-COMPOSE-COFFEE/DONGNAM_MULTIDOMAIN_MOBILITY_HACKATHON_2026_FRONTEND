@@ -1,36 +1,19 @@
-import type { AlertT, ExecutionOrderT, PlanSessionT, SchemaT, TwinStateT } from '@/types/api';
+import type { AlertT, PlanSessionT, TwinStateT } from '@/types/api';
+import type { SaasQueryT, SaasSchemaT } from '@/types/api-saas';
 
-export type ForwarderRefT = {
-  org_id: string;
-  org_name: string;
-};
+export type ForwarderRefT = SaasSchemaT<'ForwarderRef'>;
 
-export type ForwarderPlanItemT = {
-  plan_id: string;
-  created_at: string;
-  status: PlanSessionT['status'];
-  vessel: string | null;
-  departure: string | null;
-  shipper_count: number;
-  total_pallets: number;
-  forwarder: ForwarderRefT | null;
-};
+export type ForwarderPlanItemT = SaasSchemaT<'PlanListItem'>;
 
 export type ForwarderPlanSessionT = PlanSessionT;
 
-export type ForwarderOrderT = ExecutionOrderT;
+export type ForwarderOrderT = SaasSchemaT<'ForwarderOrder'>;
 
-export type ForwarderDecisionT = {
-  accept: boolean;
-  note?: string | null;
-};
+export type ForwarderDecisionT = SaasSchemaT<'ForwarderDecision'>;
 
-export type ForwarderPlanListParamsT = {
-  limit?: number;
-  offset?: number;
-};
+export type ForwarderPlanListParamsT = SaasQueryT<'/test/api/saas/forwarder/plans'>;
 
-export type ForwarderTwinSummaryT = SchemaT<'TwinSummary'>;
+export type ForwarderTwinSummaryT = SaasSchemaT<'TwinSummary'>;
 export type ForwarderTwinStateT = TwinStateT;
 export type ForwarderAlertT = AlertT;
 

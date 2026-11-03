@@ -7,6 +7,7 @@ import { planQueryOptions } from '@/apis/getPlan';
 import { planOrdersQueryOptions } from '@/apis/getPlanOrders';
 import { postOrderConfirm } from '@/apis/postOrderConfirm';
 import type { ConfirmRequestT, ExecutionOrderT } from '@/types/api';
+import type { ForwarderOrderT } from '@/types/saas-forwarder';
 
 export type ConfirmActorT = ConfirmRequestT['actor'];
 
@@ -15,9 +16,11 @@ export type ConfirmOrderRequestT = Omit<ConfirmRequestT, 'actor' | 'shipper_id'>
   shipper_id?: string | null;
 };
 
+export type ConfirmableOrderT = ExecutionOrderT | ForwarderOrderT;
+
 export type UseConfirmOrderOptionsT = {
-  confirmFn?: (request: ConfirmOrderRequestT) => Promise<ExecutionOrderT>;
-  onSuccess?: (updated: ExecutionOrderT, request: ConfirmOrderRequestT) => void;
+  confirmFn?: (request: ConfirmOrderRequestT) => Promise<ConfirmableOrderT>;
+  onSuccess?: (updated: ConfirmableOrderT, request: ConfirmOrderRequestT) => void;
 };
 
 export const useConfirmOrder = (
