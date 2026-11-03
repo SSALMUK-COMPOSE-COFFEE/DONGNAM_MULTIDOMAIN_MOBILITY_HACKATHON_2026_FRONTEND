@@ -1105,6 +1105,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/platform/plans/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Plan */
+        post: operations["preview_plan_test_api_saas_platform_plans_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/saas/platform/settlements": {
         parameters: {
             query?: never;
@@ -1272,6 +1289,23 @@ export interface paths {
         post?: never;
         /** Delete Device */
         delete: operations["delete_device_test_api_saas_devices__device_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/public/showcase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Showcase */
+        get: operations["read_showcase_test_api_public_showcase_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4245,6 +4279,13 @@ export interface components {
             total_pallets: number;
             forwarder?: components["schemas"]["ForwarderRef"] | null;
         };
+        /** PlanPreview */
+        PlanPreview: {
+            scenario: components["schemas"]["Scenario"];
+            plan: components["schemas"]["Plan"];
+            /** Routes */
+            routes: components["schemas"]["VoyagePickup"][];
+        };
         /** PlanSession */
         PlanSession: {
             /** Plan Id */
@@ -5744,6 +5785,113 @@ export interface components {
             shipper_gain: number;
             /** Savings Delta */
             savings_delta: number;
+        };
+        /** Showcase */
+        Showcase: {
+            /**
+             * Basis
+             * @constant
+             */
+            basis: "default_scenario";
+            /** Saving Rate */
+            saving_rate: number;
+            /** Packhouse Count */
+            packhouse_count: number;
+            /** Total Pallets */
+            total_pallets: number;
+            /** Containers */
+            containers: components["schemas"]["ShowcaseContainer"][];
+            /** Air */
+            air: components["schemas"]["ShowcaseAir"][];
+            /** Packhouses */
+            packhouses: components["schemas"]["ShowcasePlace"][];
+            /** Ports */
+            ports: components["schemas"]["ShowcasePort"][];
+            /** Products */
+            products: components["schemas"]["ShowcaseProduct"][];
+            /** Voyages */
+            voyages: components["schemas"]["ShowcaseVoyage"][];
+            /** Routes */
+            routes: components["schemas"]["ShowcaseRoute"][];
+        };
+        /** ShowcaseAir */
+        ShowcaseAir: {
+            /** Packhouse Id */
+            packhouse_id: string;
+            /** Pallets */
+            pallets: number;
+        };
+        /** ShowcaseContainer */
+        ShowcaseContainer: {
+            /** Container Id */
+            container_id: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Product Ids */
+            product_ids: string[];
+            /** Pallets */
+            pallets: number;
+            /** Capacity Pallets */
+            capacity_pallets: number;
+        };
+        /** ShowcasePlace */
+        ShowcasePlace: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+        };
+        /** ShowcasePort */
+        ShowcasePort: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+        };
+        /** ShowcaseProduct */
+        ShowcaseProduct: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** So2 Treated */
+            so2_treated: boolean;
+        };
+        /** ShowcaseRoute */
+        ShowcaseRoute: {
+            /** Voyage Id */
+            voyage_id: string;
+            /** Truck Id */
+            truck_id: string;
+            /** Trip */
+            trip: number;
+            /** Cargo Group */
+            cargo_group: string | null;
+            /** Load Pallets */
+            load_pallets: number;
+            /** Stops */
+            stops: string[];
+        };
+        /** ShowcaseVoyage */
+        ShowcaseVoyage: {
+            /** Id */
+            id: string;
+            /** Vessel Name */
+            vessel_name: string;
+            /** Origin */
+            origin: string;
+            /** Destination */
+            destination: string;
+            /** Transit Days */
+            transit_days: number;
         };
         /** SignupRequest */
         SignupRequest: {
@@ -8882,6 +9030,39 @@ export interface operations {
             };
         };
     };
+    preview_plan_test_api_saas_platform_plans_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_settlements_test_api_saas_platform_settlements_get: {
         parameters: {
             query?: {
@@ -9256,6 +9437,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_showcase_test_api_public_showcase_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Showcase"];
                 };
             };
         };

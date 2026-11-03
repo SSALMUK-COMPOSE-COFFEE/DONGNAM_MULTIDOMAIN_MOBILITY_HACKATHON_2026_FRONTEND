@@ -20,6 +20,7 @@ export const SAAS_ENDPOINTS = {
   AUTH_DEMO_LOGIN: '/auth/demo-login',
   AUTH_LOGOUT: '/auth/logout',
   ME: '/me',
+  PUBLIC_SHOWCASE: '/public/showcase',
 } as const;
 
 export const SAAS_AUTH_ENDPOINTS: readonly string[] = [
@@ -27,4 +28,5 @@ export const SAAS_AUTH_ENDPOINTS: readonly string[] = [
   SAAS_ENDPOINTS.AUTH_LOGIN,
   SAAS_ENDPOINTS.AUTH_DEMO_LOGIN,
   SAAS_ENDPOINTS.AUTH_LOGOUT,
+  SAAS_ENDPOINTS.PUBLIC_SHOWCASE,
 ];

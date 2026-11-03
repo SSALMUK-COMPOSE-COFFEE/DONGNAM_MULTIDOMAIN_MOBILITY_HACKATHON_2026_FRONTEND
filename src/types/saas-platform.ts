@@ -33,3 +33,5 @@ export type RegisteredDeviceT = SaasSchemaT<'RegisteredDevice'>;
 export type DeviceRequestT = SaasSchemaT<'DeviceRequest'>;
 
 export type TwinSummaryT = SaasSchemaT<'TwinSummary'>;
+
+export type PlanPreviewT = SaasSchemaT<'PlanPreview'>;

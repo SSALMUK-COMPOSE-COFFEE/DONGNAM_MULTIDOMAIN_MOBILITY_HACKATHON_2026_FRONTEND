@@ -11,6 +11,7 @@ import {
 import { DEMO_EMAIL_DOMAIN } from '@/consts/sandbox-saas';
 import alertsFixture from '@/mocks/fixtures/alerts.json';
 import intakeStrawberryFixture from '@/mocks/fixtures/intake-strawberry.json';
+import planSessionFixture from '@/mocks/fixtures/plan-session.json';
 import twinFixture from '@/mocks/fixtures/twin.json';
 import { createAnonymizer } from '@/mocks/saas/anonymize';
 import { demoConfirm, demoCreatePlan, demoOrders, demoPlan } from '@/mocks/saas/demo-bridge';
@@ -53,6 +54,8 @@ import type {
   SignupOrgType,
   SignupRequest,
 } from '@/types/saas';
+import type { PlanPreviewT } from '@/types/saas-platform';
+import type { ShowcaseT } from '@/types/saas-public';
 
 const api = (path: string) => `${SAAS_API_BASE}${path}`;
 
@@ -76,6 +79,7 @@ const SSE_TICK_MS = 1_500;
 const SIGNUP_ORG_TYPES: readonly SignupOrgType[] = ['shipper', 'forwarder'];
 
 const twin = twinFixture as unknown as TwinStateT;
+const previewSession = planSessionFixture as unknown as PlanSessionT;
 const alerts = alertsFixture.alerts as unknown as AlertT[];
 
 type PrincipalT = { org: MockOrgT; me: Me };
@@ -152,6 +156,82 @@ const planItem = (session: PlanSessionT) => ({
 });
 
 const currentSessions = () => Promise.all(planIds().map(demoPlan));
+
+const showcaseOf = (session: PlanSessionT): ShowcaseT => {
+  const { scenario, plan, routes } = session;
+  const packhouseOf = new Map(scenario.shippers.map(s => [s.id, s.packhouse_id]));
+  const used = plan.containers.filter(container => container.used);
+  const usedVoyages = new Set(used.map(container => container.voyage_id));
+  const voyages = scenario.voyages
+    .filter(voyage => usedVoyages.has(voyage.id))
+    .sort((a, b) => a.etd.localeCompare(b.etd) || a.id.localeCompare(b.id));
+  const portIds = new Set(voyages.flatMap(voyage => [voyage.origin, voyage.destination]));
+  const assignedPackhouses = new Set(
+    plan.assignments.flatMap(a => {
+      const packhouseId = packhouseOf.get(a.shipper_id);
+
+      return packhouseId ? [packhouseId] : [];
+    })
+  );
+  const trucks = routes.flatMap(voyage =>
+    voyage.pickup.routes.map(truck => ({ voyageId: voyage.voyage_id, truck }))
+  );
+  const shown = new Set([
+    ...assignedPackhouses,
+    ...trucks.flatMap(({ truck }) => truck.stops.map(stop => stop.packhouse_id)),
+  ]);
+  const productIds = new Set(plan.assignments.map(a => a.product_id));
+  const air = new Map<string, number>();
+  plan.assignments
+    .filter(a => a.mode === 'air')
+    .forEach(a => {
+      const key = packhouseOf.get(a.shipper_id);
+      if (key) air.set(key, (air.get(key) ?? 0) + a.pallets);
+    });
+
+  return {
+    basis: 'default_scenario',
+    saving_rate: plan.total_baseline_cost
+      ? Math.round((plan.total_savings / plan.total_baseline_cost) * 1_000) / 1_000
+      : 0,
+    packhouse_count: assignedPackhouses.size,
+    total_pallets: totalPallets(session),
+    containers: used.map(container => ({
+      container_id: container.container_id,
+      voyage_id: container.voyage_id,
+      product_ids: container.product_ids,
+      pallets: container.pallets,
+      capacity_pallets: container.capacity_pallets,
+    })),
+    air: [...air].map(([packhouse_id, pallets]) => ({ packhouse_id, pallets })),
+    packhouses: scenario.packhouses
+      .filter(packhouse => shown.has(packhouse.id))
+      .map(({ id, name, lat, lon }) => ({ id, name, lat, lon })),
+    ports: scenario.ports
+      .filter(port => portIds.has(port.id))
+      .map(({ id, name, lat, lon }) => ({ id, name, lat, lon })),
+    products: scenario.products
+      .filter(product => productIds.has(product.id))
+      .map(({ id, name, so2_treated }) => ({ id, name, so2_treated })),
+    voyages: voyages.map(({ id, vessel_name, origin, destination, transit_days }) => ({
+      id,
+      vessel_name,
+      origin,
+      destination,
+      transit_days,
+    })),
+    routes: trucks.map(({ voyageId, truck }) => ({
+      voyage_id: voyageId,
+      truck_id: truck.truck_id,
+      trip: truck.trip,
+      cargo_group: truck.cargo_group ?? null,
+      load_pallets: truck.load_pallets,
+      stops: [...truck.stops]
+        .sort((a, b) => a.sequence - b.sequence)
+        .map(stop => stop.packhouse_id),
+    })),
+  };
+};
 
 const ownLotIds = (session: PlanSessionT, org: MockOrgT) => {
   const own = new Set(org.shipper_ids);
@@ -691,6 +771,45 @@ const shipperHandlers = [
       sessions.flatMap(session => shipperSettlements(session, principal.org))
     );
   }),
+
+  http.post(api('/intake/lots'), async ({ request }) => {
+    if (!isSaasRequest(request)) return;
+
+    const principal = authorize(request, 'shipper');
+    if (principal instanceof Response) return principal;
+
+    const body = (await request.json()) as IntakeRequestT;
+    if (!principal.org.shipper_ids.includes(body.shipper)) {
+      return HttpResponse.json(
+        { detail: [{ field: 'shipper', message: '내 조직의 화주가 아닙니다' }] },
+        { status: 422 }
+      );
+    }
+
+    const session = await demoPlan(planIds()[0]);
+    const now = nowIso();
+    const lot: MockLotT = {
+      id: body.lot_id || `lot-${body.shipper.replace(/^sh-/, '')}-${body.product}-preview`,
+      scenario_id: body.scenario_id,
+      shipper_id: body.shipper,
+      product_id: body.product,
+      pallets: body.pallets,
+      ready_date: body.ready_date,
+      destination: body.destination,
+      sell_by_date: body.sell_by_date || addDays(body.ready_date, 7),
+      sell_window: body.sell_window,
+      packhouse:
+        session.scenario.shippers.find(shipper => shipper.id === body.shipper)?.packhouse_id ??
+        null,
+      source: '화주 간편 등록',
+      status: 'registered',
+      created_at: now,
+      updated_at: now,
+    };
+    await delay(200);
+
+    return HttpResponse.json({ ...intakePreview(lot, session), registered: null });
+  }),
 ];
 
 const platformHandlers = [
@@ -726,6 +845,27 @@ const platformHandlers = [
     mockDb.planCreatedAt.set(session.plan_id, now);
 
     return HttpResponse.json(session, { status: 201 });
+  }),
+
+  http.post(api('/saas/platform/plans/preview'), async ({ request }) => {
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+
+    const body = (await request.json()) as { lot_ids?: string[] };
+    const lotIds = body.lot_ids ?? [];
+    if (!lotIds.length) return fail(422, '계획에 넣을 등록 출하가 없습니다');
+
+    const chosen = mockDb.lots.filter(lot => lotIds.includes(lot.id));
+    if (chosen.length !== lotIds.length) return fail(422, '등록되지 않은 로트입니다');
+    if (chosen.some(lot => lot.status !== 'registered')) {
+      return fail(409, '이미 계획에 들어갔거나 취소된 출하입니다');
+    }
+
+    await delay(400);
+    const { scenario, plan, routes } = previewSession;
+    const preview: PlanPreviewT = { scenario, plan, routes };
+
+    return HttpResponse.json(preview);
   }),
 
   http.get(api('/saas/platform/plans'), async ({ request }) => {
@@ -975,8 +1115,15 @@ const streamHandlers = streamOverlapsDemo()
       }),
     ];
 
+const publicHandlers = [
+  http.get(api(SAAS_ENDPOINTS.PUBLIC_SHOWCASE), () =>
+    HttpResponse.json(showcaseOf(previewSession))
+  ),
+];
+
 export const saasHandlers = [
   ...authHandlers,
+  ...publicHandlers,
   ...catalogHandlers,
   ...shipperHandlers,
   ...platformHandlers,

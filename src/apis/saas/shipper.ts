@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  keepPreviousData,
   queryOptions,
   useMutation,
   useQueries,
@@ -12,6 +13,7 @@ import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
+import type { SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
 import type {
   ShipperCatalogT,
   ShipperLotCreateT,
@@ -270,3 +272,41 @@ export const useAnswerShipperRequest = () => {
     onSettled: (_data, _error, { planId }) => invalidatePlan(planId),
   });
 };
+
+export const SHIPPER_INTAKE_PREVIEW_ENDPOINT = '/intake/lots';
+
+export type ShipperIntakePreviewRequestT = WithDefaultsT<
+  SaasSchemaT<'IntakeRequest'>,
+  'sell_window' | 'scenario_id' | 'save'
+>;
+
+export const shipperIntakePreviewKey = (orgId: string, request: ShipperIntakePreviewRequestT) =>
+  [...shipperKeys.all(orgId), 'intake-preview', request] as const;
+
+export const postShipperIntakePreview = async (request: ShipperIntakePreviewRequestT) => {
+  const { data } = await saasApi.post<ShipperLotPreviewT>(SHIPPER_INTAKE_PREVIEW_ENDPOINT, {
+    ...request,
+    save: false,
+  });
+
+  return data;
+};
+
+export const shipperIntakePreviewQueryOptions = (
+  orgId: string,
+  request: ShipperIntakePreviewRequestT | null
+) =>
+  queryOptions({
+    queryKey: request
+      ? shipperIntakePreviewKey(orgId, request)
+      : ([...shipperKeys.all(orgId), 'intake-preview', null] as const),
+    queryFn: () =>
+      request ? postShipperIntakePreview(request) : Promise.reject(new Error('no request')),
+    retry: false,
+    staleTime: 60 * 1000,
+    placeholderData: keepPreviousData,
+    enabled: !!orgId && !!request,
+  });
+
+export const useShipperIntakePreview = (request: ShipperIntakePreviewRequestT | null) =>
+  useQuery(shipperIntakePreviewQueryOptions(useShipperOrgId(), request));

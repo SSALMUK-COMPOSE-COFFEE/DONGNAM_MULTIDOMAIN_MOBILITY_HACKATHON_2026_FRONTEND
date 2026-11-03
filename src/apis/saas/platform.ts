@@ -1,6 +1,12 @@
 'use client';
 
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -32,6 +38,7 @@ import type {
   ForwarderAssignmentT,
   LotStatusT,
   OrgSummaryT,
+  PlanPreviewT,
   PlatformLotT,
   PlatformPlanItemT,
   PlatformPlanRequestT,
@@ -44,6 +51,7 @@ export const PLATFORM_ENDPOINTS = {
   CATALOG: '/saas/catalog',
   LOTS: '/saas/platform/lots',
   PLANS: '/saas/platform/plans',
+  PLAN_PREVIEW: '/saas/platform/plans/preview',
   PLAN_FORWARDER: (planId: string) =>
     `/saas/platform/plans/${encodeURIComponent(planId)}/forwarder`,
   SETTLEMENTS: '/saas/platform/settlements',
@@ -71,6 +79,7 @@ const TWIN_POLLING_MS = 5_000;
 const SIMULATOR_DEVICE_ID = 'sim-01';
 const SIMULATION_INTERVAL_SECONDS = 1;
 const SUMMARY_POLLING_MS = 10_000;
+const PLAN_PREVIEW_TIMEOUT_MS = 30_000;
 
 export const platformKeys = {
   all: (orgId: string) => [...orgKeys.scoped(orgId), 'platform'] as const,
@@ -80,6 +89,8 @@ export const platformKeys = {
     [...platformKeys.lots(orgId), status ?? 'all'] as const,
   plans: (orgId: string) => [...platformKeys.all(orgId), 'plans'] as const,
   plan: (orgId: string, planId: string) => [...platformKeys.plans(orgId), planId] as const,
+  planPreview: (orgId: string, lotIds: readonly string[]) =>
+    [...platformKeys.all(orgId), 'plan-preview', ...lotIds] as const,
   planOrders: (orgId: string, planId: string) =>
     [...platformKeys.plan(orgId, planId), 'orders'] as const,
   settlements: (orgId: string) => [...platformKeys.all(orgId), 'settlements'] as const,
@@ -118,6 +129,14 @@ export const getPlatformLots = async (status: LotStatusT | null) => {
 
 export const postPlatformPlan = async (request: PlatformPlanRequestT) => {
   const { data } = await saasApi.post<PlanSessionT>(PLATFORM_ENDPOINTS.PLANS, request);
+
+  return data;
+};
+
+export const postPlatformPlanPreview = async (request: PlatformPlanRequestT) => {
+  const { data } = await saasApi.post<PlanPreviewT>(PLATFORM_ENDPOINTS.PLAN_PREVIEW, request, {
+    timeout: PLAN_PREVIEW_TIMEOUT_MS,
+  });
 
   return data;
 };
@@ -252,6 +271,20 @@ export const platformLotsQueryOptions = (orgId: string, status: LotStatusT | nul
     enabled: !!orgId,
   });
 
+const sortedLotIds = (lotIds: readonly string[]) => [...new Set(lotIds)].sort();
+
+export const platformPlanPreviewQueryOptions = (orgId: string, lotIds: readonly string[]) => {
+  const ids = sortedLotIds(lotIds);
+
+  return queryOptions({
+    queryKey: platformKeys.planPreview(orgId, ids),
+    queryFn: () => postPlatformPlanPreview({ lot_ids: ids }),
+    retry: saasRetry,
+    placeholderData: keepPreviousData,
+    enabled: !!orgId && ids.length > 0,
+  });
+};
+
 export const platformPlansQueryOptions = (orgId: string) =>
   queryOptions({
     queryKey: platformKeys.plans(orgId),
@@ -327,6 +360,9 @@ export const usePlatformLots = (status: LotStatusT | null = null) =>
 export const usePlatformCatalog = () => useQuery(platformCatalogQueryOptions(usePlatformOrgId()));
 
 export const usePlatformPlans = () => useQuery(platformPlansQueryOptions(usePlatformOrgId()));
+
+export const usePlatformPlanPreview = (lotIds: readonly string[]) =>
+  useQuery(platformPlanPreviewQueryOptions(usePlatformOrgId(), lotIds));
 
 export const usePlatformPlan = (planId: string) =>
   useQuery(platformPlanQueryOptions(usePlatformOrgId(), planId));
