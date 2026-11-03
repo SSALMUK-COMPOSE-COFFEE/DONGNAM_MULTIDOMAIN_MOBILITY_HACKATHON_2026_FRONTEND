@@ -58,6 +58,10 @@ export const PLATFORM_ENDPOINTS = {
 } as const;
 
 const SSE_RECONNECT_MS = 3_000;
+const SSE_RECONNECT_MAX_MS = 30_000;
+const SSE_MAX_FAILURES = 6;
+export const PLATFORM_LOTS_LIMIT = 1_000;
+export const PLATFORM_PLANS_LIMIT = 500;
 const TWIN_POLLING_MS = 5_000;
 const SUMMARY_POLLING_MS = 10_000;
 
@@ -90,7 +94,7 @@ export const getPlatformCatalog = async () => {
 
 export const getPlatformLots = async (status: LotStatusT | null) => {
   const { data } = await saasApi.get<PlatformLotT[]>(PLATFORM_ENDPOINTS.LOTS, {
-    params: status ? { status } : {},
+    params: status ? { status, limit: PLATFORM_LOTS_LIMIT } : { limit: PLATFORM_LOTS_LIMIT },
   });
 
   return data;
@@ -103,7 +107,9 @@ export const postPlatformPlan = async (request: PlatformPlanRequestT) => {
 };
 
 export const getPlatformPlans = async () => {
-  const { data } = await saasApi.get<PlatformPlanItemT[]>(PLATFORM_ENDPOINTS.PLANS);
+  const { data } = await saasApi.get<PlatformPlanItemT[]>(PLATFORM_ENDPOINTS.PLANS, {
+    params: { limit: PLATFORM_PLANS_LIMIT },
+  });
 
   return data;
 };
@@ -450,12 +456,14 @@ export const usePlatformReplanFlow = (planId: string) => {
   };
 };
 
-export type AlertStreamStatusT = 'connecting' | 'open' | 'reconnecting';
+export type AlertStreamStatusT = 'connecting' | 'open' | 'reconnecting' | 'stopped';
 
 export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT) => void) => {
   const [alerts, setAlerts] = useState<AlertT[]>([]);
   const [status, setStatus] = useState<AlertStreamStatusT>('connecting');
+  const [attempt, setAttempt] = useState(0);
   const onAlertRef = useRef(onAlert);
+  const cursorRef = useRef({ planId, seen: new Set<number>(), lastSeq: 0 });
 
   useEffect(() => {
     onAlertRef.current = onAlert;
@@ -464,27 +472,33 @@ export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT)
   useEffect(() => {
     if (!planId) return;
 
-    const seen = new Set<number>();
-    let lastSeq = 0;
+    if (cursorRef.current.planId !== planId) {
+      cursorRef.current = { planId, seen: new Set<number>(), lastSeq: 0 };
+    }
+    const cursor = cursorRef.current;
     let source: EventSource | null = null;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     let isClosed = false;
+    let failures = 0;
 
     const connect = () => {
       if (isClosed) return;
 
-      const params = new URLSearchParams({ plan_id: planId, since: String(lastSeq) });
+      const params = new URLSearchParams({ plan_id: planId, since: String(cursor.lastSeq) });
       source = new EventSource(
         `${SAAS_API_BASE}${PLATFORM_ENDPOINTS.COLDCHAIN_ALERTS_STREAM}?${params}`,
         { withCredentials: true }
       );
-      source.addEventListener('open', () => setStatus('open'));
+      source.addEventListener('open', () => {
+        failures = 0;
+        setStatus('open');
+      });
       source.addEventListener('alert', event => {
         const alert = JSON.parse((event as MessageEvent<string>).data) as AlertT;
-        lastSeq = Math.max(lastSeq, alert.seq);
-        if (seen.has(alert.seq)) return;
+        cursor.lastSeq = Math.max(cursor.lastSeq, alert.seq);
+        if (cursor.seen.has(alert.seq)) return;
 
-        seen.add(alert.seq);
+        cursor.seen.add(alert.seq);
         setAlerts(prev => [alert, ...prev]);
         onAlertRef.current?.(alert);
       });
@@ -493,8 +507,17 @@ export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT)
         source = null;
         if (isClosed) return;
 
+        failures += 1;
+        if (failures >= SSE_MAX_FAILURES) {
+          setStatus('stopped');
+          return;
+        }
+
         setStatus('reconnecting');
-        retryTimer = setTimeout(connect, SSE_RECONNECT_MS);
+        retryTimer = setTimeout(
+          connect,
+          Math.min(SSE_RECONNECT_MS * 2 ** (failures - 1), SSE_RECONNECT_MAX_MS)
+        );
       });
     };
 
@@ -505,7 +528,14 @@ export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT)
       if (retryTimer) clearTimeout(retryTimer);
       source?.close();
     };
-  }, [planId]);
+  }, [planId, attempt]);
 
-  return { alerts, status };
+  return {
+    alerts,
+    status,
+    reconnect: () => {
+      setStatus('connecting');
+      setAttempt(value => value + 1);
+    },
+  };
 };

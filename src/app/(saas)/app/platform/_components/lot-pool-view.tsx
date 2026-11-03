@@ -7,6 +7,7 @@ import { type ReactNode, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
+  PLATFORM_LOTS_LIMIT,
   useCreatePlatformPlan,
   usePlatformCatalog,
   usePlatformLots,
@@ -52,17 +53,20 @@ const errorDetail = (error: unknown) => {
 };
 
 export function LotPoolView() {
+  const [filter, setFilter] = useState<FilterT>('registered');
   const lotsQuery = usePlatformLots();
+  const registeredQuery = usePlatformLots('registered');
+  const tabQuery = usePlatformLots(filter === 'all' ? null : filter);
   const plansQuery = usePlatformPlans();
   const { data: catalog } = usePlatformCatalog();
-  const [filter, setFilter] = useState<FilterT>('registered');
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const router = useRouter();
   const createPlan = useCreatePlatformPlan();
 
   const lots = useMemo(() => lotsQuery.data ?? [], [lotsQuery.data]);
-  const registered = useMemo(() => lots.filter(({ status }) => status === 'registered'), [lots]);
-  const visible = filter === 'all' ? lots : lots.filter(({ status }) => status === filter);
+  const registered = useMemo(() => registeredQuery.data ?? [], [registeredQuery.data]);
+  const visible = tabQuery.data ?? [];
+  const totalLabel = lots.length >= PLATFORM_LOTS_LIMIT ? `${lots.length}+` : lots.length;
   const selectedLots = registered.filter(({ id }) => selected.has(id));
   const shipperCount = new Set(lots.map(({ shipper_org_id }) => shipper_org_id)).size;
   const unassignedPlans = plansQuery.data?.filter(({ forwarder }) => !forwarder).length;
@@ -98,13 +102,13 @@ export function LotPoolView() {
       <div className="grid grid-cols-4 gap-6">
         <StatTile
           label="계획을 기다리는 출하"
-          value={lotsQuery.isSuccess ? registered.length : '–'}
+          value={registeredQuery.isSuccess ? registered.length : '–'}
           unit="건"
-          note={lotsQuery.isSuccess ? `${sumPallets(registered)}파렛트` : ''}
+          note={registeredQuery.isSuccess ? `${sumPallets(registered)}파렛트` : ''}
         />
         <StatTile
           label="전체 출하"
-          value={lotsQuery.isSuccess ? lots.length : '–'}
+          value={lotsQuery.isSuccess ? totalLabel : '–'}
           unit="건"
           note={lotsQuery.isSuccess ? `화주 ${shipperCount}곳` : ''}
         />
@@ -136,12 +140,12 @@ export function LotPoolView() {
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <LotPoolBody
-            isPending={lotsQuery.isPending}
-            error={lotsQuery.isError ? lotsQuery.error : null}
-            onRetry={() => lotsQuery.refetch()}
-            isRetrying={lotsQuery.isFetching}
+            isPending={tabQuery.isPending}
+            error={tabQuery.isError ? tabQuery.error : null}
+            onRetry={() => tabQuery.refetch()}
+            isRetrying={tabQuery.isFetching}
             lots={visible}
-            isEmptyPool={lots.length === 0}
+            isEmptyPool={lotsQuery.isSuccess && lots.length === 0}
             renderRow={lot => (
               <TableRow key={lot.id} className={cn(selected.has(lot.id) && 'bg-brand-soft/60')}>
                 <TableCell>

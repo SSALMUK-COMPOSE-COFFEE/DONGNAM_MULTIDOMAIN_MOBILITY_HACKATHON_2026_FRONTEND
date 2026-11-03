@@ -19,6 +19,7 @@ import { ActionList } from '@/components/action-list';
 import { AlertFeed } from '@/components/alert-feed';
 import { SensorStatusCard } from '@/components/sensor-status-card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -45,6 +46,7 @@ const STREAM_LABEL: Record<AlertStreamStatusT, { label: string; className: strin
   connecting: { label: '연결 중', className: 'bg-slate' },
   open: { label: '실시간 연결', className: 'bg-ok' },
   reconnecting: { label: '다시 연결 중', className: 'bg-air' },
+  stopped: { label: '연결 끊김', className: 'bg-berry' },
 };
 
 export function ColdchainView() {
@@ -112,7 +114,8 @@ function PlanColdchain({ planId }: { planId: string }) {
   const [openedAt] = useState(() => new Date().toISOString());
   const [pickedContainerId, setPickedContainerId] = useState('');
 
-  const { alerts, status } = usePlatformAlertStream(planId, (alert: AlertT) => {
+  const streamPlanId = planQuery.isSuccess ? planId : '';
+  const { alerts, status, reconnect } = usePlatformAlertStream(streamPlanId, (alert: AlertT) => {
     if (!alert.created_at || alert.created_at < openedAt || alert.level === 'info') return;
     const notify = alert.level === 'critical' ? toast.error : toast.warning;
     notify(alert.title, { description: alert.message });
@@ -180,6 +183,11 @@ function PlanColdchain({ planId }: { planId: string }) {
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               알림 스트림 <Badge className={stream.className}>{stream.label}</Badge>
+              {status === 'stopped' && (
+                <Button size="sm" variant="outline" onClick={reconnect}>
+                  다시 연결
+                </Button>
+              )}
             </div>
             <AlertFeed alerts={alerts.filter(alert => alert.container_id === containerId)} />
           </div>
