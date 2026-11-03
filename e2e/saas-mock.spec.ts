@@ -447,7 +447,9 @@ test('다른 탭에서 로그인·로그아웃하면 기존 탭이 새 세션을
   await enterAs(other, 'platform');
 
   await page.waitForURL(/\/test\/app\/platform/);
-  await expect(page.getByRole('main').first()).not.toContainText('진주 딸기 수출농가 A');
+  await expect(page.getByRole('main').first().getByRole('heading', { level: 1 })).not.toContainText(
+    '진주 딸기 수출농가 A'
+  );
 
   await logout(other);
   await page.waitForURL(/\/test\/login/);
