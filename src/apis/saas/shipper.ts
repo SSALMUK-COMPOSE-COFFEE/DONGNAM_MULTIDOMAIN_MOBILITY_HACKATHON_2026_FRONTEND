@@ -12,7 +12,12 @@ import {
 import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { orgKeys } from '@/apis/saas/keys';
-import { SHIPPER_PLANS_POLLING_MS, capOf, openOrdersRefetchInterval } from '@/apis/saas/polling';
+import {
+  OPEN_ORDER_POLLING_MS,
+  SHIPPER_PLANS_POLLING_MS,
+  capOf,
+  hasOpenOrder,
+} from '@/apis/saas/polling';
 import { saasRetry } from '@/apis/saas/retry';
 import type { SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
 import type {
@@ -182,7 +187,8 @@ export const shipperPlanOrdersQueryOptions = (orgId: string, planId: string) =>
     queryFn: () => getShipperPlanOrders(planId),
     retry: saasRetry,
     staleTime: 0,
-    refetchInterval: openOrdersRefetchInterval,
+    refetchInterval: query =>
+      hasOpenOrder(query.state.data ?? null) ? OPEN_ORDER_POLLING_MS : SHIPPER_PLANS_POLLING_MS,
     enabled: !!orgId && !!planId,
   });
 
