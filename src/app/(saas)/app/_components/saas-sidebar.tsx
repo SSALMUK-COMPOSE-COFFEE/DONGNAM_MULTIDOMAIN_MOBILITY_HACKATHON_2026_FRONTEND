@@ -2,18 +2,16 @@
 
 import { cn } from 'cn';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
-import { useLogout, useMe } from '@/apis/saas/auth';
+import { useMe } from '@/apis/saas/auth';
+import { LogoutButton } from '@/app/(saas)/app/_components/logout-button';
 import { OrgSwitcher } from '@/app/(saas)/app/_components/org-switcher';
-import { Button } from '@/components/ui/button';
-import { SAAS_PAGES, SAAS_ROUTES, isActiveMenu } from '@/consts/route-saas';
+import { SAAS_ROUTES, isActiveMenu } from '@/consts/route-saas';
 
 export function SaasSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { data: me } = useMe();
-  const logout = useLogout();
 
   if (!me) return null;
 
@@ -53,15 +51,7 @@ export function SaasSidebar() {
           <p className="font-bold text-navy">{me.user.name}</p>
           <p className="truncate text-sm text-muted-foreground">{me.user.email}</p>
         </div>
-        <Button
-          variant="outline"
-          disabled={logout.isPending}
-          onClick={() =>
-            logout.mutate(void 0, { onSettled: () => router.replace(SAAS_PAGES.LOGIN) })
-          }
-        >
-          {logout.isPending ? '로그아웃 중' : '로그아웃'}
-        </Button>
+        <LogoutButton />
       </div>
     </aside>
   );
