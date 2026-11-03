@@ -1171,7 +1171,23 @@ const baseSettlements = new Map(
 );
 const settlementPreview = settlementPreviewFixture as unknown as SettlementPreviewT;
 
-let lastSandboxResetAt = 0;
+const SANDBOX_RESET_AT_KEY = 'fs.saas.mock.sandbox-reset-at';
+
+const readSandboxResetAt = () => {
+  try {
+    return Number(localStorage.getItem(SANDBOX_RESET_AT_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+};
+
+const writeSandboxResetAt = (at: number) => {
+  try {
+    localStorage.setItem(SANDBOX_RESET_AT_KEY, String(at));
+  } catch {
+    return;
+  }
+};
 
 const platformPlanRequest = (request: Request, planId: string) => {
   if (!isSaasRequest(request)) return null;
@@ -1474,6 +1490,7 @@ const sandboxHandlers = [
       return fail(403, '데모(sandbox) 조직에서만 데모 세계를 초기화할 수 있습니다');
 
     const now = Date.now();
+    const lastSandboxResetAt = readSandboxResetAt();
     if (now - lastSandboxResetAt < SANDBOX_RESET_COOLDOWN_MS) {
       const wait = Math.ceil((SANDBOX_RESET_COOLDOWN_MS - (now - lastSandboxResetAt)) / 1000);
 
@@ -1482,7 +1499,7 @@ const sandboxHandlers = [
         { status: 429, headers: { 'Retry-After': String(wait) } }
       );
     }
-    lastSandboxResetAt = now;
+    writeSandboxResetAt(now);
     resetMockDb();
     await demoReset();
 

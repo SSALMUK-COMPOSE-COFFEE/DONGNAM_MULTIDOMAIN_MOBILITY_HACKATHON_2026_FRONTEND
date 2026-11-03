@@ -7,6 +7,7 @@ import { Fragment, useId } from 'react';
 
 import { useMe } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
+import { SandboxResetButton } from '@/app/(saas)/app/_components/sandbox-reset-button';
 import { useRoleSwitch } from '@/app/(saas)/app/_components/use-role-switch';
 import {
   ORG_TYPES,
@@ -133,6 +134,7 @@ export function SandboxBanner() {
             </button>
           ))}
         </div>
+        <SandboxResetButton />
       </div>
     </section>
   );

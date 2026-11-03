@@ -13,7 +13,7 @@ import alertsFixture from '@/mocks/fixtures/alerts.json';
 import twinFixture from '@/mocks/fixtures/twin.json';
 import { demoPlan } from '@/mocks/saas/demo-bridge';
 import { type MockOrgT, PLATFORM_ORG_ID } from '@/mocks/saas/orgs';
-import { mockDb, nowIso, readSession } from '@/mocks/saas/state';
+import { mockDb, nowIso, onMockReset, readSession } from '@/mocks/saas/state';
 import type { PlanSessionT, SimulationRequestT, SimulationRunT } from '@/types/api';
 import type {
   ColdchainActionHandlerT,
@@ -238,6 +238,11 @@ type PrincipalT = { org: MockOrgT; handler: ColdchainActionHandlerT | null };
 
 const actionPatches = new Map<string, ActionPatchT>();
 const simulationRuns = new Map<string, SimulationRunT>();
+
+onMockReset(() => {
+  actionPatches.clear();
+  simulationRuns.clear();
+});
 
 const patchKey = (planId: string, containerId: string, actionKey: string) =>
   `${planId}:${containerId}:${actionKey}`;
@@ -779,11 +784,6 @@ const simulationRun = (
 };
 
 export const coldchainActionHandlers = [
-  http.post(api('/saas/sandbox/reset'), () => {
-    actionPatches.clear();
-    simulationRuns.clear();
-  }),
-
   http.get(api('/coldchain/containers'), async ({ request }) => {
     if (!isSaasRequest(request)) return;
 

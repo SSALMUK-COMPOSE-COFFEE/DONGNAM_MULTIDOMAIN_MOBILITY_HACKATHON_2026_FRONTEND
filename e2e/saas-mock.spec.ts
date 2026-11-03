@@ -264,3 +264,80 @@ test('목업 모드에서 세 역할이 같은 컨테이너의 콜드체인을 �
     await expect(main.getByRole('button', { name: '측정 기록 CSV' })).toBeEnabled();
   });
 });
+
+test('목업 모드에서 플랫폼만 데모 초기화를 하고 쿨다운 동안 남은 초를 본다', async ({ page }) => {
+  const banner = page.getByRole('region', { name: '데모 환경' });
+  const resetButton = banner.getByRole('button', { name: /데모 초기화|초 뒤 다시 초기화/ });
+  const remainingSeconds = async () => {
+    const match = (await resetButton.textContent())?.match(/^(\d+)초 뒤 다시 초기화$/);
+    expect(match).not.toBeNull();
+
+    return Number(match?.[1]);
+  };
+
+  await page.clock.install();
+  await page.goto(LOGIN_PATH);
+
+  await test.step('화주와 포워더에게는 초기화 버튼이 없다', async () => {
+    await enterAs(page, 'shipper');
+    await expect(banner).toBeVisible();
+    await expect(resetButton).toHaveCount(0);
+    await logout(page);
+
+    await enterAs(page, 'forwarder');
+    await expect(banner).toBeVisible();
+    await expect(resetButton).toHaveCount(0);
+    await logout(page);
+  });
+
+  await test.step('플랫폼이 확인 창을 거쳐 초기화하면 로그인 화면으로 간다', async () => {
+    await enterAs(page, 'platform');
+    await expect(resetButton).toHaveText('데모 초기화');
+    await resetButton.click();
+
+    const dialog = page.getByRole('alertdialog');
+    await expect(dialog).toContainText('모든 데모 사용자가 로그아웃됩니다');
+    await dialog.getByRole('button', { name: '초기화', exact: true }).click();
+    await page.waitForURL(/\/test\/login/);
+    await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+  });
+
+  await test.step('쿨다운 동안 버튼이 꺼지고 남은 초가 줄어든다', async () => {
+    await page.getByRole('link', { name: '내 화면으로' }).click();
+    await page.waitForURL(/\/test\/app\/platform/);
+    await expect(resetButton).toHaveText(/^\d+초 뒤 다시 초기화$/);
+    await expect(resetButton).toBeDisabled();
+
+    const before = await remainingSeconds();
+    await page.clock.runFor(3000);
+    await expect.poll(remainingSeconds).toBeLessThan(before);
+  });
+
+  await test.step('새로고침해도 버튼은 꺼진 채 남은 초를 보여 준다', async () => {
+    await page.reload();
+    await expect(resetButton).toHaveText(/^\d+초 뒤 다시 초기화$/);
+    await expect(resetButton).toBeDisabled();
+  });
+
+  await test.step('남은 초를 모르는 화면에서 누르면 429의 남은 초로 버튼이 꺼진다', async () => {
+    await page.evaluate(() => localStorage.removeItem('fs.saas.sandbox-reset-until'));
+    await page.reload();
+    await expect(resetButton).toHaveText('데모 초기화');
+    await resetButton.click();
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button', { name: '초기화', exact: true })
+      .click();
+
+    await expect(page.getByText(/방금 초기화했습니다\. \d+초 뒤에 다시 시도하세요/)).toBeVisible();
+    await expect(resetButton).toHaveText(/^\d+초 뒤 다시 초기화$/);
+    await expect(resetButton).toBeDisabled();
+    await expect(page).toHaveURL(/\/test\/app\/platform/);
+  });
+
+  await test.step('쿨다운이 끝나면 버튼이 다시 켜진다', async () => {
+    await page.clock.runFor(61_000);
+    await expect(resetButton).toHaveText('데모 초기화');
+    await expect(resetButton).toBeEnabled();
+  });
+});
