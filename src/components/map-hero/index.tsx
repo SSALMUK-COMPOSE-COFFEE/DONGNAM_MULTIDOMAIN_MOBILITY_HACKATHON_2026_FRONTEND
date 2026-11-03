@@ -19,6 +19,7 @@ import {
   type ScenePlaceT,
   type SceneRunT,
 } from '@/components/map-hero/scene';
+import { estimateTextWidth } from '@/components/map-hero/timeline-data';
 import { keysOverlap, useMapLinkState } from '@/components/map-link';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 
@@ -98,6 +99,16 @@ const DEFAULT_LEVEL = 11;
 const DIM_OPACITY = 0.18;
 const LANE_STUB = { lat: -0.3, lng: 0.16 };
 const AIR_STUB = { lat: 0.34, lng: -0.3 };
+const FIT_EDGE = 28;
+const FIT_TOP = 52;
+const FIT_BOTTOM = 30;
+const PORT_LABEL_OFFSET = 7 + 6 + 16;
+const PORT_NAME_FONT = 11.5;
+const PORT_SUB_FONT = 10;
+const MAX_INSET_RIGHT_RATIO = 0.3;
+const FIT_FREE_RATIO = 0.45;
+const FIT_LABEL_GAP = 8;
+const FIT_LABEL_PASSES = 2;
 
 type OverlayKindT = 'pin' | 'port' | 'lane' | 'air';
 
@@ -279,7 +290,7 @@ function SceneLayers({
             kind: 'port' as const,
             lat: scene.port.lat,
             lng: scene.port.lon,
-            emit: [scene.port.key],
+            emit: [scene.port.key, ...scene.containers.map(({ key }) => key)],
             match: [scene.port.key, ...scene.containers.map(({ key }) => key)],
             name: scene.port.name,
             sub: portSublabel ?? scene.port.sublabel,
@@ -343,6 +354,20 @@ function SceneLayers({
       : []),
   ];
   const overlayKey = JSON.stringify(overlaySpecs);
+  const portSpec = overlaySpecs.find(spec => spec.kind === 'port') ?? null;
+  const labelKey = portSpec
+    ? JSON.stringify({
+        lat: portSpec.lat,
+        lng: portSpec.lng,
+        width: Math.ceil(
+          PORT_LABEL_OFFSET +
+            Math.max(
+              estimateTextWidth(portSpec.name, PORT_NAME_FONT),
+              estimateTextWidth(portSpec.sub, PORT_SUB_FONT)
+            )
+        ),
+      })
+    : null;
   const airLines = showAir
     ? scene.places
         .filter(place => place.airPallets > 0)
@@ -362,7 +387,7 @@ function SceneLayers({
 
   return (
     <>
-      <FitBounds boundsKey={boundsKey} fitInsetLeft={fitInsetLeft} />
+      <FitBounds boundsKey={boundsKey} fitInsetLeft={fitInsetLeft} labelKey={labelKey} />
 
       {showSeaLane && scene.seaLane && laneKey ? (
         <>
@@ -496,24 +521,71 @@ function RunLines({
   );
 }
 
-function FitBounds({ boundsKey, fitInsetLeft }: { boundsKey: string; fitInsetLeft: number }) {
+type FitBoundsPropsT = { boundsKey: string; fitInsetLeft: number; labelKey: string | null };
+
+type FitLabelT = { lat: number; lng: number; width: number };
+
+function FitBounds({ boundsKey, fitInsetLeft, labelKey }: FitBoundsPropsT) {
   const map = useMap();
 
   useEffect(() => {
     const points = JSON.parse(boundsKey) as { lat: number; lng: number }[];
     if (points.length === 0) return;
+    const latLngs = points.map(({ lat, lng }) => new kakao.maps.LatLng(lat, lng));
+    const label = labelKey ? (JSON.parse(labelKey) as FitLabelT) : null;
+    const labelLatLng = label ? new kakao.maps.LatLng(label.lat, label.lng) : null;
+
+    const insetLeft = (width: number, right: number) =>
+      Math.max(FIT_EDGE, Math.min(fitInsetLeft, width - right - width * FIT_FREE_RATIO));
+
+    const place = (width: number, right: number) => {
+      const left = insetLeft(width, right);
+      if (latLngs.length === 1) {
+        map.setLevel(9);
+        map.setCenter(latLngs[0]);
+        return left;
+      }
+      const bounds = new kakao.maps.LatLngBounds();
+      latLngs.forEach(latLng => bounds.extend(latLng));
+      map.setBounds(bounds, FIT_TOP, right, FIT_BOTTOM, left);
+      return left;
+    };
+
+    const labelOverhang = () => {
+      if (!label || !labelLatLng) return 0;
+      const projection = map.getProjection();
+      const maxX = Math.max(
+        ...latLngs.map(latLng => projection.containerPointFromCoords(latLng).x)
+      );
+      const labelEast = projection.containerPointFromCoords(labelLatLng).x + label.width;
+
+      return labelEast - maxX + FIT_LABEL_GAP;
+    };
 
     const fit = () => {
       const width = map.getNode().clientWidth;
-      const left = Math.max(28, Math.min(fitInsetLeft, width - 28 - width * 0.45));
-      if (points.length === 1) {
-        map.setLevel(9);
-        map.setCenter(new kakao.maps.LatLng(points[0].lat, points[0].lng));
-        return;
+      const maxRight = width * MAX_INSET_RIGHT_RATIO;
+      let right = FIT_EDGE;
+      let left = place(width, right);
+      for (let pass = 0; pass < FIT_LABEL_PASSES; pass += 1) {
+        const needed = Math.min(maxRight, Math.max(FIT_EDGE, labelOverhang()));
+        if (needed <= right + 1) break;
+        right = needed;
+        left = place(width, right);
       }
-      const bounds = new kakao.maps.LatLngBounds();
-      points.forEach(({ lat, lng }) => bounds.extend(new kakao.maps.LatLng(lat, lng)));
-      map.setBounds(bounds, 52, 28, 30, left);
+
+      if (latLngs.length > 1 && left <= FIT_EDGE) return;
+      const projection = map.getProjection();
+      const xs = latLngs.map(latLng => projection.containerPointFromCoords(latLng).x);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const shift = latLngs.length === 1 ? minX - (left + (width - right - left) / 2) : minX - left;
+      if (Math.abs(shift) < 1 || maxX - shift > width - right + 1) return;
+
+      const center = projection.containerPointFromCoords(map.getCenter());
+      map.setCenter(
+        projection.coordsFromContainerPoint(new kakao.maps.Point(center.x + shift, center.y))
+      );
     };
 
     fit();
@@ -528,7 +600,7 @@ function FitBounds({ boundsKey, fitInsetLeft }: { boundsKey: string; fitInsetLef
     observer.observe(map.getNode());
 
     return () => observer.disconnect();
-  }, [map, boundsKey, fitInsetLeft]);
+  }, [map, boundsKey, fitInsetLeft, labelKey]);
 
   return null;
 }

@@ -34,10 +34,6 @@ export const withLocatedPackhouses = (session: PlanSessionT): PlanSessionT => ({
   },
 });
 
-export const todayIso = () => {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
-  return `${now.getFullYear()}-${month}-${day}`;
-};
+export const todayIso = () => new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 10);

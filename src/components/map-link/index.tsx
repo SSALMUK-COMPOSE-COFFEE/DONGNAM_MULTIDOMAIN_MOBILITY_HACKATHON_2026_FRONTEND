@@ -2,6 +2,7 @@
 
 import {
   type FocusEvent,
+  type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
   createContext,
@@ -37,7 +38,7 @@ type MapLinkContextT = {
   flash: MapLinkFlashT | null;
   setHover: (hover: MapLinkHoverT | null) => void;
   setPick: (pick: MapLinkPickT | null) => void;
-  register: (element: HTMLElement) => () => void;
+  register: (element: HTMLElement, id: string) => () => void;
   focusFromMap: (keys: string[]) => void;
 };
 
@@ -72,6 +73,21 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const IGNORED_CLICK_TARGETS = 'input,button,a,select,textarea,label,[role="checkbox"]';
+const NATIVE_FOCUSABLE =
+  'a[href],button,input,select,textarea,summary,[tabindex],[contenteditable]';
+const NATIVE_ACTIVATABLE = 'a[href],button,input,select,textarea,summary';
+const PICKABLE_ATTR = 'data-link-pickable';
+
+const isShown = (element: HTMLElement) => {
+  if (!element.isConnected) return false;
+  if (element.closest('[hidden],[inert],[aria-hidden="true"]')) return false;
+  if (element.getClientRects().length === 0) return false;
+  if (typeof element.checkVisibility === 'function') {
+    return element.checkVisibility({ visibilityProperty: true });
+  }
+
+  return true;
+};
 
 export function MapLinkProvider({ children }: { children: ReactNode }) {
   const [hover, setHover] = useState<MapLinkHoverT | null>(null);
@@ -80,6 +96,11 @@ export function MapLinkProvider({ children }: { children: ReactNode }) {
   const registryRef = useRef(new Set<HTMLElement>());
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flashNonceRef = useRef(0);
+  const pickRef = useRef<MapLinkPickT | null>(null);
+
+  useEffect(() => {
+    pickRef.current = pick;
+  }, [pick]);
 
   useEffect(
     () => () => {
@@ -88,12 +109,15 @@ export function MapLinkProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const register = useCallback((element: HTMLElement) => {
+  const register = useCallback((element: HTMLElement, id: string) => {
     const registry = registryRef.current;
     registry.add(element);
 
     return () => {
       registry.delete(element);
+      setHover(current => (current?.originId === id ? null : current));
+      setPick(current => (current?.originId === id ? null : current));
+      setFlash(current => (current?.id === id ? null : current));
     };
   }, []);
 
@@ -102,13 +126,20 @@ export function MapLinkProvider({ children }: { children: ReactNode }) {
     if (keys.length === 0) return;
 
     const matches = [...registryRef.current]
-      .filter(element => element.isConnected)
+      .filter(element => element.getAttribute(PICKABLE_ATTR) !== 'false')
       .filter(element => keysOverlap(keys, (element.dataset.link ?? '').split(' ')))
+      .filter(isShown)
       .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
     const target = matches[0];
 
     if (!target) {
-      setPick({ keys, originId: null });
+      setPick(null);
+      return;
+    }
+
+    const targetId = target.getAttribute(LINK_ID_ATTR);
+    if (targetId && pickRef.current?.originId === targetId) {
+      setPick(null);
       return;
     }
 
@@ -117,7 +148,6 @@ export function MapLinkProvider({ children }: { children: ReactNode }) {
       behavior: prefersReducedMotion() ? 'auto' : 'smooth',
     });
 
-    const targetId = target.getAttribute(LINK_ID_ATTR);
     setPick({ keys: normalizeKeys((target.dataset.link ?? '').split(' ')), originId: targetId });
 
     if (!targetId) return;
@@ -146,9 +176,12 @@ export type MapLinkTargetPropsT = {
   onFocus: (event: FocusEvent<HTMLElement>) => void;
   onBlur: (event: FocusEvent<HTMLElement>) => void;
   onClick: (event: MouseEvent<HTMLElement>) => void;
+  onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
   className: string;
   'data-link': string;
   'data-link-id': string;
+  'data-link-pickable': 'true' | 'false';
+  'aria-current': 'true' | 'false';
 };
 
 export function useMapLinkTarget(
@@ -163,9 +196,10 @@ export function useMapLinkTarget(
   const ref = useCallback(
     (element: HTMLElement | null) => {
       if (!element) return;
-      return register(element);
+      if (pickable && !element.matches(NATIVE_FOCUSABLE)) element.tabIndex = 0;
+      return register(element, id);
     },
-    [register]
+    [register, id, pickable]
   );
 
   const isPick = pick !== null && pick.originId === id;
@@ -187,6 +221,10 @@ export function useMapLinkTarget(
   const endHover = () => {
     if (hover?.originId === id) setHover(null);
   };
+  const togglePick = () => {
+    if (!pickable || linkKeys.length === 0) return;
+    setPick(isPick ? null : { keys: linkKeys, originId: id });
+  };
 
   return {
     ref,
@@ -195,16 +233,24 @@ export function useMapLinkTarget(
     onFocus: startHover,
     onBlur: endHover,
     onClick: event => {
-      if (!pickable || linkKeys.length === 0) return;
       const target = event.target instanceof Element ? event.target : null;
       const control = target?.closest(IGNORED_CLICK_TARGETS);
       if (control && control !== event.currentTarget) return;
 
-      setPick(isPick ? null : { keys: linkKeys, originId: id });
+      togglePick();
+    },
+    onKeyDown: event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (event.target !== event.currentTarget) return;
+      if (event.currentTarget.matches(NATIVE_ACTIVATABLE)) return;
+      event.preventDefault();
+      togglePick();
     },
     className: classNames.join(' '),
     'data-link': keyString,
     'data-link-id': id,
+    'data-link-pickable': pickable ? 'true' : 'false',
+    'aria-current': pickable && isPick ? 'true' : 'false',
   };
 }
 

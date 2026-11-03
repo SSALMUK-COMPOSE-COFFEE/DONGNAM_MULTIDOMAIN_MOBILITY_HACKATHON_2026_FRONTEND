@@ -14,6 +14,7 @@ export type TimelineMarkT = {
   textColor?: string;
   keys: string[];
   title?: string;
+  shortLabels?: string[];
 };
 
 export type TimelineBarT = {
@@ -112,6 +113,7 @@ type PlacedMarkT = TimelineMarkT & {
   top: number;
   tag: 'right' | 'left' | null;
   tagW: number;
+  tagText: string;
 };
 type PlacedBarT = TimelineBarT & {
   x0: number;
@@ -241,12 +243,26 @@ export function layoutTimeline(
       sorted.forEach(({ item, ms }, index) => {
         const mx = x(ms);
         const nextX = index + 1 < sorted.length ? x(sorted[index + 1].ms) - 6 : width - 4;
-        const tagW = estimateTextWidth(item.label, 11) + 4;
-        const fitsRight = mx + 9 + tagW <= nextX;
-        const fitsLeft = !fitsRight && mx - 9 - tagW >= prevEnd + 4;
-        const tag = (fitsRight && 'right') || (fitsLeft && 'left') || null;
+        const placement = [item.label, ...(item.shortLabels ?? [])]
+          .filter(Boolean)
+          .map(text => ({ text, tagW: estimateTextWidth(text, 11) + 4 }))
+          .map(({ text, tagW }) => {
+            if (mx + 9 + tagW <= nextX) return { text, tagW, tag: 'right' as const };
+            if (mx - 9 - tagW >= prevEnd + 4) return { text, tagW, tag: 'left' as const };
+            return null;
+          })
+          .find(candidate => candidate !== null);
+        const tag = placement ? placement.tag : null;
+        const tagW = placement ? placement.tagW : 0;
         prevEnd = tag === 'right' ? mx + 9 + tagW : mx + 5;
-        marks.push({ ...item, x: mx, top: cursor, tag, tagW });
+        marks.push({
+          ...item,
+          x: mx,
+          top: cursor,
+          tag,
+          tagW,
+          tagText: placement ? placement.text : '',
+        });
       });
       rows.push({ key: row.key, label: row.label, top: cursor - 6 });
       cursor += MARK_ROW_H;
@@ -365,9 +381,14 @@ export function timelineFromScene(
   );
 
   const readyMarks: TimelineMarkT[] = [...readyGroups.entries()].map(([groupKey, group]) => {
-    const label = [...group.parts.entries()]
-      .map(([name, pallets]) => `${name} ${pallets}`)
-      .join(' · ');
+    const parts = [...group.parts.entries()];
+    const label = parts.map(([name, pallets]) => `${name} ${pallets}`).join(' · ');
+    const total = parts.reduce((sum, [, pallets]) => sum + pallets, 0);
+    const shortLabels = [
+      ...(parts.length > 1 ? [`${parts[0][0]} 외 ${parts.length - 1} · ${total}`] : []),
+      ...(parts.length > 1 ? [`${parts[0][0]} 외 ${parts.length - 1}`] : []),
+      `${total}P`,
+    ];
     return {
       key: `ready:${groupKey}`,
       at: group.at,
@@ -375,6 +396,7 @@ export function timelineFromScene(
       color: group.color,
       keys: [...group.keys],
       title: `${kstDayLabel(group.at)} ${kstHourMinute(group.at)} 출하 준비 · ${label}`,
+      shortLabels,
     };
   });
 
@@ -393,6 +415,7 @@ export function timelineFromScene(
         label,
         color: M2_COLORS.warn,
         textColor: M2_COLORS.warnInk,
+        shortLabels: [`항공 ${item.pallets}`, `${item.pallets}P`],
         keys: [item.key, item.lotId, 'air', ...(item.packhouseId ? [item.packhouseId] : [])],
         title: `${kstDayLabel(at)} 출하 준비 · ${label}`,
       },
@@ -453,7 +476,7 @@ export function timelineFromScene(
           label: `CY 마감 ${kstHourMinute(lane.cyCutoff)}`,
           tone: 'crit',
           side: 'left',
-          keys: scene.port ? [scene.port.key] : [],
+          keys: scene.port ? [scene.port.key, ...scene.containers.map(({ key }) => key)] : [],
         },
         {
           key: `etd:${lane.key}`,

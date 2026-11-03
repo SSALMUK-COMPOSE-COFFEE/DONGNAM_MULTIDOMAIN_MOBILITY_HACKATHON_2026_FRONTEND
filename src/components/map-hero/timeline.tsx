@@ -199,6 +199,7 @@ export function Timeline({
                   <div
                     aria-hidden
                     data-k={k}
+                    {...(mark.tagText === mark.label ? {} : { title: tip })}
                     className={cn('m2-tl-tag', hlClass(keys))}
                     style={{
                       left: mark.tag === 'right' ? mark.x + 9 : mark.x - 9 - mark.tagW,
@@ -207,7 +208,7 @@ export function Timeline({
                     }}
                     {...linkProps(keys)}
                   >
-                    {mark.label}
+                    {mark.tagText}
                   </div>
                 ) : null}
               </div>

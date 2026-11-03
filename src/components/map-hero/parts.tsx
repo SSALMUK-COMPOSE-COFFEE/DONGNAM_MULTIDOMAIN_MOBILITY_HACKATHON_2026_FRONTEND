@@ -9,15 +9,33 @@ export type HeroPanelPropsT = {
   value: ReactNode;
   sub?: ReactNode;
   rows?: HeroPanelRowT[];
+  empty?: ReactNode;
   children?: ReactNode;
   className?: string;
 };
 
-export function HeroPanel({ label, value, sub, rows = [], children, className }: HeroPanelPropsT) {
+const PLACEHOLDER_VALUE = /^\s*(?:[—–−-]+|[−+-]0(?:\.0+)?\s*%?)\s*$/;
+
+const isEmptyValue = (value: ReactNode) =>
+  value === null ||
+  value === false ||
+  (typeof value === 'string' && (value.trim() === '' || PLACEHOLDER_VALUE.test(value)));
+
+export function HeroPanel({
+  label,
+  value,
+  sub,
+  rows = [],
+  empty = '아직 표시할 값이 없습니다',
+  children,
+  className,
+}: HeroPanelPropsT) {
+  const isEmpty = isEmptyValue(value);
+
   return (
     <div className={cn('m2-hpanel', className)}>
       <div className="m2-lbl">{label}</div>
-      <div className="m2-big">{value}</div>
+      <div className={cn('m2-big', isEmpty && 'is-empty')}>{isEmpty ? empty : value}</div>
       {sub ? <div className="m2-sub">{sub}</div> : null}
       {rows.map((row, index) => (
         <div key={index} className="m2-hrow">

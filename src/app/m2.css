@@ -748,14 +748,15 @@
     position: absolute;
     inset: 0;
   }
-  [data-ui='m2'] .m2-map-mono img[src*='daumcdn.net/map_'] {
+  [data-ui='m2'] .m2-map-mono img[src*='daumcdn.net/map_'],
+  [data-ui='m2'] .m2-map-mono img[src*='kakaocdn.net/api/v1/tile'] {
     filter: grayscale(1) contrast(0.92) brightness(1.04);
   }
   [data-ui='m2'] .m2-hov {
     position: absolute;
     top: 16px;
     left: 16px;
-    bottom: 16px;
+    bottom: 36px;
     z-index: 2;
     display: flex;
     flex-direction: column;
@@ -778,6 +779,13 @@
   }
   [data-ui='m2'] .m2-hpanel .m2-big {
     margin: 6px 0 4px;
+  }
+  [data-ui='m2'] .m2-big.is-empty {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0;
+    color: var(--m2-faint);
   }
   [data-ui='m2'] .m2-hpanel .m2-sub {
     margin: 0 0 8px;
