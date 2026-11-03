@@ -30,9 +30,16 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
   const [kind, setKind] = useState<ChangeKindT>('reduce');
   const [pickedLotId, setPickedLotId] = useState('');
   const lot = seaLots.find(({ lot_id }) => lot_id === pickedLotId) ?? seaLots[0];
-  const [newPallets, setNewPallets] = useState(0);
-  const maxPallets = Math.max((lot?.pallets ?? 1) - 1, 0);
-  const pallets = Math.min(newPallets, maxPallets);
+  const [palletDraft, setPalletDraft] = useState<{ lotId: string; pallets: number } | null>(null);
+  const maxPallets = lot?.pallets ?? 0;
+  const pallets =
+    palletDraft && palletDraft.lotId === lot?.lot_id
+      ? Math.min(palletDraft.pallets, maxPallets)
+      : maxPallets;
+  const setNewPallets = (next: number) => {
+    if (lot) setPalletDraft({ lotId: lot.lot_id, pallets: next });
+  };
+  const isUnchanged = kind === 'reduce' && pallets === maxPallets;
   const container = plan.containers.find(({ container_id }) => container_id === lot?.container_id);
 
   const flow = usePlatformReplanFlow(planId);
@@ -40,6 +47,7 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
   const buildEvent = (): PlanEventT | null => {
     if (!lot) return null;
     if (kind === 'air_switch') return { type: 'air_switch', lot_id: lot.lot_id };
+    if (isUnchanged) return null;
 
     return pallets === 0
       ? { type: 'cancel', lot_id: lot.lot_id }
@@ -52,10 +60,11 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
   };
 
   const shipperName = lot ? getShipperShortName(scenario, lot.shipper_id) : '';
+  const reduceLabel = isUnchanged
+    ? '줄일 파렛트 수를 고르세요'
+    : `${shipperName} ${pallets === 0 ? '전량' : `${maxPallets - pallets}파렛트`} 취소하고 다시 짜기`;
   const actionLabel =
-    kind === 'air_switch'
-      ? `${shipperName} 항공으로 돌리고 다시 짜기`
-      : `${shipperName} ${pallets === 0 ? '전량' : `${(lot?.pallets ?? 0) - pallets}파렛트`} 취소하고 다시 짜기`;
+    kind === 'air_switch' ? `${shipperName} 항공으로 돌리고 다시 짜기` : reduceLabel;
 
   return (
     <div className="@container flex flex-col gap-6">
@@ -124,7 +133,11 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
                 </div>
               )}
 
-              <Button size="lg" disabled={!lot || flow.isReplanning} onClick={runReplan}>
+              <Button
+                size="lg"
+                disabled={!lot || isUnchanged || flow.isReplanning}
+                onClick={runReplan}
+              >
                 {flow.isReplanning ? '다시 짜는 중' : actionLabel}
               </Button>
             </div>
