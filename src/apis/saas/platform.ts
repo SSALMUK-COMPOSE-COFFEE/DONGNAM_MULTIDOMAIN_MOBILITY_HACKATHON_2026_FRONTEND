@@ -457,6 +457,8 @@ export const usePlatformReplanFlow = (planId: string) => {
   };
 };
 
+const toAlertKey = ({ container_id, key }: AlertT) => `${container_id}:${key}`;
+
 export type AlertStreamStatusT = 'connecting' | 'open' | 'reconnecting' | 'stopped';
 
 export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT) => void) => {
@@ -500,7 +502,8 @@ export const usePlatformAlertStream = (planId: string, onAlert?: (alert: AlertT)
         if (cursor.seen.has(alert.seq)) return;
 
         cursor.seen.add(alert.seq);
-        setAlerts(prev => [alert, ...prev]);
+        const alertKey = toAlertKey(alert);
+        setAlerts(prev => [alert, ...prev.filter(item => toAlertKey(item) !== alertKey)]);
         onAlertRef.current?.(alert);
       });
       source.addEventListener('error', () => {
