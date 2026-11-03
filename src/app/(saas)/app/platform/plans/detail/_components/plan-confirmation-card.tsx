@@ -3,6 +3,7 @@
 import { cn } from 'cn';
 
 import { useIsSandbox } from '@/apis/saas/auth';
+import { saasErrorDetail, saasErrorStatus } from '@/apis/saas/errors';
 import {
   AWAITING_SHIPPERS_STATUS,
   type PlanConfirmationStatusT,
@@ -12,6 +13,7 @@ import {
   useRecomputeWithoutRejected,
 } from '@/apis/saas/platform-confirm';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
+import { scrollToReplanCandidates } from '@/app/(saas)/app/platform/plans/detail/_components/replan-gate';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +48,13 @@ export function PlanConfirmationCard({ session }: { session: PlanSessionT }) {
   const isAwaiting = planStatus === AWAITING_SHIPPERS_STATUS;
   const isCommitted = planStatus === 'committed';
   const isBusy = autoAccept.isPending || recompute.isPending;
+  const recomputeConflict =
+    recompute.isError && saasErrorStatus(recompute.error) === 409
+      ? (saasErrorDetail(recompute.error) ?? '지금은 거절한 화주를 빼고 다시 짤 수 없습니다.')
+      : null;
+  const hasRejectedCandidate = !!state?.replan_candidates.some(
+    ({ source }) => source === 'shipper_rejected'
+  );
 
   const summary = () => {
     if (!state) return '화주별 계획 수락 여부를 불러오는 중입니다.';
@@ -164,6 +173,33 @@ export function PlanConfirmationCard({ session }: { session: PlanSessionT }) {
           )}
           {isSandbox && counts.pending > 0 && (
             <span className="m2-sub mt-0 text-[12px]">데모 환경에서만 보이는 버튼입니다.</span>
+          )}
+        </div>
+      )}
+
+      {recomputeConflict && (
+        <div
+          className="m2-note m2-note-warn mt-3 flex-col items-start gap-2 text-[12.5px]"
+          role="alert"
+        >
+          <p className="break-words">{recomputeConflict}</p>
+          {hasRejectedCandidate ? (
+            <>
+              <p>
+                아래 &lsquo;재계획이 필요합니다&rsquo; 카드에서 거절한 화주 후보의 &lsquo;취소 ·
+                다시 짜기&rsquo;로 거절한 화주를 뺄 수 있습니다. 이 안을 적용하면 거절한 화주의 취소
+                부담금은 면제됩니다.
+              </p>
+              <button
+                type="button"
+                className="m2-btn m2-btn-sec m2-btn-sm"
+                onClick={scrollToReplanCandidates}
+              >
+                재계획 후보로 이동
+              </button>
+            </>
+          ) : (
+            <p>재계획 후보가 생기면 아래 재최적화 영역에 나타납니다.</p>
           )}
         </div>
       )}

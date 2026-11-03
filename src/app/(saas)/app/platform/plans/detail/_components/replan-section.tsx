@@ -24,6 +24,7 @@ import { PlatformOrderCard } from '@/app/(saas)/app/platform/plans/detail/_compo
 import { ReplanAddLotTab } from '@/app/(saas)/app/platform/plans/detail/_components/replan-add-lot-tab';
 import { ReplanCandidatesCard } from '@/app/(saas)/app/platform/plans/detail/_components/replan-candidates-card';
 import { ReplanDelayTab } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
+import { useReplanGate } from '@/app/(saas)/app/platform/plans/detail/_components/replan-gate';
 import { ScheduleCheckCard } from '@/app/(saas)/app/platform/plans/detail/_components/schedule-check-card';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
 import {
@@ -90,6 +91,7 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
     scenario.lots.find(({ id }) => id === lot?.lot_id)?.sell_window === 'short';
 
   const flow = usePlatformReplanFlow(planId);
+  const gate = useReplanGate(session);
   const requestReplan = useChangeRequestReplan();
   const applyRequest = useApplyChangeRequest();
   const openRequests = usePlatformChangeRequests(openRequestParams(planId));
@@ -261,7 +263,13 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
               <ReplanDelayTab session={session} isReplanning={isBusy} onRun={runEvent} />
             )}
             {kind === 'add_lot' && (
-              <ReplanAddLotTab session={session} isReplanning={isBusy} onAddLot={runAddLot} />
+              <ReplanAddLotTab
+                session={session}
+                isReplanning={isBusy}
+                onAddLot={runAddLot}
+                addLotBlock={gate.addLotBlock}
+                forwarderName={gate.forwarderName}
+              />
             )}
             {isLotKind && seaLots.length === 0 && (
               <p className="m2-sub mt-0">해상으로 가는 로트가 없어 바꿀 대상이 없습니다.</p>
@@ -385,6 +393,7 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
             onApply={shown.onApply}
             variant="saas"
             current={{ plan, routes: session.routes }}
+            applyBlockedReason={gate.applyBlockReason(shown.replan)}
           />
         </div>
       )}

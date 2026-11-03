@@ -11,6 +11,7 @@ import {
   productShortName,
 } from '@/app/(saas)/app/platform/_components/m2-format';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
+import { REPLAN_CANDIDATES_ID } from '@/app/(saas)/app/platform/plans/detail/_components/replan-gate';
 import type { PlanEventT, PlanSessionT } from '@/types/api';
 import { formatKstMonthDayTime } from '@/utils/kst';
 import { getShipperShortName } from '@/utils/scenario';
@@ -109,7 +110,11 @@ export function ReplanCandidatesCard({ session, isReplanning, onRun }: ReplanCan
     )?.reason ?? null;
 
   return (
-    <section className="m2-card flex flex-col gap-3" aria-label="재계획 후보">
+    <section
+      id={REPLAN_CANDIDATES_ID}
+      className="m2-card flex scroll-mt-4 flex-col gap-3"
+      aria-label="재계획 후보"
+    >
       <div className="m2-card-h">
         <div>
           <h2 className="m2-h2">재계획이 필요합니다</h2>
@@ -149,6 +154,12 @@ export function ReplanCandidatesCard({ session, isReplanning, onRun }: ReplanCan
                 {(candidate.lot_ids ?? []).length > 0 ? (
                   <p className="m2-sub mt-0 text-[12px] break-words">
                     대상: {(candidate.lot_ids ?? []).map(id => lotText(session, id)).join(', ')}
+                  </p>
+                ) : null}
+                {candidate.source === 'shipper_rejected' && events.length > 0 ? (
+                  <p className="m2-sub mt-0 text-[12px]">
+                    거절한 화주를 빼는 다른 길입니다. &lsquo;거절한 화주 빼고 다시 짜기&rsquo;가
+                    확정된 실행 지시 때문에 막힐 때 이 안으로 빼면 취소 부담금은 면제됩니다.
                   </p>
                 ) : null}
                 {events.length === 0 ? (

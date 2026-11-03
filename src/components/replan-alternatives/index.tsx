@@ -42,6 +42,7 @@ type ReplanAlternativesPropsT = {
   baselineAlternativeId?: AlternativeIdT;
   variant?: 'demo' | 'saas';
   current?: ReplanCurrentT | null;
+  applyBlockedReason?: string | null;
 };
 
 export type { ReplanCurrentT } from '@/components/replan-alternatives/saas-alternatives';
@@ -58,6 +59,7 @@ export function ReplanAlternatives({
   baselineAlternativeId,
   variant = 'demo',
   current = null,
+  applyBlockedReason = null,
 }: ReplanAlternativesPropsT) {
   if (variant === 'saas') {
     return (
@@ -71,6 +73,7 @@ export function ReplanAlternatives({
         costDeltaLabel={costDeltaLabel}
         baselineAlternativeId={baselineAlternativeId ?? null}
         current={current}
+        applyBlockedReason={applyBlockedReason}
       />
     );
   }

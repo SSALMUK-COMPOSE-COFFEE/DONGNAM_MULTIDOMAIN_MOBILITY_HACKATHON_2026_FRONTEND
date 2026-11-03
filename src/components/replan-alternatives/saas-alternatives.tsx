@@ -1,6 +1,6 @@
 import { cn } from 'cn';
 import { CheckIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { ContainerLoadBar } from '@/components/container-load-bar';
 import { DomainChain, type VoyagePickupT } from '@/components/domain-chain';
@@ -41,6 +41,7 @@ type SaasReplanAlternativesPropsT = {
   costDeltaLabel: string;
   baselineAlternativeId: AlternativeIdT | null;
   current: ReplanCurrentT | null;
+  applyBlockedReason: string | null;
 };
 
 const summarizeReasons = (reasons: string[], lotNames: LotNameMapT) => [
@@ -67,7 +68,9 @@ export function SaasReplanAlternatives({
   costDeltaLabel,
   baselineAlternativeId,
   current,
+  applyBlockedReason,
 }: SaasReplanAlternativesPropsT) {
+  const blockedId = useId();
   const [snapshot, setSnapshot] = useState({ replanId: replan.replan_id, current });
   if (snapshot.replanId !== replan.replan_id) {
     setSnapshot({ replanId: replan.replan_id, current });
@@ -87,6 +90,12 @@ export function SaasReplanAlternatives({
     <div className="@container flex flex-col gap-4">
       <ReplanExplanation replan={replan} scenario={scenario} />
 
+      {applyBlockedReason && !appliedId && (
+        <p id={blockedId} className="m2-note m2-note-warn mt-0 text-[13px]" role="note">
+          {applyBlockedReason}. 세 가지 안은 비교해 볼 수 있지만 지금은 적용할 수 없습니다.
+        </p>
+      )}
+
       <div className="grid grid-cols-1 items-stretch gap-4 @min-[1080px]:grid-cols-3">
         {replan.alternatives.map(alternative => (
           <SaasAlternativeCard
@@ -103,6 +112,7 @@ export function SaasReplanAlternatives({
             isLocked={!!appliedId || !!applyingId}
             costDeltaLabel={costDeltaLabel}
             costDelta={alternative.cost_delta - baselineDelta}
+            blockedId={applyBlockedReason ? blockedId : null}
             onApply={() => onApply(alternative.id)}
           />
         ))}
@@ -124,6 +134,7 @@ type SaasAlternativeCardPropsT = {
   isLocked: boolean;
   costDeltaLabel: string;
   costDelta: number;
+  blockedId: string | null;
   onApply: () => void;
 };
 
@@ -140,8 +151,10 @@ function SaasAlternativeCard({
   isLocked,
   costDeltaLabel,
   costDelta,
+  blockedId,
   onApply,
 }: SaasAlternativeCardPropsT) {
+  const isBlocked = !!blockedId && !isApplied;
   const { label, summary, feasible, infeasible_reasons: reasons, plan, diff } = alternative;
   const container = plan.containers.find(({ container_id }) => container_id === focusContainerId);
   const affected = diff.shippers.filter(isAffected);
@@ -218,7 +231,8 @@ function SaasAlternativeCard({
       <button
         type="button"
         className={cn('m2-btn mt-auto w-full', isRecommended ? 'm2-btn-pri' : 'm2-btn-sec')}
-        disabled={!feasible || isLocked}
+        disabled={!feasible || isLocked || isBlocked}
+        aria-describedby={isBlocked && blockedId ? blockedId : ''}
         onClick={onApply}
       >
         {isApplied && <CheckIcon size={16} />}
