@@ -52,39 +52,105 @@ const assumeDefaultLoss = (page: Page) =>
     });
   });
 
-const markPlansAwaitingShipper = (page: Page) =>
-  page.addInitScript(() => {
-    const urls = new WeakMap<XMLHttpRequest, string>();
-    const open = XMLHttpRequest.prototype.open;
-    const responseText = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText');
+type AwaitingOptionsT = { addPlan?: boolean; awaitingIndexes?: number[] | null };
 
-    XMLHttpRequest.prototype.open = function (
-      this: XMLHttpRequest,
-      ...args: Parameters<XMLHttpRequest['open']>
-    ) {
-      urls.set(this, String(args[1]));
+const ADDED_PLAN_ID = 'e2e-added-plan';
+const ADDED_VESSEL = 'MV E2E 추가 계획';
 
-      return open.apply(this, args);
-    } as XMLHttpRequest['open'];
-    Object.defineProperty(XMLHttpRequest.prototype, 'responseText', {
-      configurable: true,
-      get(this: XMLHttpRequest) {
-        const text = String(responseText?.get?.call(this) ?? '');
-        const url = urls.get(this) ?? '';
-        if (!/\/saas\/shipper\/plans(\?|$)/.test(url)) return text;
-        const plans: unknown = JSON.parse(text);
-        if (!Array.isArray(plans)) return text;
+const markPlansAwaitingShipper = (page: Page, options: AwaitingOptionsT = {}) =>
+  page.addInitScript(
+    ({ addPlan, awaitingIndexes, addedPlanId, addedVessel }) => {
+      const urls = new WeakMap<XMLHttpRequest, string>();
+      const open = XMLHttpRequest.prototype.open;
+      const responseText = Object.getOwnPropertyDescriptor(
+        XMLHttpRequest.prototype,
+        'responseText'
+      );
+      const state = { sourcePlanId: '' };
+      const isRecord = (value: unknown): value is Record<string, unknown> =>
+        !!value && typeof value === 'object';
+      const withAddedPlan = (plans: unknown[]) => {
+        const source = plans.find(isRecord);
+        if (!addPlan || !source) return plans;
+        state.sourcePlanId = String(source.plan_id);
+        const created = new Date(String(source.created_at));
+        created.setDate(created.getDate() - 1);
 
-        return JSON.stringify(
-          plans.map(plan =>
-            plan && typeof plan === 'object'
-              ? { ...plan, status: 'pending_shipper_confirmation' }
-              : plan
-          )
-        );
-      },
-    });
-  });
+        return [
+          ...plans,
+          {
+            ...source,
+            plan_id: addedPlanId,
+            created_at: created.toISOString(),
+            vessel: addedVessel,
+          },
+        ];
+      };
+      const withAddedRow = (rows: unknown[]) => {
+        const source = rows.find(isRecord);
+        if (!addPlan || !source) return rows;
+        const half = (key: string) => Math.round(Number(source[key] ?? 0) / 2);
+
+        return [
+          ...rows,
+          {
+            ...source,
+            plan_id: addedPlanId,
+            vessel: addedVessel,
+            baseline_cost: half('baseline_cost'),
+            shared_cost: half('shared_cost'),
+            savings: half('savings'),
+            fee: half('fee'),
+            fee_before_refund: half('fee_before_refund'),
+            shipper_gain: half('shipper_gain'),
+            quality_refund: 0,
+          },
+        ];
+      };
+
+      XMLHttpRequest.prototype.open = function (
+        this: XMLHttpRequest,
+        ...args: Parameters<XMLHttpRequest['open']>
+      ) {
+        const url = String(args[1]);
+        urls.set(this, url);
+        if (state.sourcePlanId && url.includes(`/saas/shipper/plans/${addedPlanId}`)) {
+          args[1] = url.replace(addedPlanId, state.sourcePlanId);
+        }
+
+        return open.apply(this, args);
+      } as XMLHttpRequest['open'];
+      Object.defineProperty(XMLHttpRequest.prototype, 'responseText', {
+        configurable: true,
+        get(this: XMLHttpRequest) {
+          const text = String(responseText?.get?.call(this) ?? '');
+          const url = urls.get(this) ?? '';
+          if (/\/saas\/shipper\/settlements(\?|$)/.test(url)) {
+            const rows: unknown = JSON.parse(text);
+
+            return Array.isArray(rows) ? JSON.stringify(withAddedRow(rows)) : text;
+          }
+          if (!/\/saas\/shipper\/plans(\?|$)/.test(url)) return text;
+          const plans: unknown = JSON.parse(text);
+          if (!Array.isArray(plans)) return text;
+
+          return JSON.stringify(
+            withAddedPlan(plans).map((plan, index) =>
+              isRecord(plan) && (!awaitingIndexes || awaitingIndexes.includes(index))
+                ? { ...plan, status: 'pending_shipper_confirmation' }
+                : plan
+            )
+          );
+        },
+      });
+    },
+    {
+      addPlan: options.addPlan ?? false,
+      awaitingIndexes: options.awaitingIndexes ?? null,
+      addedPlanId: ADDED_PLAN_ID,
+      addedVessel: ADDED_VESSEL,
+    }
+  );
 
 const expectLossCard = async (page: Page) => {
   const card = page.getByRole('region', { name: LOSS_CARD });
@@ -464,4 +530,73 @@ test('화주 확인 대기 계획은 홈 이번 시즌 금액에서 빼고 제�
   ).toBeVisible();
   await expect(card.getByText('내가 확인한 계획이 생기면 여기에 쌓입니다.')).toBeVisible();
   await expectNoSeriousAxe(page, '화주 홈(확인 대기)');
+});
+
+test('일부 계획만 화주 확인 대기면 홈 시즌 금액과 정산 합계가 같고 대기 계획은 따로 묶인다', async ({
+  page,
+}) => {
+  await markPlansAwaitingShipper(page, { addPlan: true, awaitingIndexes: [1] });
+  await page.goto(LOGIN_PATH);
+  await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+  await page
+    .getByRole('button', { name: /들어가기/ })
+    .nth(1)
+    .click();
+  await page.waitForURL(/\/test\/app\/shipper/);
+
+  const home = await seasonNumbers(page);
+  expect(home.savings).not.toBe('0원');
+  const card = page.getByRole('region', { name: '이번 시즌 내가 아낀 금액' });
+  await expect(
+    card.getByText('화주 확인 대기 1건 제외 (확인 전 절감액은 합의 전 제안값)')
+  ).toBeVisible();
+
+  await menu(page, /^정산/).click();
+  await page.waitForURL(/\/test\/app\/shipper\/settlements/);
+  const main = page.getByRole('main').first();
+  const stat = (label: string) =>
+    main
+      .locator('.m2-card')
+      .filter({ has: page.locator('.m2-lbl', { hasText: label }) })
+      .locator('.m2-num')
+      .first();
+  const flat = (text: string) => text.replace(/\s+/g, '');
+  expect(flat(await stat('내 절감 합계').innerText())).toBe(home.savings);
+  expect(flat(await stat('수수료').innerText())).toBe(home.fee);
+  expect(flat(await stat('내 몫').innerText())).toBe(home.gain);
+  await expect(
+    main.locator('.m2-card').filter({ has: page.locator('.m2-lbl', { hasText: '내 절감 합계' }) })
+  ).toContainText('확인 대기 1건 제외');
+
+  const settled = main.getByRole('region', { name: '계획별 정산' });
+  const confirmedTable = settled.getByRole('table').first();
+  await expect(confirmedTable.locator('tbody tr')).toHaveCount(1);
+  await expect(confirmedTable.getByText(ADDED_VESSEL)).toHaveCount(0);
+  await expect(confirmedTable.getByText('확인 대기', { exact: true })).toHaveCount(0);
+
+  const group = settled.getByRole('region', { name: '화주 확인 대기 (합의 전 제안값)' });
+  await expect(
+    group.getByRole('heading', { level: 3, name: '화주 확인 대기 (합의 전 제안값)' })
+  ).toBeVisible();
+  const awaitingTable = group.getByRole('table', { name: '화주 확인 대기 (합의 전 제안값)' });
+  const awaitingRows = awaitingTable.locator('tbody tr');
+  await expect(awaitingRows).toHaveCount(1);
+  await expect(awaitingRows.first()).toContainText(ADDED_VESSEL);
+  await expect(awaitingRows.first().getByText('확인 대기', { exact: true })).toBeVisible();
+  await expect(awaitingRows.first()).toHaveClass(/is-dis/);
+  await expectNoSeriousAxe(page, '정산(확인 대기 포함)');
+
+  await page.setViewportSize({ width: 1024, height: 900 });
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  expect(overflow, '정산(확인 대기 포함) 1024px 가로 넘침(px)').toBeLessThanOrEqual(0);
+
+  await page.setViewportSize({ width: MOBILE_WIDTH, height: 844 });
+  await expect(awaitingRows.first().getByText('확인 대기', { exact: true })).toBeVisible();
+  await expect(
+    awaitingRows.first().locator('.m2-lines').getByText('같이 실을 때 드는 예상 비용')
+  ).toBeVisible();
+  await expectNoSeriousAxe(page, '정산(확인 대기 포함, 390px)');
+  await expectFitsMobile(page, '정산(확인 대기 포함)');
 });
