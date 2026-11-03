@@ -731,7 +731,7 @@ const gensetCandidates = (lots: LotPowerPlanT[]): GensetCandidateT[] => {
   });
 };
 
-const powerPlanOf = (session: PlanSessionT, org: MockOrgT): PowerPlanT => {
+export const powerPlanOf = (session: PlanSessionT, org: MockOrgT): PowerPlanT => {
   const own = new Set(org.shipper_ids);
   const lots = session.plan.assignments
     .filter(lot => lot.mode === 'sea' && lot.container_id && lot.voyage_id)

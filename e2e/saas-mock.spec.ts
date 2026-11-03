@@ -341,3 +341,93 @@ test('목업 모드에서 플랫폼만 데모 초기화를 하고 쿨다운 동�
     await expect(resetButton).toBeEnabled();
   });
 });
+
+test('목업 모드에서 포워더가 실행 카드에 번호를 넣고 VGM·젯셋·요청 서류를 본다', async ({
+  page,
+}) => {
+  await page.goto(LOGIN_PATH);
+
+  await test.step('플랫폼이 감축 재최적화를 적용한다', async () => {
+    await enterAs(page, 'platform');
+    await menu(page, /공동적재 계획/).click();
+    const main = page.getByRole('main').first();
+    await main
+      .getByRole('row')
+      .filter({ hasText: 'MV FRESH HARMONY' })
+      .first()
+      .getByRole('link', { name: '상세' })
+      .click();
+    await page.waitForURL(/\/platform\/plans\/detail\?plan_id=/);
+
+    await main.getByRole('button', { name: '한 파렛트 줄이기' }).click();
+    await main.getByRole('button', { name: '한 파렛트 줄이기' }).click();
+    await main.getByRole('button', { name: '진주 2파렛트 취소하고 다시 짜기' }).click();
+    await main.getByRole('button', { name: '이 안으로 적용' }).first().click();
+    await expect(main.getByRole('button', { name: '적용됨' })).toBeVisible();
+    await logout(page);
+  });
+
+  await test.step('포워더가 실행 카드에서 번호를 저장한다', async () => {
+    await enterAs(page, 'forwarder');
+    const main = page.getByRole('main').first();
+    await main
+      .getByRole('row')
+      .filter({ hasText: 'MV FRESH HARMONY' })
+      .first()
+      .getByRole('link', { name: '상세' })
+      .click();
+    await page.waitForURL(/\/forwarder\/plans\/detail\?plan_id=/);
+
+    const card = main.getByRole('article', { name: 'CA-01 실행 카드' });
+    const mockChips = card.getByText('가상 번호', { exact: true });
+    await expect(mockChips).toHaveCount(3);
+    await expect(card).toContainText('아직 입력하지 않았습니다');
+
+    await card.getByLabel('컨테이너 번호').fill('CSQU3054384');
+    await card.getByRole('button', { name: '번호 저장' }).click();
+    await expect(
+      page.getByText(
+        '컨테이너 번호 체크디지트가 틀립니다: CSQU305438의 체크디지트는 3입니다(올바른 번호 CSQU3054383)'
+      )
+    ).toBeVisible();
+    await expect(mockChips).toHaveCount(3);
+
+    await card.getByLabel('부킹 번호').fill('BK-FS-0001');
+    const containerInput = card.getByLabel('컨테이너 번호');
+    await containerInput.fill('CSQU3054383');
+    await containerInput.press('Enter');
+    await expect(page.getByText('CA-01 실행 번호를 저장했습니다.')).toBeVisible();
+    await expect(mockChips).toHaveCount(1);
+    await expect(card).toContainText(/입력 \d{2}\.\d{2}|입력 \d/);
+    await expect(containerInput).toHaveValue('CSQU3054383');
+    await expect(containerInput).toBeFocused();
+
+    const second = main.getByRole('article', { name: 'CA-02 실행 카드' });
+    await second.getByLabel('컨테이너 번호').fill('TGHU1234567');
+    await second.getByRole('button', { name: '번호 저장' }).click();
+    await expect(page.getByText('CA-02 실행 번호를 저장했습니다.')).toBeVisible();
+  });
+
+  await test.step('VGM 가정 항목·젯셋 사전 배정·요청 서류 종류를 보고 금액은 보지 않는다', async () => {
+    const main = page.getByRole('main').first();
+    const vgm = main.getByRole('table', { name: 'CA-01 VGM 항목' });
+    await expect(vgm.getByRole('row', { name: /^컨테이너 자중/ })).toContainText('가정');
+    await expect(vgm.getByRole('row', { name: /^화물 순중량/ })).not.toContainText('가정');
+    await expect(main.getByRole('article', { name: 'CA-01 실행 카드' })).toContainText(
+      /VGM [\d,]+kg = 화물 순중량/
+    );
+
+    const gensets = main.getByRole('list', { name: '배터리 젯셋 사전 배정' });
+    await expect(gensets).toContainText('[배터리 젯셋 사전 배정]');
+    await expect(gensets).toContainText('CA-02(TGHU1234567)');
+    const documents = main.getByRole('list', { name: '외부 요청 서류' });
+    const correction = documents
+      .getByRole('listitem')
+      .filter({ has: page.getByText('SI·VGM 정정', { exact: true }) });
+    await expect(correction.first()).toBeVisible();
+    await expect(correction.filter({ hasText: '부킹 변경' })).toHaveCount(0);
+    await expect(main.getByRole('region', { name: '컨테이너 실행 카드' })).not.toContainText(
+      /\d\s*원/
+    );
+  });
+});

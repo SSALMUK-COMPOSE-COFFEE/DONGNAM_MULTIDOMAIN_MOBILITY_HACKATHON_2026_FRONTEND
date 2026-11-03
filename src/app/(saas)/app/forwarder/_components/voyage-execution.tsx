@@ -5,6 +5,7 @@ import { type ReactNode, useState } from 'react';
 
 import { useForwarderPlanOrders } from '@/apis/saas/forwarder';
 import { ContainerLoadsCard } from '@/app/(saas)/app/forwarder/_components/container-loads';
+import { ForwarderExecutionCard } from '@/app/(saas)/app/forwarder/_components/execution-card';
 import {
   type RemainingT,
   circled,
@@ -246,6 +247,8 @@ export function VoyageExecution({ session, eyebrow }: VoyageExecutionPropsT) {
           <ContainerLoadsCard session={slice} />
         </div>
       </div>
+
+      <ForwarderExecutionCard planId={session.plan_id} />
 
       <VoyageColdchainCard
         planId={session.plan_id}

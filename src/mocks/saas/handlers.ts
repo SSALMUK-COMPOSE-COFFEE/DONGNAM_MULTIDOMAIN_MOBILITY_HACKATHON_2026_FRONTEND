@@ -28,7 +28,7 @@ import {
   demoPlan,
   demoReset,
 } from '@/mocks/saas/demo-bridge';
-import { executionNumberHandlers } from '@/mocks/saas/execution-numbers';
+import { executionNumberHandlers, withDocumentActions } from '@/mocks/saas/execution-numbers';
 import airSeaFixture from '@/mocks/saas/fixtures/air-sea.json';
 import arrivalFixture from '@/mocks/saas/fixtures/arrival.json';
 import benchmarkFixture from '@/mocks/saas/fixtures/benchmark.json';
@@ -951,7 +951,9 @@ const forwarderHandlers = [
     const planId = String(params.planId);
     if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
 
-    return HttpResponse.json((await demoOrders(planId)).map(withAnswers));
+    return HttpResponse.json(
+      await withDocumentActions(planId, (await demoOrders(planId)).map(withAnswers))
+    );
   }),
 
   http.post(

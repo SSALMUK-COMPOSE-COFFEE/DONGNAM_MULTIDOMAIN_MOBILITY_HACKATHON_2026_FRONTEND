@@ -1,13 +1,18 @@
 import { HttpResponse, http } from 'msw';
 
 import { api, authorize, canReadPlan, fail } from '@/mocks/saas/access';
+import { powerPlanOf } from '@/mocks/saas/coldchain';
 import { demoPlan } from '@/mocks/saas/demo-bridge';
+import type { MockOrgT } from '@/mocks/saas/orgs';
 import { nowIso, onMockReset } from '@/mocks/saas/state';
-import type { PlanSessionT } from '@/types/api';
+import type { ExecutionOrderT, PlanSessionT } from '@/types/api';
 import type {
   ForwarderContainerExecutionT,
+  ForwarderDocumentActionT,
   ForwarderExecutionCardT,
   ForwarderExecutionNumbersInputT,
+  ForwarderGensetInstructionT,
+  ForwarderOrderT,
   ForwarderSetpointT,
 } from '@/types/saas-forwarder';
 
@@ -125,6 +130,23 @@ const kstLabel = (iso: string) =>
     hour12: false,
   });
 
+const slashLabel = (iso: string) => {
+  const parts = new Map(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Seoul',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(new Date(iso))
+      .map(part => [part.type, part.value])
+  );
+
+  return `${parts.get('month')}/${parts.get('day')} ${parts.get('hour')}:${parts.get('minute')}`;
+};
+
 const shiftHours = (iso: string, hours: number) =>
   new Date(new Date(iso).getTime() - hours * HOUR_MS).toISOString();
 
@@ -182,7 +204,54 @@ const setpointOf = (products: ProductT[], productIds: string[]): ForwarderSetpoi
   };
 };
 
-const buildCard = (session: PlanSessionT): ForwarderExecutionCardT => {
+const GENSET_PLAIN_TEXT =
+  '항구 게이트에서 전기가 끊기는 시간이 길어 보여 배터리 냉각 장치를 미리 붙입니다. 냉장은 그대로 이어집니다.';
+
+const gensetInstructions = (
+  session: PlanSessionT,
+  org: MockOrgT,
+  containers: ForwarderContainerExecutionT[]
+): ForwarderGensetInstructionT[] => {
+  const numbers = new Map(containers.map(item => [item.container_id, item.container_no]));
+
+  return powerPlanOf(session, org).candidates.map(candidate => {
+    const nos = candidate.container_ids.map(id => numbers.get(id) ?? id);
+    const where = candidate.truck_id ? `${candidate.truck_id} ${candidate.trip}회차` : '트럭 미정';
+    const window =
+      candidate.window_start && candidate.window_end
+        ? `${slashLabel(candidate.window_start)}~${slashLabel(candidate.window_end)}`
+        : '시각 미정';
+    const units = candidate.container_ids.map((id, index) => `${id}(${nos[index]})`).join(', ');
+    const text = [
+      `[배터리 젯셋 사전 배정] ${candidate.voyage_id} ${where} ${units}`,
+      `로트 ${candidate.lot_ids.join(', ')}: 무전원 예상 ${window}`,
+      `${Math.round(candidate.unpowered_minutes)}분(기준 ${Math.round(candidate.threshold_minutes)}분).`,
+      `${candidate.equipment}를 게이트 도착 전에 배정·연결합니다.`,
+      candidate.gate_peak ? '게이트 혼잡 시간대 도착.' : '',
+    ]
+      .join(' ')
+      .trimEnd();
+
+    return {
+      key: candidate.key,
+      equipment: candidate.equipment,
+      voyage_id: candidate.voyage_id,
+      container_ids: candidate.container_ids,
+      container_nos: nos,
+      truck_id: candidate.truck_id,
+      trip: candidate.trip,
+      lot_ids: candidate.lot_ids,
+      window_start: candidate.window_start,
+      window_end: candidate.window_end,
+      unpowered_minutes: candidate.unpowered_minutes,
+      threshold_minutes: candidate.threshold_minutes,
+      text,
+      plain_text: GENSET_PLAIN_TEXT,
+    };
+  });
+};
+
+const buildCard = (session: PlanSessionT, org: MockOrgT): ForwarderExecutionCardT => {
   const { plan_id: planId, scenario, plan } = session;
   const saved = entered.get(planId);
   const voyages = new Map(scenario.voyages.map(voyage => [voyage.id, voyage]));
@@ -260,7 +329,98 @@ const buildCard = (session: PlanSessionT): ForwarderExecutionCardT => {
     mock: !containers.length || containers.some(item => item.mock),
     mock_note: MOCK_NOTE,
     containers,
+    genset_instructions: gensetInstructions(session, org, containers),
   };
+};
+
+type MockRequestT = ExecutionOrderT['requests'][number];
+
+const DOCUMENT_REQUEST_KINDS: readonly MockRequestT['kind'][] = [
+  'booking_amendment',
+  'booking_cancel',
+  'booking_new',
+];
+const CONTAINER_COUNT_DELTA: Partial<Record<MockRequestT['kind'], number>> = {
+  booking_new: 1,
+  booking_cancel: -1,
+};
+const DOCUMENT_ACTION_LABEL: Record<ForwarderDocumentActionT, string> = {
+  si_vgm_correction: 'SI·VGM 정정',
+  booking_change: '부킹 변경',
+};
+const PLAIN_TEXT: Record<string, string> = {
+  si_vgm_correction:
+    '배에 싣는 짐 목록과 무게 신고만 고칩니다. 배 자리 예약과 컨테이너 대수는 그대로입니다.',
+  booking_new:
+    '배에 싣는 냉장 컨테이너를 1대 늘립니다. 선사가 받아 주면 늘어난 컨테이너에 실어 보냅니다.',
+  booking_cancel:
+    '배에 싣던 냉장 컨테이너 1대를 뺍니다. 짐이 어디로 옮겨 가는지는 변경 내용에서 확인하세요.',
+  reefer_plug: '항구에 들어온 냉장 컨테이너에 바로 전기를 꽂아 달라고 터미널에 요청합니다.',
+  cy_entry: '트럭이 항구 장치장에 짐을 들여놓는 예약 시간을 바꿉니다.',
+  air_booking: '이 출하를 비행기로 보내려고 항공사에 화물칸 자리를 예약합니다.',
+  air_cancel: '잡아 둔 비행기 화물칸 자리를 취소합니다. 이 출하는 비행기로 가지 않습니다.',
+};
+
+const swappedIndexes = (requests: MockRequestT[], scenario: ScenarioT) => {
+  const kinds = new Map(scenario.containers.map(container => [container.id, container.kind]));
+  const groups = new Map<string, number[]>();
+  requests.forEach((request, index) => {
+    if (!DOCUMENT_REQUEST_KINDS.includes(request.kind)) return;
+    const kind = kinds.get(request.container_id ?? '');
+    if (!kind) return;
+    const key = `${request.voyage_id ?? ''}|${kind}`;
+    groups.set(key, [...(groups.get(key) ?? []), index]);
+  });
+
+  const swapped = new Set<number>();
+  groups.forEach(members => {
+    const delta = members.reduce(
+      (sum, index) => sum + (CONTAINER_COUNT_DELTA[requests[index].kind] ?? 0),
+      0
+    );
+    if (delta !== 0) return;
+    const cancels = members.filter(index => requests[index].kind === 'booking_cancel');
+    const news = members.filter(index => requests[index].kind === 'booking_new');
+    cancels.slice(0, news.length).forEach((index, pair) => {
+      swapped.add(index);
+      swapped.add(news[pair]);
+    });
+  });
+
+  return swapped;
+};
+
+const documentActionOf = (request: MockRequestT, swapped: boolean) => {
+  if (!DOCUMENT_REQUEST_KINDS.includes(request.kind)) return null;
+  if (swapped || !CONTAINER_COUNT_DELTA[request.kind]) return 'si_vgm_correction';
+
+  return 'booking_change';
+};
+
+export const withDocumentActions = async (
+  planId: string,
+  orders: ExecutionOrderT[]
+): Promise<ForwarderOrderT[]> => {
+  const { scenario } = (await demoPlan(planId)) as PlanSessionT;
+
+  return orders.map(order => {
+    const swapped = swappedIndexes(order.requests, scenario);
+
+    return {
+      ...order,
+      requests: order.requests.map((request, index) => {
+        const action = documentActionOf(request, swapped.has(index));
+
+        return {
+          ...request,
+          document_action: action,
+          document_action_label: action ? DOCUMENT_ACTION_LABEL[action] : null,
+          plain_text:
+            action === 'si_vgm_correction' ? PLAIN_TEXT[action] : PLAIN_TEXT[request.kind],
+        };
+      }),
+    } as ForwarderOrderT;
+  });
 };
 
 const normalized = (value: unknown) => {
@@ -291,15 +451,15 @@ const readablePlan = async (request: Request, planId: string) => {
   if (principal instanceof Response) return principal;
   if (!canReadPlan(planId, principal.org)) return fail(404, PLAN_NOT_FOUND);
 
-  return (await demoPlan(planId)) as PlanSessionT;
+  return { session: (await demoPlan(planId)) as PlanSessionT, org: principal.org };
 };
 
 export const executionNumberHandlers = [
   http.get(api('/saas/forwarder/plans/:planId/execution-card'), async ({ request, params }) => {
-    const session = await readablePlan(request, String(params.planId));
-    if (session instanceof Response) return session;
+    const readable = await readablePlan(request, String(params.planId));
+    if (readable instanceof Response) return readable;
 
-    return HttpResponse.json(buildCard(session));
+    return HttpResponse.json(buildCard(readable.session, readable.org));
   }),
 
   http.put(
@@ -307,8 +467,9 @@ export const executionNumberHandlers = [
     async ({ request, params }) => {
       const planId = String(params.planId);
       const containerId = String(params.containerId);
-      const session = await readablePlan(request, planId);
-      if (session instanceof Response) return session;
+      const readable = await readablePlan(request, planId);
+      if (readable instanceof Response) return readable;
+      const { session, org } = readable;
 
       const body = ((await request.json()) ?? {}) as Record<string, unknown>;
       const changes = new Map<NumberFieldT, string | null>();
@@ -321,7 +482,7 @@ export const executionNumberHandlers = [
         changes.set(field, value);
       }
 
-      const active = buildCard(session).containers.map(item => item.container_id);
+      const active = buildCard(session, org).containers.map(item => item.container_id);
       if (!active.includes(containerId)) return fail(404, CONTAINER_NOT_FOUND);
       if (!changes.size) return fail(422, NO_CHANGES);
 
@@ -352,7 +513,9 @@ export const executionNumberHandlers = [
       });
       entered.set(planId, planNumbers);
 
-      const saved = buildCard(session).containers.find(item => item.container_id === containerId);
+      const saved = buildCard(session, org).containers.find(
+        item => item.container_id === containerId
+      );
 
       return HttpResponse.json(saved);
     }
