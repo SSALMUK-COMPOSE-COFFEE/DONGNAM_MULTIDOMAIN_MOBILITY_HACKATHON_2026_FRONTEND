@@ -1,5 +1,6 @@
 'use client';
 
+import { isAxiosError } from 'axios';
 import { useState } from 'react';
 
 import { useLogin } from '@/apis/saas/auth';
@@ -8,6 +9,17 @@ import { FormField } from '@/app/(auth)/_components/form-field';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { isDemoEmail } from '@/consts/sandbox-saas';
+
+const DEMO_PASSWORD_LOGIN_MESSAGE =
+  "데모 계정은 비밀번호로 로그인할 수 없습니다. 오른쪽 '데모 계정으로 둘러보기'에서 역할을 고르세요.";
+
+const loginErrorMessage = (error: unknown, email: string) => {
+  if (isAxiosError(error) && error.response?.status === 401 && isDemoEmail(email))
+    return DEMO_PASSWORD_LOGIN_MESSAGE;
+
+  return authErrorMessage(error, '로그인하지 못했습니다. 잠시 뒤 다시 시도하세요.');
+};
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -47,7 +59,7 @@ export function LoginForm() {
 
       {login.isError && (
         <p role="alert" className="text-sm text-berry">
-          {authErrorMessage(login.error, '로그인하지 못했습니다. 잠시 뒤 다시 시도하세요.')}
+          {loginErrorMessage(login.error, login.variables?.email ?? email)}
         </p>
       )}
 

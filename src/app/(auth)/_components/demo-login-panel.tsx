@@ -6,7 +6,15 @@ import { useState } from 'react';
 import { useDemoLogin } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ORG_TYPES, SAAS_ROUTES } from '@/consts/route-saas';
+import { DEMO_SHIPPER_ORGS } from '@/consts/sandbox-saas';
 import type { OrgType } from '@/types/saas';
 
 const DEMO_DESCRIPTIONS: Record<OrgType, string> = {
@@ -19,31 +27,75 @@ export function DemoLoginPanel() {
   const demoLogin = useDemoLogin();
   const enterApp = useEnterApp();
   const [chosen, setChosen] = useState<OrgType | null>(null);
+  const [shipperOrgId, setShipperOrgId] = useState<string>(DEMO_SHIPPER_ORGS[0].org_id);
+  const [isPickingShipper, setIsPickingShipper] = useState(false);
+  const shipperOrg =
+    DEMO_SHIPPER_ORGS.find(({ org_id }) => org_id === shipperOrgId) ?? DEMO_SHIPPER_ORGS[0];
+
+  const enter = (orgType: OrgType) => {
+    setChosen(orgType);
+    demoLogin.mutate(
+      orgType === 'shipper'
+        ? { org_type: orgType, org_id: shipperOrg.org_id }
+        : { org_type: orgType },
+      { onSuccess: enterApp }
+    );
+  };
 
   return (
     <div className="flex flex-col gap-3">
       {ORG_TYPES.map(orgType => (
-        <button
-          key={orgType}
-          type="button"
-          disabled={demoLogin.isPending}
-          onClick={() => {
-            setChosen(orgType);
-            demoLogin.mutate({ org_type: orgType }, { onSuccess: enterApp });
-          }}
-          className={cn(
-            'flex flex-col items-start gap-1 rounded-xl border bg-white px-5 py-4 text-left transition-colors',
-            'hover:border-brand hover:bg-brand-soft disabled:opacity-50'
-          )}
-        >
-          <span className="flex items-center gap-2 text-lg font-bold text-navy">
-            {SAAS_ROUTES[orgType].label}
-            {demoLogin.isPending && chosen === orgType && (
-              <span className="text-sm font-medium text-muted-foreground">들어가는 중</span>
+        <div key={orgType} className="flex flex-col gap-2">
+          <button
+            type="button"
+            disabled={demoLogin.isPending}
+            onClick={() => enter(orgType)}
+            className={cn(
+              'flex flex-col items-start gap-1 rounded-xl border bg-white px-5 py-4 text-left transition-colors',
+              'hover:border-brand hover:bg-brand-soft disabled:opacity-50'
             )}
-          </span>
-          <span className="text-sm text-muted-foreground">{DEMO_DESCRIPTIONS[orgType]}</span>
-        </button>
+          >
+            <span className="flex items-center gap-2 text-lg font-bold text-navy">
+              {SAAS_ROUTES[orgType].label}
+              {orgType === 'shipper' && (
+                <span className="text-sm font-medium text-brand">{shipperOrg.org_name}</span>
+              )}
+              {demoLogin.isPending && chosen === orgType && (
+                <span className="text-sm font-medium text-muted-foreground">들어가는 중</span>
+              )}
+            </span>
+            <span className="text-sm text-muted-foreground">{DEMO_DESCRIPTIONS[orgType]}</span>
+          </button>
+
+          {orgType === 'shipper' && !isPickingShipper && (
+            <button
+              type="button"
+              disabled={demoLogin.isPending}
+              onClick={() => setIsPickingShipper(true)}
+              className="self-end px-1 text-sm font-bold text-brand disabled:opacity-50"
+            >
+              다른 화주로 바꾸기
+            </button>
+          )}
+          {orgType === 'shipper' && isPickingShipper && (
+            <Select
+              value={shipperOrg.org_id}
+              disabled={demoLogin.isPending}
+              onValueChange={setShipperOrgId}
+            >
+              <SelectTrigger aria-label="데모 화주 조직" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DEMO_SHIPPER_ORGS.map(({ org_id, org_name }) => (
+                  <SelectItem key={org_id} value={org_id}>
+                    {org_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       ))}
 
       {demoLogin.isError && (
