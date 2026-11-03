@@ -2,7 +2,6 @@
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
-import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 
 import { useMe } from '@/apis/saas/auth';
@@ -12,11 +11,11 @@ import { orgKeys } from '@/apis/saas/keys';
 import { usePlatformAlertStream, usePlatformSimulation } from '@/apis/saas/platform';
 import { settlementPreviewQueryOptions } from '@/apis/saas/platform-analysis';
 import { saasRetry } from '@/apis/saas/retry';
-import type { AlertT } from '@/types/api';
 import type { SaasSchemaT } from '@/types/api-saas';
 import type {
   ColdchainActionUpdateT,
   ColdchainResidualRiskT,
+  PlatformAlertT,
   PowerPlanT,
   TwinSummaryT,
 } from '@/types/saas-platform';
@@ -24,7 +23,7 @@ import type {
 export type ColdchainActionT = SaasSchemaT<'ColdchainAction'>;
 export type ColdchainActionStatusT = ColdchainActionT['status'];
 export type ColdchainRequestDraftT = SaasSchemaT<'RequestDraft'>;
-export type ColdchainAlertT = SaasSchemaT<'Alert'>;
+export type ColdchainAlertT = PlatformAlertT;
 export type ColdchainAlertFeedT = SaasSchemaT<'AlertFeed'>;
 export type ColdchainLossT = SaasSchemaT<'LossSummary'>;
 export type ColdchainLotLossT = SaasSchemaT<'LotLoss'>;
@@ -327,19 +326,7 @@ export const useDownloadContainerCsv = (planId: string, containerId: string) =>
     onError: (error, kind) => toastSaasError(`${CSV_LABEL[kind]}을 내려받지 못했습니다.`)(error),
   });
 
-const asColdchainAlert = (alert: AlertT) => alert as ColdchainAlertT;
-
-export const useColdchainAlertStream = (
-  planId: string,
-  onAlert?: (alert: ColdchainAlertT) => void
-) => {
-  const handleAlert = useCallback((alert: AlertT) => onAlert?.(asColdchainAlert(alert)), [onAlert]);
-  const stream = usePlatformAlertStream(planId, handleAlert);
-
-  const alerts = useMemo(() => stream.alerts.map(asColdchainAlert), [stream.alerts]);
-
-  return { ...stream, alerts };
-};
+export const useColdchainAlertStream = usePlatformAlertStream;
 
 export const openActionCount = (actions: readonly ColdchainActionT[]) =>
   actions.filter(action => action.status !== 'done').length;
