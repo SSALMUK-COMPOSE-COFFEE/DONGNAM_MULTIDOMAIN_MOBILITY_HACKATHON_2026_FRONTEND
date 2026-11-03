@@ -10,6 +10,9 @@ const menu = (page: Page, name: RegExp) =>
   page.getByRole('complementary', { name: '주 메뉴' }).getByRole('link', { name });
 
 const expectNoSeriousAxe = async (page: Page, screen: string, scope = 'main') => {
+  await page.waitForFunction(() =>
+    document.getAnimations().every(animation => animation.playState !== 'running')
+  );
   const result = await new AxeBuilder({ page }).include(scope).analyze();
   const blocking = result.violations
     .filter(({ impact }) => impact === 'serious' || impact === 'critical')
