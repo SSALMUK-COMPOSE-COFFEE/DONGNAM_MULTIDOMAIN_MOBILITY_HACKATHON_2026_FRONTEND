@@ -2,6 +2,10 @@ import { cn } from 'cn';
 import { CheckIcon } from 'lucide-react';
 
 import { ContainerLoadBar } from '@/components/container-load-bar';
+import {
+  type ReplanCurrentT,
+  SaasReplanAlternatives,
+} from '@/components/replan-alternatives/saas-alternatives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +40,11 @@ type ReplanAlternativesPropsT = {
    * 백엔드 cost_delta 는 지금 계획 대비라서, 모든 안에 똑같이 드는 비용(예: 항공 전환 운임)이 섞여 있을 때 쓴다
    */
   baselineAlternativeId?: AlternativeIdT;
+  variant?: 'demo' | 'saas';
+  current?: ReplanCurrentT | null;
 };
+
+export type { ReplanCurrentT } from '@/components/replan-alternatives/saas-alternatives';
 
 /** 재최적화 대안 3개(당겨 채우기·다음 배 이월·그대로 출항)를 비용·적재·화주 영향으로 비교한다 */
 export function ReplanAlternatives({
@@ -48,7 +56,25 @@ export function ReplanAlternatives({
   onApply,
   costDeltaLabel = '지금 계획 대비 총비용 변화',
   baselineAlternativeId,
+  variant = 'demo',
+  current = null,
 }: ReplanAlternativesPropsT) {
+  if (variant === 'saas') {
+    return (
+      <SaasReplanAlternatives
+        replan={replan}
+        scenario={scenario}
+        focusContainerId={focusContainerId}
+        appliedId={appliedId}
+        applyingId={applyingId}
+        onApply={onApply}
+        costDeltaLabel={costDeltaLabel}
+        baselineAlternativeId={baselineAlternativeId ?? null}
+        current={current}
+      />
+    );
+  }
+
   const baselineDelta =
     replan.alternatives.find(({ id }) => id === baselineAlternativeId)?.cost_delta ?? 0;
   const recommended = replan.alternatives.find(({ id }) => id === replan.recommended_id);

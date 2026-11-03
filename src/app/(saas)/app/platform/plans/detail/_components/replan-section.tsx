@@ -163,6 +163,8 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
           appliedId={flow.appliedId}
           applyingId={flow.applyingId}
           onApply={flow.applyAlternative}
+          variant="saas"
+          current={{ plan, routes: session.routes }}
         />
       )}
 
