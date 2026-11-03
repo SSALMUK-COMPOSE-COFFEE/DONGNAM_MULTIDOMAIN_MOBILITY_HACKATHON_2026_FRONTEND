@@ -81,6 +81,7 @@ export const useSaveExecutionNumbers = (planId: string) => {
       putExecutionNumbers(planId, containerId, numbers),
     onSuccess: saved => {
       queryClient.setQueryData(forwarderExecutionKeys.card(orgId, planId), withContainer(saved));
+      queryClient.invalidateQueries({ queryKey: forwarderExecutionKeys.card(orgId, planId) });
       queryClient.invalidateQueries({ queryKey: forwarderKeys.plan(orgId, planId), exact: true });
       toast.success(`${saved.container_id} 실행 번호를 저장했습니다.`);
     },
