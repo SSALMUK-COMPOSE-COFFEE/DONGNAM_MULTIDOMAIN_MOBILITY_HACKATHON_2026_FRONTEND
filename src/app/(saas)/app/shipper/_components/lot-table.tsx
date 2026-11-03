@@ -117,6 +117,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
             </span>
           )}
         </h2>
+        {lots.isCapped ? (
+          <span className="m2-chip m2-chip-warn">
+            최근 {lots.limit.toLocaleString('ko-KR')}건만 표시
+          </span>
+        ) : null}
         <div
           role="tablist"
           aria-label="출하 상태"
