@@ -3,9 +3,11 @@
 import Link from 'next/link';
 
 import {
+  CONFIRM_WAIT_LABEL,
   type MyPlanT,
   type OwnScopeT,
   baselineRowLabel,
+  confirmWaitOf,
 } from '@/app/(saas)/app/shipper/_components/my-plan';
 import {
   DecisionButtons,
@@ -25,17 +27,31 @@ import {
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import { CompareBars, M2_COLORS, SlotBar } from '@/components/map-hero';
 import { useMapLinkTarget } from '@/components/map-link';
+import type { ShipperOrderT } from '@/types/saas-shipper';
 import { planSessionLabel } from '@/utils/plan-label';
 
 export type { PendingConfirmationT } from '@/app/(saas)/app/shipper/_components/order-decision';
 
 const OTHER_SLOT_COLOR = '#c3c9d2';
 
-const headlineOf = ({ products, seaPallets, airPallets, voyage }: MyPlanT) => {
+const otherVoyagesText = ({ otherVoyages }: MyPlanT) =>
+  otherVoyages
+    .map(({ voyage, voyageId, pallets }) => {
+      const where = voyage ? `${voyage.vessel_name} ${fmtMonthDay(voyage.etd)}` : voyageId;
+
+      return `외 ${fmtCount(pallets)}파렛트는 ${where}`;
+    })
+    .join(', ');
+
+const headlineOf = (myPlan: MyPlanT) => {
+  const { products, firstVoyagePallets, airPallets, voyage } = myPlan;
   const names = products.map(({ name }) => name).join('·') || '내 출하';
 
-  if (seaPallets > 0 && voyage) {
-    return `${names} ${fmtCount(seaPallets)}파렛트가 ${fmtMonthDay(voyage.etd)} ${voyage.vessel_name}에 실립니다`;
+  if (firstVoyagePallets > 0 && voyage) {
+    const head = `${names} ${fmtCount(firstVoyagePallets)}파렛트가 ${fmtMonthDay(voyage.etd)} ${voyage.vessel_name}에 실립니다`;
+    const others = otherVoyagesText(myPlan);
+
+    return others ? `${head} · ${others}` : head;
   }
   if (airPallets > 0) return `${names} ${fmtCount(airPallets)}파렛트는 항공으로 보냅니다`;
 
@@ -99,6 +115,7 @@ type ShipperPlanCardPropsT = {
   myPlan: MyPlanT;
   own: OwnScopeT;
   pending: PendingConfirmationT[] | null;
+  orders: ShipperOrderT[] | null;
   showDetailLink?: boolean;
   showDecision?: boolean;
 };
@@ -107,6 +124,7 @@ export function ShipperPlanCard({
   myPlan,
   own,
   pending,
+  orders,
   showDetailLink = true,
   showDecision = true,
 }: ShipperPlanCardPropsT) {
@@ -114,10 +132,10 @@ export function ShipperPlanCard({
   const planId = session.plan_id;
   const items = pending ?? [];
   const decision = useOrderDecision(planId, showDecision ? items : []);
-  const ordersKnown = pending !== null;
+  const ordersKnown = pending !== null && orders !== null;
   const isPending = items.length > 0;
-  const waitingOthers = ordersKnown && !isPending && session.status === 'pending_confirmation';
-  const isConfirmed = ordersKnown && !isPending && !waitingOthers;
+  const wait = ordersKnown ? confirmWaitOf(session, orders, items.length) : null;
+  const isConfirmed = ordersKnown && !isPending && wait === null;
   const truckNote = firstStop
     ? `집하 트럭 ${firstStop.run.label}가 ${fmtMonthDayTime(firstStop.stop.eta)}에 들릅니다.`
     : '';
@@ -137,7 +155,7 @@ export function ShipperPlanCard({
               확정 대기
             </span>
           )}
-          {waitingOthers && <span className="m2-chip m2-chip-warn">다른 화주 확정 대기</span>}
+          {wait && <span className="m2-chip m2-chip-warn">{CONFIRM_WAIT_LABEL[wait]}</span>}
           {isConfirmed && (
             <span className="m2-chip m2-chip-ok">
               <span className="m2-dot" />
@@ -152,6 +170,21 @@ export function ShipperPlanCard({
 
       <h2 className="m2-h2 text-[18px]">{headlineOf(myPlan)}</h2>
       {condition && <div className="m2-sub">{condition}</div>}
+      {myPlan.otherVoyages.map(
+        ({ voyageId, voyage, pallets, containerIds, pickupEta, truckLabel }) => (
+          <div key={voyageId} className="m2-sub m2-num">
+            {[
+              voyage ? `${fmtMonthDay(voyage.etd)} ${voyage.vessel_name}` : voyageId,
+              containerIds.join('·'),
+              `${fmtCount(pallets)}파렛트`,
+              pickupEta ? `집하 ${fmtMonthDayTime(pickupEta)}` : '',
+              truckLabel ? `트럭 ${truckLabel}` : '',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </div>
+        )
+      )}
 
       {items.map(({ order, confirmation }) => (
         <div key={`${order.order_id}:${confirmation.shipper_id}`} className="m2-note">

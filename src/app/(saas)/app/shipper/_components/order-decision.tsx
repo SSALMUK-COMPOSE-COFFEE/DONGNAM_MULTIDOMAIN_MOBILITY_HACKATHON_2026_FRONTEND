@@ -23,6 +23,25 @@ type DecisionT = { accept: boolean; note: string | null };
 
 const REASON_MAX = 300;
 
+const REJECTED_MESSAGE = '계획을 거절했습니다. 플랫폼이 다시 계획을 짭니다.';
+
+const latestPerOrder = (responses: ShipperOrderT[]) => [
+  ...new Map(responses.map(order => [order.order_id, order])).values(),
+];
+
+const acceptedMessage = (responses: ShipperOrderT[]) => {
+  const orders = latestPerOrder(responses);
+
+  if (orders.some(({ status }) => status === 'proposed')) {
+    return '수락했습니다. 다른 화주 확정을 기다립니다.';
+  }
+  if (orders.some(({ status }) => status === 'shipper_confirmed')) {
+    return '수락했습니다. 포워더 확정을 기다립니다.';
+  }
+
+  return '계획을 확정했습니다.';
+};
+
 export const useOrderDecision = (planId: string, items: PendingConfirmationT[]) => {
   const orgId = useShipperOrgId();
   const queryClient = useQueryClient();
@@ -31,22 +50,24 @@ export const useOrderDecision = (planId: string, items: PendingConfirmationT[]) 
   const [reason, setReason] = useState('');
 
   const mutation = useMutation({
-    mutationFn: ({ accept, note }: DecisionT) =>
-      Promise.all(
-        items.map(({ order, confirmation }) =>
-          postShipperOrderConfirm(planId, order.order_id, {
+    mutationFn: async ({ accept, note }: DecisionT) => {
+      const responses: ShipperOrderT[] = [];
+      for (const { order, confirmation } of items) {
+        responses.push(
+          await postShipperOrderConfirm(planId, order.order_id, {
             accept,
             note,
             shipper_id: confirmation.shipper_id,
           })
-        )
-      ),
-    onSuccess: (_orders, { accept }) => {
+        );
+      }
+
+      return responses;
+    },
+    onSuccess: (orders, { accept }) => {
       setRejecting(false);
       setReason('');
-      toast.success(
-        accept ? '계획을 확정했습니다.' : '계획을 거절했습니다. 플랫폼이 다시 계획을 짭니다.'
-      );
+      toast.success(accept ? acceptedMessage(orders) : REJECTED_MESSAGE);
     },
     onSettled: () => {
       invalidatePlan(planId);

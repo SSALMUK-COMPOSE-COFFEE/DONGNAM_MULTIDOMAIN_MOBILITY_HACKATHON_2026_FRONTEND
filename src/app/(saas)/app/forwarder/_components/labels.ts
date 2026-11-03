@@ -19,6 +19,14 @@ export const OPEN_ORDER_STATUSES: readonly ForwarderOrderT['status'][] = [
   'shipper_confirmed',
 ];
 
+export const pendingReplyCount = (order: ForwarderOrderT) =>
+  order.status === 'forwarder_confirmed'
+    ? order.requests.filter(({ status }) => (status ?? 'pending') === 'pending').length
+    : 0;
+
+export const isOrderInProgress = (order: ForwarderOrderT) =>
+  OPEN_ORDER_STATUSES.includes(order.status) || pendingReplyCount(order) > 0;
+
 export const ORDER_PRIORITY: Record<ForwarderOrderT['status'], number> = {
   shipper_confirmed: 0,
   proposed: 1,

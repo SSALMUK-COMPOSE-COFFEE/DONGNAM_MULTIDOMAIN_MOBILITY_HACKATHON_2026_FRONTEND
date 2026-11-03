@@ -8,6 +8,7 @@ import { getActiveOrgId, useActiveOrgStore } from '@/apis/saas/active-org';
 import { saasApi } from '@/apis/saas/client';
 import { orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
+import { useDemoOrgStore } from '@/app/(saas)/app/_components/demo-org-store';
 import { SAAS_ENDPOINTS } from '@/consts/api-saas';
 import type { DemoLoginRequest, LoginRequest, Me, OrgType, SignupRequest } from '@/types/saas';
 
@@ -91,7 +92,10 @@ export const useDemoLogin = () => {
   return useMutation({
     mutationFn: (request: OrgType | DemoLoginRequest) =>
       postDemoLogin(typeof request === 'string' ? { org_type: request } : request),
-    onSuccess: startSession,
+    onSuccess: (me: Me) => {
+      useDemoOrgStore.getState().remember(me.active_org.org_type, me.active_org.org_id);
+      startSession(me);
+    },
   });
 };
 

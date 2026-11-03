@@ -20,6 +20,7 @@ import { ForwarderPageHeader } from '@/app/(saas)/app/forwarder/_components/forw
 import {
   CLOSED_ORDER_STATUSES,
   ORDER_STATUS_LABEL,
+  isOrderInProgress,
   latestOrder,
   planStatusLabel,
 } from '@/app/(saas)/app/forwarder/_components/labels';
@@ -91,8 +92,7 @@ const buildSteps = (
   now: number | null
 ): StepItemT[] => {
   const { order } = orders;
-  const orderOpen =
-    !!order && (order.status === 'proposed' || order.status === 'shipper_confirmed');
+  const orderOpen = !!order && isOrderInProgress(order);
   const cyPassed = passed(voyage?.cy_cutoff, now);
   const etdPassed = passed(voyage?.etd, now);
   const progress = order ? orderProgress(order) : null;

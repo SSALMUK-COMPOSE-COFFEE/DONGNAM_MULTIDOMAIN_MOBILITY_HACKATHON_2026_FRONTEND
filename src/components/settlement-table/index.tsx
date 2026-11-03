@@ -15,6 +15,7 @@ import { getOtherShipperLabel, getShipperName } from '@/utils/scenario';
 const BASIS_LABEL: Record<string, string> = {
   tariff: '정산표 단가',
   operational: '운영비 기준',
+  mixed: '혼합',
 };
 type SettlementTablePropsT = {
   containerSettlements: ContainerSettlementT[];

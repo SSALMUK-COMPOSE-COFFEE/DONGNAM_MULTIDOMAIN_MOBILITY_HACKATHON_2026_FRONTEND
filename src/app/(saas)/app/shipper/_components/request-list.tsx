@@ -65,16 +65,36 @@ const requestTextOf = (request: ShipperRequestT, labels: LotLabelMapT) => {
 const requestStatusLabel = (request: ShipperRequestT) =>
   request.status === 'pending' ? '마감' : REQUEST_STATUS_LABEL[request.status];
 
-const awaitingForwarderLabel = (order: ShipperOrderT) =>
-  order.status === 'forwarder_confirmed' ? '포워더 회신 대기' : '포워더 확정 대기';
+const hasMyPendingConfirmation = (order: ShipperOrderT, ownShipperIds: readonly string[]) =>
+  order.shipper_confirmations.some(
+    ({ status, shipper_id }) => status === 'pending' && ownShipperIds.includes(shipper_id)
+  );
+
+const awaitingForwarderLabel = (order: ShipperOrderT, ownShipperIds: readonly string[]) => {
+  if (order.status === 'forwarder_confirmed') return '포워더 회신 대기';
+  if (order.status === 'shipper_confirmed') return '포워더 확정 대기';
+  if (order.status === 'proposed' && hasMyPendingConfirmation(order, ownShipperIds)) {
+    return '내 확정 대기';
+  }
+
+  return '화주 확정 후 발송';
+};
 
 type RequestListPropsT = {
   items: RequestItemT[];
   emptyText: string;
   labels?: LotLabelMapT;
+  ownShipperIds?: readonly string[];
 };
 
-export function RequestList({ items, emptyText, labels = NO_LABELS }: RequestListPropsT) {
+const NO_SHIPPERS: readonly string[] = [];
+
+export function RequestList({
+  items,
+  emptyText,
+  labels = NO_LABELS,
+  ownShipperIds = NO_SHIPPERS,
+}: RequestListPropsT) {
   const answer = useAnswerShipperRequest();
 
   if (items.length === 0) return <p className="m2-sub mt-0">{emptyText}</p>;
@@ -94,7 +114,7 @@ export function RequestList({ items, emptyText, labels = NO_LABELS }: RequestLis
         const { order, request } = item;
         const canAnswer = isRequestAnswerable(order, request);
         const statusLabel = isRequestAwaitingForwarder(order, request)
-          ? awaitingForwarderLabel(order)
+          ? awaitingForwarderLabel(order, ownShipperIds)
           : requestStatusLabel(request);
         const isBusy = answer.isPending && answer.variables?.requestId === request.request_id;
 

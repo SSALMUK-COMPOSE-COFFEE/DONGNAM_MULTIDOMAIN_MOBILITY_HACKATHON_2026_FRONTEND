@@ -5,14 +5,14 @@ import {
   buildPlanScene,
 } from '@/components/map-hero/scene';
 import type { ContainerLoadT, PlanSessionT, SchemaT, TariffSheetT } from '@/types/api';
-import type { ShipperCatalogT, ShipperOrderT } from '@/types/saas-shipper';
+import type { ShipperCatalogT, ShipperOrderT, ShipperSettlementT } from '@/types/saas-shipper';
 
 export type OwnScopeT = {
   shipperIds: string[];
   packhouseIds: string[];
 };
 
-export const ownScopeOf = (catalog: ShipperCatalogT | null | undefined): OwnScopeT => ({
+export const ownScopeOf = (catalog?: ShipperCatalogT | null): OwnScopeT => ({
   shipperIds: (catalog?.shippers ?? []).map(({ id }) => id),
   packhouseIds: [...new Set((catalog?.shippers ?? []).map(({ packhouse_id }) => packhouse_id))],
 });
@@ -34,6 +34,7 @@ export type MySettlementT = {
   savings: number;
   fee: number;
   gain: number;
+  refund: number;
   baselineLabel: string | null;
   baselineKind: string | null;
   performanceOnly: boolean;
@@ -45,6 +46,15 @@ const stringField = (row: object, key: string) => {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 };
 
+export type OtherVoyageT = {
+  voyage: SchemaT<'Voyage'> | null;
+  voyageId: string;
+  pallets: number;
+  containerIds: string[];
+  pickupEta: string | null;
+  truckLabel: string | null;
+};
+
 export type MyPlanT = {
   session: PlanSessionT;
   scene: MapSceneT;
@@ -52,6 +62,8 @@ export type MyPlanT = {
   destinationName: string;
   assignments: SchemaT<'Assignment'>[];
   seaPallets: number;
+  firstVoyagePallets: number;
+  otherVoyages: OtherVoyageT[];
   airPallets: number;
   container: ContainerLoadT | null;
   containerKind: string | null;
@@ -143,6 +155,7 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
           savings: sum.savings + row.savings,
           fee: sum.fee + row.fee,
           gain: sum.gain + row.shipper_gain,
+          refund: 0,
           baselineLabel:
             sum.baselineLabel ??
             stringField(row, 'baseline_label') ??
@@ -159,6 +172,7 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
           savings: 0,
           fee: 0,
           gain: 0,
+          refund: 0,
           baselineLabel: null,
           baselineKind: null,
           performanceOnly: true,
@@ -175,6 +189,28 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
       .sort()[0] ?? null;
 
   const assignmentByLot = new Map(assignments.map(item => [item.lot_id, item]));
+  const palletsOf = (items: SchemaT<'Assignment'>[]) =>
+    items.reduce((sum, { pallets }) => sum + pallets, 0);
+  const otherVoyages: OtherVoyageT[] = uniq(
+    sea.map(({ voyage_id }) => voyage_id ?? '').filter(id => id && id !== voyageId)
+  ).map(id => {
+    const items = sea.filter(({ voyage_id }) => voyage_id === id);
+    const pickup = base.allRuns
+      .filter(run => run.voyageId === id)
+      .flatMap(run =>
+        run.stops.filter(stop => ownPackhouses.has(stop.packhouseId)).map(stop => ({ stop, run }))
+      )
+      .sort((a, b) => a.stop.eta.localeCompare(b.stop.eta))[0];
+
+    return {
+      voyage: voyageById.get(id) ?? null,
+      voyageId: id,
+      pallets: palletsOf(items),
+      containerIds: uniq(items.map(({ container_id }) => container_id ?? '').filter(Boolean)),
+      pickupEta: pickup?.stop.eta ?? null,
+      truckLabel: pickup?.run.label ?? null,
+    };
+  });
 
   return {
     session,
@@ -184,7 +220,9 @@ export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
       ? (scenario.ports.find(({ id }) => id === voyage.destination)?.name ?? voyage.destination)
       : '',
     assignments,
-    seaPallets: sea.reduce((sum, { pallets }) => sum + pallets, 0),
+    seaPallets: palletsOf(sea),
+    firstVoyagePallets: palletsOf(sea.filter(({ voyage_id }) => voyage_id === voyageId)),
+    otherVoyages,
     airPallets: assignments
       .filter(({ mode }) => mode === 'air')
       .reduce((sum, { pallets }) => sum + pallets, 0),
@@ -235,4 +273,68 @@ export const myPendingConfirmations = (orders: ShipperOrderT[], own: OwnScopeT) 
         .filter(({ status, shipper_id }) => status === 'pending' && ownShippers.has(shipper_id))
         .map(confirmation => ({ order, confirmation }))
     );
+};
+
+export type ConfirmWaitT = 'forwarder' | 'others' | null;
+
+const OPEN_CONFIRM_STATUSES: readonly ShipperOrderT['status'][] = ['proposed', 'shipper_confirmed'];
+
+export const activeOrderOf = (session: PlanSessionT, orders: ShipperOrderT[]) => {
+  const byId = session.active_order_id
+    ? orders.find(({ order_id }) => order_id === session.active_order_id)
+    : null;
+
+  if (byId) return byId;
+
+  return (
+    orders
+      .filter(({ status }) => OPEN_CONFIRM_STATUSES.includes(status))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null
+  );
+};
+
+export const confirmWaitOf = (
+  session: PlanSessionT,
+  orders: ShipperOrderT[],
+  pendingCount: number
+): ConfirmWaitT => {
+  if (pendingCount > 0) return null;
+
+  const status = activeOrderOf(session, orders)?.status ?? null;
+
+  if (status === 'shipper_confirmed') return 'forwarder';
+  if (status === 'proposed') return 'others';
+  if (status === null && session.status === 'pending_confirmation') return 'others';
+
+  return null;
+};
+
+export const CONFIRM_WAIT_LABEL: Record<Exclude<ConfirmWaitT, null>, string> = {
+  forwarder: '포워더 확정 대기',
+  others: '다른 화주 확정 대기',
+};
+
+export const withSettlementRows = (
+  settlement: MySettlementT | null,
+  session: PlanSessionT,
+  rows?: ShipperSettlementT[] | null
+): MySettlementT | null => {
+  const forPlan = (rows ?? []).filter(({ plan_id }) => plan_id === session.plan_id);
+  const sameVersion = forPlan.filter(({ version }) => version === session.version);
+  const picked = sameVersion.length > 0 ? sameVersion : forPlan;
+
+  if (!settlement || picked.length === 0) return settlement;
+
+  const sum = (pick: (row: ShipperSettlementT) => number) =>
+    picked.reduce((total, row) => total + pick(row), 0);
+
+  return {
+    ...settlement,
+    baseline: sum(({ baseline_cost }) => baseline_cost),
+    shared: sum(({ shared_cost }) => shared_cost),
+    savings: sum(({ savings }) => savings),
+    fee: sum(({ fee }) => fee),
+    gain: sum(({ shipper_gain }) => shipper_gain),
+    refund: sum(({ quality_refund }) => quality_refund),
+  };
 };

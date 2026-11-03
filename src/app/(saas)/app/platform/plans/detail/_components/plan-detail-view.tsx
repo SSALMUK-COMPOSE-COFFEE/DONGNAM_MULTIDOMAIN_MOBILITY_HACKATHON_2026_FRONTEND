@@ -4,7 +4,7 @@ import { isAxiosError } from 'axios';
 import { cn } from 'cn';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { usePlatformPlan, usePlatformPlans } from '@/apis/saas/platform';
 import { ContainerPlanCard } from '@/app/(saas)/app/platform/_components/container-plan-card';
@@ -28,6 +28,10 @@ import {
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
+import {
+  SceneVoyageTabs,
+  buildPickedScene,
+} from '@/app/(saas)/app/platform/_components/scene-voyage-tabs';
 import { SettlementPreviewCard } from '@/app/(saas)/app/platform/_components/settlement-preview-card';
 import { ArrivalInspectionCard } from '@/app/(saas)/app/platform/plans/detail/_components/arrival-inspection-card';
 import { BenchmarkCard } from '@/app/(saas)/app/platform/plans/detail/_components/benchmark-card';
@@ -38,7 +42,7 @@ import { ProvenanceCard } from '@/app/(saas)/app/platform/plans/detail/_componen
 import { ReplanSection } from '@/app/(saas)/app/platform/plans/detail/_components/replan-section';
 import { ShipperSavingsCard } from '@/app/(saas)/app/platform/plans/detail/_components/shipper-savings-card';
 import { TariffSheetCard } from '@/app/(saas)/app/platform/plans/detail/_components/tariff-sheet-card';
-import { type StepItemT, Steps, buildPlanScene } from '@/components/map-hero';
+import { type StepItemT, Steps } from '@/components/map-hero';
 import { MapLinkProvider, useMapLinkTarget } from '@/components/map-link';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -100,7 +104,11 @@ export function PlanDetailView() {
 function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSessionT }) {
   const plansQuery = usePlatformPlans();
   const planItem = plansQuery.data?.find(item => item.plan_id === planId) ?? null;
-  const scene = useMemo(() => buildPlanScene(session), [session]);
+  const [pickedVoyageId, setPickedVoyageId] = useState<string | null>(null);
+  const scene = useMemo(
+    () => buildPickedScene(session, {}, pickedVoyageId),
+    [session, pickedVoyageId]
+  );
   const voyage = voyageView(session);
   const { plan } = session;
   const totalPallets = [...plan.assignments, ...plan.unassigned].reduce(
@@ -161,6 +169,8 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
 
       <Steps items={steps} />
 
+      <SceneVoyageTabs scene={scene} onPick={setPickedVoyageId} />
+
       <PlanHero
         source={session}
         sceneSource={session}
@@ -174,7 +184,7 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
       <SectionErrorBoundary message="계획 상세를 그리지 못했습니다." className="h-96">
         <div className="m2-grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] max-[1400px]:grid-cols-1">
           <div className="m2-col">
-            <PlanLotsCard session={session} runs={scene.runs} />
+            <PlanLotsCard session={session} runs={scene.allRuns} />
             <ShipperSavingsCard session={session} />
           </div>
           <div className="m2-col">

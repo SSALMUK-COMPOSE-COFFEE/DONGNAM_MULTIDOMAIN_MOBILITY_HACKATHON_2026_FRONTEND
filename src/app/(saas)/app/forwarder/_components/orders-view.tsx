@@ -8,10 +8,11 @@ import { ForwarderOrderPanel } from '@/app/(saas)/app/forwarder/_components/forw
 import { ForwarderPageHeader } from '@/app/(saas)/app/forwarder/_components/forwarder-page-header';
 import { FORWARDER_PATHS } from '@/app/(saas)/app/forwarder/_components/forwarder-paths';
 import {
-  OPEN_ORDER_STATUSES,
   ORDER_PRIORITY,
   ORDER_STATUS_LABEL,
+  isOrderInProgress,
   latestOrder,
+  pendingReplyCount,
 } from '@/app/(saas)/app/forwarder/_components/labels';
 import { EmptyState, QueryError } from '@/app/(saas)/app/forwarder/_components/query-state';
 import { useForwarderOrgName } from '@/app/(saas)/app/forwarder/_components/use-org-name';
@@ -68,15 +69,16 @@ export function OrdersView() {
     return order ? [{ plan, order, history: (orders?.length ?? 1) - 1 }] : [];
   });
   const open = items
-    .filter(({ order }) => OPEN_ORDER_STATUSES.includes(order.status))
+    .filter(({ order }) => isOrderInProgress(order))
     .sort((a, b) => ORDER_PRIORITY[a.order.status] - ORDER_PRIORITY[b.order.status]);
-  const closed = items.filter(({ order }) => !OPEN_ORDER_STATUSES.includes(order.status));
+  const closed = items.filter(({ order }) => !isOrderInProgress(order));
   const awaiting = open.filter(({ order }) => order.status === 'shipper_confirmed').length;
+  const replies = open.filter(({ order }) => pendingReplyCount(order) > 0).length;
 
   return (
     <>
       {header(
-        `진행 중 ${open.length}건 · 내 확정 대기 ${awaiting}건 · 끝난 지시 ${closed.length}건`
+        `진행 중 ${open.length}건 · 내 확정 대기 ${awaiting}건 · 회신 대기 ${replies}건 · 끝난 지시 ${closed.length}건`
       )}
 
       <div className="flex flex-col gap-4">

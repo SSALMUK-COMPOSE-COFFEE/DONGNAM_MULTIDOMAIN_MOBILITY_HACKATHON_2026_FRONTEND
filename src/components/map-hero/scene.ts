@@ -185,10 +185,19 @@ export type SceneAirT = {
 
 export type SceneGateWindowT = { start: string; end: string; label: string };
 
+export type SceneVoyageT = {
+  key: string;
+  vesselName: string;
+  etd: string;
+};
+
 export type MapSceneT = {
   port: ScenePortT | null;
   places: ScenePlaceT[];
   runs: SceneRunT[];
+  allRuns: SceneRunT[];
+  voyageId: string | null;
+  voyages: SceneVoyageT[];
   seaLane: SceneSeaLaneT | null;
   containers: SceneContainerT[];
   air: SceneAirT[];
@@ -201,6 +210,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const SO2_CARGO_GROUP = 'grape_so2';
 const ANON_PREFIX = 'anon-';
 const OTHER_SHIPPER_LABEL = '다른 화주';
+const OTHER_VOYAGE_LABEL = '다른 항차';
 
 export const hasPosition = (point: { lat: number | null; lon: number | null } | null | undefined) =>
   !!point &&
@@ -243,6 +253,12 @@ const minIso = (values: string[]) => {
   if (valid.length === 0) return null;
 
   return valid.reduce((min, value) => (Date.parse(value) < Date.parse(min) ? value : min));
+};
+
+const placeSublabelOf = (hasCargo: boolean, onOtherVoyage: boolean, parts: string[]) => {
+  if (hasCargo) return parts.join(' · ');
+
+  return onOtherVoyage ? OTHER_VOYAGE_LABEL : '이번 계획에서 제외';
 };
 
 export function buildPlanScene(
@@ -301,7 +317,7 @@ export function buildPlanScene(
     })
   );
 
-  const runs: SceneRunT[] = routes.flatMap(({ voyage_id, pickup }) =>
+  const allRuns: SceneRunT[] = routes.flatMap(({ voyage_id, pickup }) =>
     pickup.routes.map(route => {
       const key = runKeyOf(voyage_id, route.truck_id, route.trip);
       const sortedStops = [...route.stops].sort((a, b) => a.sequence - b.sequence);
@@ -362,6 +378,18 @@ export function buildPlanScene(
     })
   );
 
+  const runs = voyageId ? allRuns.filter(run => run.voyageId === voyageId) : allRuns;
+  const voyageById = new Map(scenario.voyages.map(item => [item.id, item]));
+  const voyages: SceneVoyageT[] = uniq([
+    ...routes.filter(({ pickup }) => pickup.routes.length > 0).map(({ voyage_id }) => voyage_id),
+    ...usedContainers.map(({ voyage_id }) => voyage_id),
+  ])
+    .flatMap(id => {
+      const item = voyageById.get(id);
+      return item ? [{ key: item.id, vesselName: item.vessel_name, etd: item.etd }] : [];
+    })
+    .sort((a, b) => a.etd.localeCompare(b.etd));
+
   const packhouseOfLot = (lotId: string) => {
     const lot = lotById.get(lotId);
     const shipper = lot ? shipperById.get(lot.shipper_id) : null;
@@ -387,7 +415,7 @@ export function buildPlanScene(
     });
 
   const placeIds = uniq([
-    ...runs.flatMap(({ stopKeys }) => stopKeys),
+    ...allRuns.flatMap(({ stopKeys }) => stopKeys),
     ...air.flatMap(({ packhouseId }) => (packhouseId ? [packhouseId] : [])),
     ...(options.includePackhouseIds ?? []),
   ]);
@@ -422,6 +450,8 @@ export function buildPlanScene(
     const containerIds = containersOfLots(lotIds);
     const readyAt = minIso(visits.map(visit => visit.readyAt));
     const onRoute = visits.length > 0;
+    const onOtherVoyage =
+      !onRoute && runs !== allRuns && allRuns.some(run => run.stopKeys.includes(packhouseId));
     const sublabelParts = [
       pallets > 0 ? `${pallets}P${airPallets > 0 ? `(+${airPallets}P 항공)` : ''}` : '',
       pallets === 0 && airPallets > 0 ? `${airPallets}P 항공` : '',
@@ -441,7 +471,7 @@ export function buildPlanScene(
         pallets,
         airPallets,
         radius: placeRadius(pallets + airPallets),
-        sublabel: onRoute || airPallets > 0 ? sublabelParts.join(' · ') : '이번 계획에서 제외',
+        sublabel: placeSublabelOf(onRoute || airPallets > 0, onOtherVoyage, sublabelParts),
         dim: anonymous || dimIds.has(packhouseId) || (!onRoute && airPallets === 0),
         anonymous,
         onRoute,
@@ -529,6 +559,9 @@ export function buildPlanScene(
     port,
     places,
     runs,
+    allRuns,
+    voyageId,
+    voyages,
     seaLane,
     containers,
     air,

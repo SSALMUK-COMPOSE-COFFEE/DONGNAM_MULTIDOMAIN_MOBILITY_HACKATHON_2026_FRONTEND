@@ -10,9 +10,15 @@ import { meQueryOptions, useDemoLogin } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
 import { roleLinkKeys, useShowcaseScene } from '@/app/(auth)/_components/use-showcase-scene';
+import { type DemoOrgRoleT, isDemoOrgRole } from '@/app/(saas)/app/_components/demo-org-store';
 import { useMapLinkTarget } from '@/components/map-link';
 import { ORG_TYPES, SAAS_ROUTES, roleHome } from '@/consts/route-saas';
-import { DEMO_FORWARDER_ORGS, DEMO_PLATFORM_ORG, DEMO_SHIPPER_ORGS } from '@/consts/sandbox-saas';
+import {
+  DEMO_FORWARDER_ORGS,
+  DEMO_PLATFORM_ORG,
+  DEMO_SHIPPER_ORGS,
+  type DemoOrgOptionT,
+} from '@/consts/sandbox-saas';
 import type { OrgType } from '@/types/saas';
 
 const DEMO_DESCRIPTIONS: Record<OrgType, string> = {
@@ -80,6 +86,52 @@ function RoleButton({
   );
 }
 
+type OrgPickerT = {
+  label: string;
+  action: string;
+  options: readonly DemoOrgOptionT[];
+  value: string;
+  onChange: (orgId: string) => void;
+};
+
+type OrgPickerPropsT = {
+  picker: OrgPickerT;
+  isOpen: boolean;
+  disabled: boolean;
+  onOpen: () => void;
+};
+
+function OrgPicker({ picker, isOpen, disabled, onOpen }: OrgPickerPropsT) {
+  if (!isOpen) {
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onOpen}
+        className="self-end px-1 text-[12.5px] font-semibold text-m2-brand-ink disabled:opacity-50"
+      >
+        {picker.action}
+      </button>
+    );
+  }
+
+  return (
+    <select
+      aria-label={picker.label}
+      className="m2-inp w-full"
+      value={picker.value}
+      disabled={disabled}
+      onChange={event => picker.onChange(event.target.value)}
+    >
+      {picker.options.map(({ org_id, org_name }) => (
+        <option key={org_id} value={org_id}>
+          {org_name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export function DemoLoginPanel() {
   const demoLogin = useDemoLogin();
   const enterApp = useEnterApp();
@@ -87,20 +139,42 @@ export function DemoLoginPanel() {
   const { scene } = useShowcaseScene();
   const [chosen, setChosen] = useState<OrgType | null>(null);
   const [shipperOrgId, setShipperOrgId] = useState<string>(DEMO_SHIPPER_ORGS[0].org_id);
-  const [isPickingShipper, setIsPickingShipper] = useState(false);
+  const [forwarderOrgId, setForwarderOrgId] = useState<string>(DEMO_FORWARDER_ORGS[0].org_id);
+  const [picking, setPicking] = useState<Record<DemoOrgRoleT, boolean>>({
+    shipper: false,
+    forwarder: false,
+  });
   const shipperOrg =
     DEMO_SHIPPER_ORGS.find(({ org_id }) => org_id === shipperOrgId) ?? DEMO_SHIPPER_ORGS[0];
+  const forwarderOrg =
+    DEMO_FORWARDER_ORGS.find(({ org_id }) => org_id === forwarderOrgId) ?? DEMO_FORWARDER_ORGS[0];
   const orgNames: Record<OrgType, string> = {
     platform: DEMO_PLATFORM_ORG.org_name,
     shipper: shipperOrg.org_name,
-    forwarder: DEMO_FORWARDER_ORGS[0].org_name,
+    forwarder: forwarderOrg.org_name,
+  };
+  const pickers: Record<DemoOrgRoleT, OrgPickerT> = {
+    shipper: {
+      label: '데모 화주 조직',
+      action: '다른 화주로 바꾸기',
+      options: DEMO_SHIPPER_ORGS,
+      value: shipperOrg.org_id,
+      onChange: setShipperOrgId,
+    },
+    forwarder: {
+      label: '데모 포워더 조직',
+      action: '다른 포워더로 바꾸기',
+      options: DEMO_FORWARDER_ORGS,
+      value: forwarderOrg.org_id,
+      onChange: setForwarderOrgId,
+    },
   };
 
   const enter = (orgType: OrgType) => {
     setChosen(orgType);
     demoLogin.mutate(
-      orgType === 'shipper'
-        ? { org_type: orgType, org_id: shipperOrg.org_id }
+      isDemoOrgRole(orgType)
+        ? { org_type: orgType, org_id: pickers[orgType].value }
         : { org_type: orgType },
       { onSuccess: enterApp }
     );
@@ -136,30 +210,13 @@ export function DemoLoginPanel() {
             onEnter={() => enter(orgType)}
           />
 
-          {orgType === 'shipper' && !isPickingShipper && (
-            <button
-              type="button"
+          {isDemoOrgRole(orgType) && (
+            <OrgPicker
+              picker={pickers[orgType]}
+              isOpen={picking[orgType]}
               disabled={demoLogin.isPending}
-              onClick={() => setIsPickingShipper(true)}
-              className="self-end px-1 text-[12.5px] font-semibold text-m2-brand-ink disabled:opacity-50"
-            >
-              다른 화주로 바꾸기
-            </button>
-          )}
-          {orgType === 'shipper' && isPickingShipper && (
-            <select
-              aria-label="데모 화주 조직"
-              className="m2-inp w-full"
-              value={shipperOrg.org_id}
-              disabled={demoLogin.isPending}
-              onChange={event => setShipperOrgId(event.target.value)}
-            >
-              {DEMO_SHIPPER_ORGS.map(({ org_id, org_name }) => (
-                <option key={org_id} value={org_id}>
-                  {org_name}
-                </option>
-              ))}
-            </select>
+              onOpen={() => setPicking(state => ({ ...state, [orgType]: true }))}
+            />
           )}
         </div>
       ))}

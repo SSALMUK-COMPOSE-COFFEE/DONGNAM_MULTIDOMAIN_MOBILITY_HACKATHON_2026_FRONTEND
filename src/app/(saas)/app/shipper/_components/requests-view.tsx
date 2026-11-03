@@ -6,6 +6,7 @@ import { type ReactNode, useMemo } from 'react';
 
 import { useShipperCatalog, useShipperLots } from '@/apis/saas/shipper';
 import { lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { ownScopeOf } from '@/app/(saas)/app/shipper/_components/my-plan';
 import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import {
   CardSkeleton,
@@ -50,6 +51,7 @@ export function RequestsView() {
     () => lotLabelMap(lots.data, catalog.data ?? null),
     [lots.data, catalog.data]
   );
+  const ownShipperIds = useMemo(() => ownScopeOf(catalog.data).shipperIds, [catalog.data]);
 
   if (plans.isError) {
     return (
@@ -165,11 +167,16 @@ export function RequestsView() {
         <Section
           title={
             <>
-              포워더 처리 대기 <span className="m2-num text-m2-muted">{awaiting.length}</span>건
+              발송·처리 대기 <span className="m2-num text-m2-muted">{awaiting.length}</span>건
             </>
           }
         >
-          <RequestList items={awaiting} labels={labels} emptyText="" />
+          <RequestList
+            items={awaiting}
+            labels={labels}
+            ownShipperIds={ownShipperIds}
+            emptyText=""
+          />
         </Section>
       )}
 

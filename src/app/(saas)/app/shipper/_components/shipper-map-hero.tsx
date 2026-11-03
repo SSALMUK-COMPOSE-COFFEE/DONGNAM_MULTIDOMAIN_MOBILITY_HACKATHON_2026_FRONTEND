@@ -2,12 +2,14 @@
 
 import { cn } from 'cn';
 
+import { useShipperSettlements } from '@/apis/saas/shipper';
 import { MOBILE_HERO } from '@/app/(saas)/app/shipper/_components/mobile';
 import {
   type MyPlanT,
   type RouteStopT,
   baselineRowLabel,
   myShareRate,
+  withSettlementRows,
 } from '@/app/(saas)/app/shipper/_components/my-plan';
 import {
   fmtCount,
@@ -143,7 +145,9 @@ function RouteStops({ myPlan }: { myPlan: MyPlanT }) {
 }
 
 function MyPanel({ myPlan }: { myPlan: MyPlanT }) {
-  const { settlement, seaPallets, airPallets } = myPlan;
+  const settlements = useShipperSettlements();
+  const { seaPallets, airPallets } = myPlan;
+  const settlement = withSettlementRows(myPlan.settlement, myPlan.session, settlements.data);
 
   if (!settlement) {
     return (
@@ -180,6 +184,7 @@ function MyPanel({ myPlan }: { myPlan: MyPlanT }) {
       rows={[
         { k: baselineRowLabel(settlement), v: fmtWon(settlement.baseline) },
         { k: '공동적재', v: fmtWon(settlement.shared) },
+        ...(settlement.refund > 0 ? [{ k: '품질 환급', v: fmtWon(settlement.refund) }] : []),
       ]}
     />
   );

@@ -66,6 +66,7 @@ export {
   type SceneRunT,
   type SceneSeaLaneT,
   type SceneToneT,
+  type SceneVoyageT,
 } from '@/components/map-hero/scene';
 
 export type MapHeroRunsModeT = 'always' | 'active';

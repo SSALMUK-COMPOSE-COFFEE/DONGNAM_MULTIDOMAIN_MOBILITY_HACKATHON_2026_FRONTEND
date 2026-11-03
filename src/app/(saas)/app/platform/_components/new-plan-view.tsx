@@ -47,6 +47,10 @@ import {
 } from '@/app/(saas)/app/platform/_components/plan-model';
 import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
+import {
+  SceneVoyageTabs,
+  buildPickedScene,
+} from '@/app/(saas)/app/platform/_components/scene-voyage-tabs';
 import { SegTabs } from '@/app/(saas)/app/platform/_components/seg-tabs';
 import { SettlementPreviewCard } from '@/app/(saas)/app/platform/_components/settlement-preview-card';
 import { useDebouncedValue } from '@/app/(saas)/app/platform/_components/use-debounced-value';
@@ -56,7 +60,6 @@ import {
   type ScenePlaceT,
   type StepItemT,
   Steps,
-  buildPlanScene,
 } from '@/components/map-hero';
 import { MapLinkProvider, useMapLinkTarget } from '@/components/map-link';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -162,6 +165,7 @@ function NewPlanScreen() {
     [poolPackhouseKey]
   );
 
+  const [pickedVoyageId, setPickedVoyageId] = useState<string | null>(null);
   const sceneSource = useMemo<PlanSceneSourceT | null>(() => {
     const extraPackhouses = catalog?.packhouses ?? [];
     if (preview) {
@@ -180,10 +184,10 @@ function NewPlanScreen() {
     () =>
       sceneSource
         ? sceneWithFullBounds(
-            buildPlanScene(sceneSource, { includePackhouseIds: poolPackhouseIds })
+            buildPickedScene(sceneSource, { includePackhouseIds: poolPackhouseIds }, pickedVoyageId)
           )
         : null,
-    [sceneSource, poolPackhouseIds]
+    [sceneSource, poolPackhouseIds, pickedVoyageId]
   );
 
   const poolByPackhouse = new Map<string, { pallets: number; selected: boolean }>();
@@ -295,6 +299,8 @@ function NewPlanScreen() {
           preview,
         })}
       />
+
+      <SceneVoyageTabs scene={scene} onPick={setPickedVoyageId} />
 
       <PlanHero
         source={preview}

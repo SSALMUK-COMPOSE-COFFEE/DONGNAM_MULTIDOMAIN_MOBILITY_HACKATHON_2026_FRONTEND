@@ -14,9 +14,11 @@ import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { MOBILE_STEPS } from '@/app/(saas)/app/shipper/_components/mobile';
 import { MyLotsCard } from '@/app/(saas)/app/shipper/_components/my-lots-card';
 import {
+  CONFIRM_WAIT_LABEL,
   type MyPlanT,
   type OwnScopeT,
   buildMyPlan,
+  confirmWaitOf,
   myPendingConfirmations,
   ownScopeOf,
 } from '@/app/(saas)/app/shipper/_components/my-plan';
@@ -47,7 +49,7 @@ import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shippe
 import { type StepItemT, Steps } from '@/components/map-hero';
 import { MapLinkProvider } from '@/components/map-link';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
-import type { ShipperCatalogT, ShipperLotT } from '@/types/saas-shipper';
+import type { ShipperCatalogT, ShipperLotT, ShipperOrderT } from '@/types/saas-shipper';
 
 const NEW_LOT_ANCHOR = 'new-lot';
 
@@ -57,10 +59,19 @@ type StepsInputT = {
   myPlan: MyPlanT | null;
   hasPlan: boolean;
   pending: PendingConfirmationT[] | null;
+  orders: ShipperOrderT[] | null;
   now: number | null;
 };
 
-const stepsOf = ({ lots, catalog, myPlan, hasPlan, pending, now }: StepsInputT): StepItemT[] => {
+const stepsOf = ({
+  lots,
+  catalog,
+  myPlan,
+  hasPlan,
+  pending,
+  orders,
+  now,
+}: StepsInputT): StepItemT[] => {
   const active = lots.filter(({ status }) => status !== 'cancelled');
   const latest = [...active].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
   const latestLabel = latest ? lotLabel(latest, catalog) : '품목·수량 등 다섯 가지';
@@ -99,7 +110,7 @@ const stepsOf = ({ lots, catalog, myPlan, hasPlan, pending, now }: StepsInputT):
   ].join('');
   const sailed = !!voyage && now !== null && timeOf(voyage.etd) <= now;
 
-  if (pending === null) {
+  if (pending === null || orders === null) {
     return [
       register,
       { title: '계획 확인', sub: planSub, state: 'cur' },
@@ -121,16 +132,16 @@ const stepsOf = ({ lots, catalog, myPlan, hasPlan, pending, now }: StepsInputT):
     ];
   }
 
-  const waitingOthers = session.status === 'pending_confirmation';
-  const pickupState: StepItemT['state'] = waitingOthers ? 'todo' : 'cur';
+  const wait = confirmWaitOf(session, orders, pending.length);
+  const pickupState: StepItemT['state'] = wait ? 'todo' : 'cur';
 
   return [
     register,
     { title: '계획 확인', sub: planSub, state: 'done' },
     {
       title: '확정',
-      sub: waitingOthers ? '다른 화주 확정 대기' : '확정 완료',
-      state: waitingOthers ? 'cur' : 'done',
+      sub: wait ? CONFIRM_WAIT_LABEL[wait] : '확정 완료',
+      state: wait ? 'cur' : 'done',
     },
     {
       title: '집하·출항',
@@ -162,7 +173,8 @@ export function ShipperHomeView() {
     [plan.data, catalog.data, own]
   );
   const focusEntry = tasks.byPlan.find(({ plan: item }) => item.plan_id === focusPlanId);
-  const pending = focusEntry?.ordersLoaded ? myPendingConfirmations(focusEntry.orders, own) : null;
+  const focusOrders = focusEntry?.ordersLoaded ? focusEntry.orders : null;
+  const pending = focusOrders ? myPendingConfirmations(focusOrders, own) : null;
   const allPending = tasks.confirmations.flatMap(({ order }) =>
     myPendingConfirmations([order], own)
   );
@@ -258,6 +270,7 @@ export function ShipperHomeView() {
           myPlan,
           hasPlan: !!focusPlanId,
           pending,
+          orders: focusOrders,
           now,
         })}
       />
@@ -275,7 +288,7 @@ export function ShipperHomeView() {
           )}
           {myPlan && plan.data && (
             <SectionErrorBoundary message="계획 카드를 그리지 못했습니다." className="h-64">
-              <ShipperPlanCard myPlan={myPlan} own={own} pending={pending} />
+              <ShipperPlanCard myPlan={myPlan} own={own} pending={pending} orders={focusOrders} />
             </SectionErrorBoundary>
           )}
           <MyLotsCard

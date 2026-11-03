@@ -169,6 +169,7 @@ export function PlanDetailView() {
                 myPlan={myPlan}
                 own={own}
                 pending={pending}
+                orders={orders.data ?? null}
                 showDetailLink={false}
                 showDecision={false}
               />
@@ -282,6 +283,7 @@ function PlanOrders({
         <RequestList
           items={requestItems}
           labels={labels}
+          ownShipperIds={own.shipperIds}
           emptyText="내 출하와 관련된 요청이 없습니다."
         />
       </section>
