@@ -8,9 +8,9 @@ import { toast } from 'sonner';
 
 import { scenarioQueryOptions } from '@/apis/getScenario';
 import { postIntakeLot } from '@/apis/postIntakeLot';
-import { type IntakeFieldErrorT, IntakeForm } from '@/app/intake/_components/intake-form';
-import { IntakePreview } from '@/app/intake/_components/intake-preview';
-import { ShipmentList } from '@/app/intake/_components/shipment-list';
+import { type IntakeFieldErrorT, IntakeForm } from '@/app/(demo)/intake/_components/intake-form';
+import { IntakePreview } from '@/app/(demo)/intake/_components/intake-preview';
+import { ShipmentList } from '@/app/(demo)/intake/_components/shipment-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

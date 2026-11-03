@@ -1,5 +1,5 @@
-import { PageHeader } from '@/app/_components/page-header';
-import { SensorView } from '@/app/sensor/_components/sensor-view';
+import { PageHeader } from '@/app/(demo)/_components/page-header';
+import { SensorView } from '@/app/(demo)/sensor/_components/sensor-view';
 
 export default function SensorPage() {
   return (

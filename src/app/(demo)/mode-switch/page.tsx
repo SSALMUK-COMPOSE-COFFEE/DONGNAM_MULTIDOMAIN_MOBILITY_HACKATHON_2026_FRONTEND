@@ -1,5 +1,5 @@
-import { PageHeader } from '@/app/_components/page-header';
-import { ModeSwitchView } from '@/app/mode-switch/_components/mode-switch-view';
+import { PageHeader } from '@/app/(demo)/_components/page-header';
+import { ModeSwitchView } from '@/app/(demo)/mode-switch/_components/mode-switch-view';
 
 export default function ModeSwitchPage() {
   return (

@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 
-import { DemoNav } from '@/components/demo-nav';
-import { PageWave } from '@/components/page-wave';
 import { Providers } from '@/components/providers';
 
 import './globals.css';
@@ -22,11 +20,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="ko" className={`${notoSansKr.variable} antialiased`}>
       <body className="flex min-h-dvh flex-col">
-        <Providers>
-          <DemoNav />
-          <main className="mx-auto w-full max-w-[1600px] flex-1 px-8 pt-8">{children}</main>
-          <PageWave />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

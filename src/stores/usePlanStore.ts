@@ -25,7 +25,7 @@ export const usePlanStore = create<PlanStoreT>()(
       name: 'freshswitch-plan',
       storage: createJSONStorage(() => localStorage),
       partialize: ({ planId }) => ({ planId }),
-      // 서버 렌더링 결과(planId 없음)와 어긋나지 않도록 마운트 뒤에 직접 읽는다 (Providers)
+      // 서버 렌더링 결과(planId 없음)와 어긋나지 않도록 마운트 뒤에 직접 읽는다 (PlanStoreHydrator)
       skipHydration: true,
       onRehydrateStorage: () => () => usePlanStore.setState({ hasHydrated: true }),
     }

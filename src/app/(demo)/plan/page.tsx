@@ -1,5 +1,5 @@
-import { PageHeader } from '@/app/_components/page-header';
-import { PlanView } from '@/app/plan/_components/plan-view';
+import { PageHeader } from '@/app/(demo)/_components/page-header';
+import { PlanView } from '@/app/(demo)/plan/_components/plan-view';
 
 export default function PlanPage() {
   return (

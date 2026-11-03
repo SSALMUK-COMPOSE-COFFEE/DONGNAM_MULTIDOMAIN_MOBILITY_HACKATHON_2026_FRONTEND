@@ -1,5 +1,5 @@
-import { PageHeader } from '@/app/_components/page-header';
-import { IntakeView } from '@/app/intake/_components/intake-view';
+import { PageHeader } from '@/app/(demo)/_components/page-header';
+import { IntakeView } from '@/app/(demo)/intake/_components/intake-view';
 
 export default function IntakePage() {
   return (

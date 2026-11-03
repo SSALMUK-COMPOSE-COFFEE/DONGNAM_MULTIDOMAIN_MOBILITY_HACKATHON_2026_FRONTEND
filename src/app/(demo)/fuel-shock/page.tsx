@@ -1,5 +1,5 @@
-import { PageHeader } from '@/app/_components/page-header';
-import { FuelShockView } from '@/app/fuel-shock/_components/fuel-shock-view';
+import { PageHeader } from '@/app/(demo)/_components/page-header';
+import { FuelShockView } from '@/app/(demo)/fuel-shock/_components/fuel-shock-view';
 
 export default function FuelShockPage() {
   return (

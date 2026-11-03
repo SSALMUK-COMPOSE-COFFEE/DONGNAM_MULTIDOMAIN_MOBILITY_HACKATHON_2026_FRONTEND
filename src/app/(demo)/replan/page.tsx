@@ -1,5 +1,5 @@
-import { PageHeader } from '@/app/_components/page-header';
-import { ReplanView } from '@/app/replan/_components/replan-view';
+import { PageHeader } from '@/app/(demo)/_components/page-header';
+import { ReplanView } from '@/app/(demo)/replan/_components/replan-view';
 
 export default function ReplanPage() {
   return (

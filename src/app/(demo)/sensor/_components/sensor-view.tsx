@@ -6,11 +6,11 @@ import { toast } from 'sonner';
 
 import { coldchainContainerQueryOptions } from '@/apis/getColdchainContainer';
 import { postColdchainBinding, postColdchainSimulation } from '@/apis/postColdchainSimulation';
-import { ActionList } from '@/app/sensor/_components/action-list';
-import { AlertFeed } from '@/app/sensor/_components/alert-feed';
-import { LossLotTable } from '@/app/sensor/_components/loss-lot-table';
-import { SensorStatusCard } from '@/app/sensor/_components/sensor-status-card';
-import { SensorSummary } from '@/app/sensor/_components/sensor-summary';
+import { ActionList } from '@/app/(demo)/sensor/_components/action-list';
+import { AlertFeed } from '@/app/(demo)/sensor/_components/alert-feed';
+import { LossLotTable } from '@/app/(demo)/sensor/_components/loss-lot-table';
+import { SensorStatusCard } from '@/app/(demo)/sensor/_components/sensor-status-card';
+import { SensorSummary } from '@/app/(demo)/sensor/_components/sensor-summary';
 import { CurrentPlanGate } from '@/components/current-plan-gate';
 import { PlanLoadError } from '@/components/plan-load-error';
 import {

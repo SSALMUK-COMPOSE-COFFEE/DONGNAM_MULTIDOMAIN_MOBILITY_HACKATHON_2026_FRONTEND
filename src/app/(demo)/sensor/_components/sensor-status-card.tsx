@@ -1,7 +1,7 @@
 import { cn } from 'cn';
 import type { ReactNode } from 'react';
 
-import { TemperatureChart } from '@/app/sensor/_components/temperature-chart';
+import { TemperatureChart } from '@/app/(demo)/sensor/_components/temperature-chart';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TwinStateT } from '@/types/api';

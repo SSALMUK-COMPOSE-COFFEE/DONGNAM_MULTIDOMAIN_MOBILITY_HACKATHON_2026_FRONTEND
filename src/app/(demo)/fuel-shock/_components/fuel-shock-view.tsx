@@ -5,10 +5,10 @@ import { useState } from 'react';
 
 import { scenarioQueryOptions } from '@/apis/getScenario';
 import { fuelShockQueryOptions } from '@/apis/postFuelShock';
-import { ShockAllocationCard } from '@/app/fuel-shock/_components/shock-allocation-card';
-import { ShockShipperTable } from '@/app/fuel-shock/_components/shock-shipper-table';
-import { ShockSummary } from '@/app/fuel-shock/_components/shock-summary';
-import { SurchargeCard } from '@/app/fuel-shock/_components/surcharge-card';
+import { ShockAllocationCard } from '@/app/(demo)/fuel-shock/_components/shock-allocation-card';
+import { ShockShipperTable } from '@/app/(demo)/fuel-shock/_components/shock-shipper-table';
+import { ShockSummary } from '@/app/(demo)/fuel-shock/_components/shock-summary';
+import { SurchargeCard } from '@/app/(demo)/fuel-shock/_components/surcharge-card';
 import { PlanLoadError } from '@/components/plan-load-error';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_FUEL_SHOCK } from '@/consts/demo';

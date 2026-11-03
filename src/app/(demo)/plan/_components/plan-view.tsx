@@ -1,10 +1,10 @@
 'use client';
 
-import { ContainerCard } from '@/app/plan/_components/container-card';
-import { PickupMap } from '@/app/plan/_components/pickup-map';
-import { PlanSummary } from '@/app/plan/_components/plan-summary';
-import { SettlementTable } from '@/app/plan/_components/settlement-table';
-import { TariffCard } from '@/app/plan/_components/tariff-card';
+import { ContainerCard } from '@/app/(demo)/plan/_components/container-card';
+import { PickupMap } from '@/app/(demo)/plan/_components/pickup-map';
+import { PlanSummary } from '@/app/(demo)/plan/_components/plan-summary';
+import { SettlementTable } from '@/app/(demo)/plan/_components/settlement-table';
+import { TariffCard } from '@/app/(demo)/plan/_components/tariff-card';
 import { PlanLoadError } from '@/components/plan-load-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
