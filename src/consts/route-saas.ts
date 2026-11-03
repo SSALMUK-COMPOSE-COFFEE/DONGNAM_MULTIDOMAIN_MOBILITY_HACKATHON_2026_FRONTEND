@@ -52,6 +52,7 @@ export const SAAS_ROUTES = {
     menu: [
       { href: '/app/forwarder', label: '배정된 항차' },
       { href: '/app/forwarder/orders', label: '실행 지시' },
+      { href: '/app/forwarder/coldchain', label: '콜드체인 조회' },
     ],
   },
 } as const satisfies Record<OrgType, SaasRoleRouteT>;
