@@ -29,7 +29,7 @@ export default function LoginPage() {
 
       <LoginShowcase />
 
-      <div className="m2-grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] max-[1180px]:grid-cols-2">
+      <div className="m2-grid grid-cols-1 min-[1180px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:max-[1180px]:grid-cols-2">
         <section className="m2-card" aria-labelledby="login-title">
           <h2 id="login-title" className="m2-h2">
             로그인

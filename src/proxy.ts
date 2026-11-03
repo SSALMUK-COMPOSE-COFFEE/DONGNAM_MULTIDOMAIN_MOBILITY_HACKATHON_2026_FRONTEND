@@ -1,11 +1,30 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { SAAS_PAGES, SESSION_COOKIE_NAME } from '@/consts/route-saas';
+import { ROUTES } from '@/consts/route';
+import { IS_SAAS_BUILD, SAAS_PAGES, SESSION_COOKIE_NAME } from '@/consts/route-saas';
+
+const DEMO_PATHS: readonly string[] = Object.values(ROUTES);
+
+const isDemoPath = (pathname: string) =>
+  pathname === '/' || DEMO_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`));
 
 export function proxy(request: NextRequest) {
-  if (request.cookies.has(SESSION_COOKIE_NAME)) return NextResponse.next();
-
   const { pathname, search } = request.nextUrl;
+  const hasSession = request.cookies.has(SESSION_COOKIE_NAME);
+
+  if (isDemoPath(pathname)) {
+    if (!IS_SAAS_BUILD) return NextResponse.next();
+
+    const entryUrl = request.nextUrl.clone();
+
+    entryUrl.pathname = pathname === '/' && hasSession ? SAAS_PAGES.APP : SAAS_PAGES.LOGIN;
+    entryUrl.search = '';
+
+    return NextResponse.redirect(entryUrl);
+  }
+
+  if (hasSession) return NextResponse.next();
+
   const loginUrl = request.nextUrl.clone();
 
   loginUrl.pathname = SAAS_PAGES.LOGIN;
@@ -16,5 +35,15 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/app', '/app/:path*'],
+  matcher: [
+    '/',
+    '/intake/:path*',
+    '/plan/:path*',
+    '/replan/:path*',
+    '/mode-switch/:path*',
+    '/fuel-shock/:path*',
+    '/sensor/:path*',
+    '/app',
+    '/app/:path*',
+  ],
 };

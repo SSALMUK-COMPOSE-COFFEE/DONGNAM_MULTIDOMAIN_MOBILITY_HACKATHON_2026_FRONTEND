@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useLogout } from '@/apis/saas/auth';
+import { useRoleSwitchStore } from '@/app/(saas)/app/_components/use-role-switch';
 import { SAAS_PAGES } from '@/consts/route-saas';
 
 export function LogoutButton() {
@@ -25,6 +26,7 @@ export function LogoutButton() {
       aria-label={label}
       title={label}
       onClick={() => {
+        useRoleSwitchStore.getState().setTarget(null);
         router.replace(SAAS_PAGES.LOGIN);
         logout.mutate();
       }}

@@ -4,6 +4,8 @@ export const SESSION_COOKIE_NAME = 'fs_session';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
+export const IS_SAAS_BUILD = BASE_PATH !== '';
+
 export const SAAS_PAGES = {
   LOGIN: '/login',
   SIGNUP: '/signup',
@@ -116,11 +118,25 @@ export const SAAS_ROUTES = {
   },
 } as const satisfies Record<OrgType, SaasRoleRouteT>;
 
+export type SandboxStepT = {
+  step: string;
+  label: string;
+  orgType: OrgType;
+  href: string;
+};
+
+export const SANDBOX_SCENARIO_STEPS = [
+  { step: '①', label: '출하 등록', orgType: 'shipper', href: '/app/shipper/lots' },
+  { step: '②', label: '계획 생성', orgType: 'platform', href: '/app/platform' },
+  { step: '③', label: '화주 확정', orgType: 'shipper', href: '/app/shipper/plans' },
+  { step: '④', label: '포워더 확정', orgType: 'forwarder', href: '/app/forwarder' },
+] as const satisfies readonly SandboxStepT[];
+
 export const SIGNUP_ORG_TYPES = ['shipper', 'forwarder'] as const satisfies readonly OrgType[];
 
 export const roleHome = (orgType: OrgType) => SAAS_ROUTES[orgType].home;
 
-const pathnameOf = (path: string) => path.split(/[?#]/)[0];
+export const pathnameOf = (path: string) => path.split(/[?#]/)[0];
 
 export const orgTypeOfPath = (path: string): OrgType | null => {
   const pathname = pathnameOf(path);

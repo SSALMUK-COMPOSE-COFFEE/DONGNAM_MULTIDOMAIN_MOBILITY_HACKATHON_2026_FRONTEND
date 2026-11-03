@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
 import { useMe } from '@/apis/saas/auth';
+import { useRoleSwitchStore } from '@/app/(saas)/app/_components/use-role-switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { orgTypeOfPath, roleHome } from '@/consts/route-saas';
 
@@ -12,15 +13,24 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const me = useMe();
+  const switchTarget = useRoleSwitchStore(state => state.target);
 
   const activeType = me.data?.active_org.org_type ?? null;
-  const redirectTo =
-    activeType && orgTypeOfPath(pathname) !== activeType ? roleHome(activeType) : null;
+  const fitsTarget = switchTarget !== null && orgTypeOfPath(switchTarget) === activeType;
+  const isMismatch = activeType !== null && orgTypeOfPath(pathname) !== activeType;
+  const hasArrived = fitsTarget && !isMismatch;
+  let redirectTo: string | null = null;
+
+  if (activeType && isMismatch) redirectTo = fitsTarget ? switchTarget : roleHome(activeType);
   const isUnauthorized = isAxiosError(me.error) && me.error.response?.status === 401;
 
   useEffect(() => {
     if (redirectTo) router.replace(redirectTo);
   }, [redirectTo, router]);
+
+  useEffect(() => {
+    if (hasArrived || isUnauthorized) useRoleSwitchStore.getState().setTarget(null);
+  }, [hasArrived, isUnauthorized]);
 
   if (me.isError && !isUnauthorized) {
     return (

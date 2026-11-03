@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 
 import { ROUTES } from '@/consts/route';
+import { IS_SAAS_BUILD, SAAS_PAGES } from '@/consts/route-saas';
 
 export default function Home() {
-  redirect(ROUTES.INTAKE);
+  redirect(IS_SAAS_BUILD ? SAAS_PAGES.APP : ROUTES.INTAKE);
 }

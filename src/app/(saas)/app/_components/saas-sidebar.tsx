@@ -60,6 +60,14 @@ const countOf = (query: { data?: readonly unknown[] | null; isSuccess: boolean }
   query.isSuccess && query.data ? query.data.length : null;
 
 export function SaasSidebar() {
+  return (
+    <aside className="m2-side" aria-label="주 메뉴">
+      <SaasSidebarBody />
+    </aside>
+  );
+}
+
+export function SaasSidebarBody() {
   const { data: me } = useMe();
 
   if (!me) return null;
@@ -68,26 +76,24 @@ export function SaasSidebar() {
   const footNote = ROLE_FOOT_NOTES[orgType];
 
   return (
-    <aside className="m2-side" aria-label="주 메뉴">
-      <div className="m2-side-in">
-        <OrgSwitcher me={me} />
+    <div className="m2-side-in">
+      <OrgSwitcher me={me} />
 
-        {orgType === 'platform' ? <PlatformNav /> : null}
-        {orgType === 'shipper' ? <ShipperNav /> : null}
-        {orgType === 'forwarder' ? <ForwarderNav /> : null}
+      {orgType === 'platform' ? <PlatformNav /> : null}
+      {orgType === 'shipper' ? <ShipperNav /> : null}
+      {orgType === 'forwarder' ? <ForwarderNav /> : null}
 
-        <div className="m2-foot">
-          {footNote ? <p className="m2-foot-note">{footNote}</p> : null}
-          <div className="m2-user">
-            <div className="m2-user-text min-w-0">
-              <p className="m2-user-nm">{me.user.name}</p>
-              <p className="m2-user-em">{me.user.email}</p>
-            </div>
-            <LogoutButton />
+      <div className="m2-foot">
+        {footNote ? <p className="m2-foot-note">{footNote}</p> : null}
+        <div className="m2-user">
+          <div className="m2-user-text min-w-0">
+            <p className="m2-user-nm">{me.user.name}</p>
+            <p className="m2-user-em">{me.user.email}</p>
           </div>
+          <LogoutButton />
         </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
