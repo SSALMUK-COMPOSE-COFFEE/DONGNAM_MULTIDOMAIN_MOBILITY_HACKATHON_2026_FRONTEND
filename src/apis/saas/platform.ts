@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
+import { toastSaasError } from '@/apis/saas/errors';
 import { orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
 import { SAAS_API_BASE } from '@/consts/api-saas';
@@ -362,7 +363,7 @@ export const useAssignForwarder = (planId: string) => {
       syncList(forwarder);
       toast.success(`${forwarder.org_name}에 배정했습니다.`);
     },
-    onError: () => toast.error('포워더를 배정하지 못했습니다.'),
+    onError: toastSaasError('포워더를 배정하지 못했습니다.'),
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: platformKeys.plans(orgId), exact: true }),
   });
@@ -373,7 +374,7 @@ export const useAssignForwarder = (planId: string) => {
       syncList(null);
       toast.success('포워더 배정을 해제했습니다.');
     },
-    onError: () => toast.error('배정을 해제하지 못했습니다.'),
+    onError: toastSaasError('배정을 해제하지 못했습니다.'),
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: platformKeys.plans(orgId), exact: true }),
   });
@@ -401,7 +402,7 @@ export const useDeleteDevice = () => {
       queryClient.invalidateQueries({ queryKey: platformKeys.devices(orgId) });
       toast.success('기기를 삭제했습니다.');
     },
-    onError: () => toast.error('기기를 삭제하지 못했습니다.'),
+    onError: toastSaasError('기기를 삭제하지 못했습니다.'),
   });
 };
 
@@ -415,7 +416,7 @@ export const useBindDevice = () => {
       queryClient.invalidateQueries({ queryKey: platformKeys.devices(orgId) });
       toast.success(`${binding.device_id} 기기를 ${binding.container_id}에 연결했습니다.`);
     },
-    onError: () => toast.error('기기를 컨테이너에 연결하지 못했습니다.'),
+    onError: toastSaasError('기기를 컨테이너에 연결하지 못했습니다.'),
   });
 };
 
@@ -425,7 +426,7 @@ export const usePlatformReplanFlow = (planId: string) => {
 
   const replan = useMutation({
     mutationFn: (event: PlanEventT) => postPlatformPlanEvent(planId, event),
-    onError: () => toast.error('재최적화하지 못했습니다.'),
+    onError: toastSaasError('재최적화하지 못했습니다.'),
   });
 
   const apply = useMutation({
@@ -438,7 +439,7 @@ export const usePlatformReplanFlow = (planId: string) => {
       queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
       toast.success('대안을 적용했습니다. 화주·포워더 확정을 기다립니다.');
     },
-    onError: () => toast.error('대안을 적용하지 못했습니다.'),
+    onError: toastSaasError('대안을 적용하지 못했습니다.'),
   });
 
   const { data: orders } = useQuery(platformPlanOrdersQueryOptions(orgId, planId));

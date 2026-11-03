@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 
+import { toastSaasError } from '@/apis/saas/errors';
 import {
   postShipperOrderConfirm,
   useInvalidateShipperPlan,
@@ -201,6 +202,7 @@ function ShipperOrderPanel({
       invalidatePlan(planId);
       toast.success(accept ? '실행 지시를 수락했습니다.' : '실행 지시를 거절했습니다.');
     },
+    onError: toastSaasError('실행 지시에 응답하지 못했습니다.'),
   };
 
   return (

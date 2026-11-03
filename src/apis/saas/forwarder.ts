@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
+import { toastSaasError } from '@/apis/saas/errors';
 import { orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
 import { SAAS_API_BASE } from '@/consts/api-saas';
@@ -197,6 +198,7 @@ export const useForwarderConfirmOptions = (
         if (accept) toast.success('실행 지시를 확정했습니다. 자동 조치를 시작합니다.');
         else toast.success('실행 지시를 거절했습니다.');
       },
+      onError: toastSaasError('실행 지시를 처리하지 못했습니다.'),
     }),
     [planId, orderId, orgId, queryClient]
   );

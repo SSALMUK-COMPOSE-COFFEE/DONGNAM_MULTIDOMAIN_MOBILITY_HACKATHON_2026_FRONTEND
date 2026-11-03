@@ -2,6 +2,7 @@
 
 import { toast } from 'sonner';
 
+import { saasErrorReason } from '@/apis/saas/errors';
 import { useCreateShipperLot, useShipperCatalog, useShipperOrgId } from '@/apis/saas/shipper';
 import { toIntakeOptions, todayIso } from '@/app/(saas)/app/shipper/_components/catalog';
 import { LotTable } from '@/app/(saas)/app/shipper/_components/lot-table';
@@ -71,7 +72,9 @@ export function LotsView() {
                   onSuccess: preview => toast.success(`${preview.lot.id} 출하를 등록했습니다.`),
                   onError: error => {
                     if (toFieldErrors(error).length === 0)
-                      toast.error('출하를 등록하지 못했습니다.');
+                      toast.error('출하를 등록하지 못했습니다.', {
+                        description: saasErrorReason(error),
+                      });
                   },
                 })
               }

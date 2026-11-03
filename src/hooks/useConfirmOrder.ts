@@ -21,12 +21,13 @@ export type ConfirmableOrderT = ExecutionOrderT | ForwarderOrderT;
 export type UseConfirmOrderOptionsT = {
   confirmFn?: (request: ConfirmOrderRequestT) => Promise<ConfirmableOrderT>;
   onSuccess?: (updated: ConfirmableOrderT, request: ConfirmOrderRequestT) => void;
+  onError?: (error: unknown) => void;
 };
 
 export const useConfirmOrder = (
   planId: string,
   orderId: string,
-  { confirmFn, onSuccess }: UseConfirmOrderOptionsT = {}
+  { confirmFn, onSuccess, onError }: UseConfirmOrderOptionsT = {}
 ) => {
   const queryClient = useQueryClient();
 
@@ -50,6 +51,6 @@ export const useConfirmOrder = (
         toast.success('계획을 확정하고 자동 조치를 실행했습니다.');
       }
     },
-    onError: () => toast.error('확정하지 못했습니다.'),
+    onError: onError ?? (() => toast.error('확정하지 못했습니다.')),
   });
 };
