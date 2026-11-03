@@ -20,3 +20,10 @@ export type ForwarderTwinStateT = TwinStateT;
 export type ForwarderAlertT = AlertT;
 
 export type ForwarderStreamStateT = 'connecting' | 'open' | 'retrying';
+
+export type ForwarderExecutionCardT = SaasSchemaT<'ExecutionCard'>;
+export type ForwarderContainerExecutionT = SaasSchemaT<'ContainerExecution'>;
+export type ForwarderVgmWeightT = SaasSchemaT<'VgmWeight'>;
+export type ForwarderSetpointT = SaasSchemaT<'Setpoint'>;
+export type ForwarderEmptyPickupT = SaasSchemaT<'EmptyPickup'>;
+export type ForwarderCutoffTimelineT = SaasSchemaT<'CutoffTimeline'>;

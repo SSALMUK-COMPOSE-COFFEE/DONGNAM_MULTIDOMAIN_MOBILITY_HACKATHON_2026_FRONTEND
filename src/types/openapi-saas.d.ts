@@ -117,8 +117,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Apply Alternative */
-        post: operations["apply_alternative_test_api_plans__plan_id__apply_post"];
+        /** Apply And Notify */
+        post: operations["apply_and_notify_test_api_plans__plan_id__apply_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1338,6 +1338,23 @@ export interface paths {
         };
         /** Read Plan */
         get: operations["read_plan_test_api_saas_forwarder_plans__plan_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plans/{plan_id}/execution-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Execution Card */
+        get: operations["read_execution_card_test_api_saas_forwarder_plans__plan_id__execution_card_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2709,6 +2726,33 @@ export interface components {
             /** Breakeven Platform Fill */
             breakeven_platform_fill: number | null;
         };
+        /** ContainerExecution */
+        ContainerExecution: {
+            /** Container Id */
+            container_id: string;
+            /** Voyage Id */
+            voyage_id: string;
+            /** Vessel Name */
+            vessel_name: string;
+            /** Terminal */
+            terminal: string;
+            /** Kind */
+            kind: string;
+            /** Lot Ids */
+            lot_ids: string[];
+            /** Booking No */
+            booking_no: string;
+            /** Container No */
+            container_no: string;
+            /** Seal No */
+            seal_no: string;
+            /** Mock */
+            mock: boolean;
+            weight: components["schemas"]["VgmWeight"];
+            setpoint: components["schemas"]["Setpoint"];
+            empty_pickup: components["schemas"]["EmptyPickup"];
+            cutoffs: components["schemas"]["CutoffTimeline"];
+        };
         /** ContainerFill */
         ContainerFill: {
             /** Container Id */
@@ -3071,6 +3115,31 @@ export interface components {
             /** Excursion C */
             excursion_c: number;
         };
+        /** CutoffTimeline */
+        CutoffTimeline: {
+            /**
+             * Si Cutoff
+             * Format: date-time
+             */
+            si_cutoff: string;
+            /**
+             * Vgm Cutoff
+             * Format: date-time
+             */
+            vgm_cutoff: string;
+            /**
+             * Cy Cutoff
+             * Format: date-time
+             */
+            cy_cutoff: string;
+            /**
+             * Etd
+             * Format: date-time
+             */
+            etd: string;
+            /** Basis */
+            basis: string;
+        };
         /** Deadlines */
         Deadlines: {
             /**
@@ -3333,6 +3402,15 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** EmptyPickup */
+        EmptyPickup: {
+            /** Location */
+            location: string;
+            /** Assumed */
+            assumed: boolean;
+            /** Basis */
+            basis: string;
+        };
         /** EventRequest */
         EventRequest: {
             /** Event */
@@ -3352,6 +3430,19 @@ export interface components {
             minutes_above_band: number;
             /** Max Temp C */
             max_temp_c: number | null;
+        };
+        /** ExecutionCard */
+        ExecutionCard: {
+            /** Plan Id */
+            plan_id: string;
+            /** Version */
+            version: number;
+            /** Mock */
+            mock: boolean;
+            /** Mock Note */
+            mock_note: string;
+            /** Containers */
+            containers: components["schemas"]["ContainerExecution"][];
         };
         /** ExecutionOrder */
         ExecutionOrder: {
@@ -3461,6 +3552,14 @@ export interface components {
              * @default 0
              */
             pallets_after: number;
+            /** Lot Pallets Before */
+            lot_pallets_before?: {
+                [key: string]: number;
+            };
+            /** Lot Pallets After */
+            lot_pallets_after?: {
+                [key: string]: number;
+            };
             /** Text */
             text: string;
             /**
@@ -6671,6 +6770,31 @@ export interface components {
             /** Solve Ms */
             solve_ms: number;
         };
+        /** Setpoint */
+        Setpoint: {
+            /** Product Ids */
+            product_ids: string[];
+            /** Set Temp C */
+            set_temp_c: number | null;
+            /** Temp Min C */
+            temp_min_c: number | null;
+            /** Temp Max C */
+            temp_max_c: number | null;
+            /** Ventilation */
+            ventilation: string;
+            /** O2 Pct */
+            o2_pct: number | null;
+            /** Co2 Pct */
+            co2_pct: number | null;
+            /** Ca Controlled */
+            ca_controlled: boolean;
+            /** Assumed */
+            assumed: boolean;
+            /** Assumptions */
+            assumptions: string[];
+            /** Source */
+            source: string;
+        };
         /** Settlement */
         Settlement: {
             /** Shipper Id */
@@ -7972,6 +8096,23 @@ export interface components {
             /** Observed At */
             observed_at?: string | null;
         };
+        /** VgmWeight */
+        VgmWeight: {
+            /** Pallets */
+            pallets: number;
+            /** Net Kg */
+            net_kg: number;
+            /** Pallet Packaging Kg */
+            pallet_packaging_kg: number;
+            /** Gross Cargo Kg */
+            gross_cargo_kg: number;
+            /** Container Tare Kg */
+            container_tare_kg: number;
+            /** Vgm Kg */
+            vgm_kg: number;
+            /** Basis */
+            basis: string;
+        };
         /** Voyage */
         Voyage: {
             /**
@@ -8412,7 +8553,7 @@ export interface operations {
             };
         };
     };
-    apply_alternative_test_api_plans__plan_id__apply_post: {
+    apply_and_notify_test_api_plans__plan_id__apply_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -11106,6 +11247,37 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_execution_card_test_api_saas_forwarder_plans__plan_id__execution_card_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionCard"];
                 };
             };
             /** @description Validation Error */
