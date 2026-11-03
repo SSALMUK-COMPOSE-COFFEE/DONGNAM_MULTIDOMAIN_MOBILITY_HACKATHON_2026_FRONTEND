@@ -28,3 +28,5 @@ export type ForwarderVgmWeightT = SaasSchemaT<'VgmWeight'>;
 export type ForwarderSetpointT = SaasSchemaT<'Setpoint'>;
 export type ForwarderEmptyPickupT = SaasSchemaT<'EmptyPickup'>;
 export type ForwarderCutoffTimelineT = SaasSchemaT<'CutoffTimeline'>;
+
+export type ForwarderExecutionNumbersInputT = SaasSchemaT<'ExecutionNumbersInput'>;

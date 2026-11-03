@@ -1312,6 +1312,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/test/api/saas/platform/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform Metrics */
+        get: operations["platform_metrics_test_api_saas_platform_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/business": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform Business */
+        get: operations["platform_business_test_api_saas_platform_business_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/business/years": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform Business Years */
+        get: operations["platform_business_years_test_api_saas_platform_business_years_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/api/saas/forwarder/plans": {
         parameters: {
             query?: never;
@@ -1356,6 +1407,23 @@ export interface paths {
         /** Read Execution Card */
         get: operations["read_execution_card_test_api_saas_forwarder_plans__plan_id__execution_card_get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plans/{plan_id}/execution-card/containers/{container_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Container Numbers */
+        put: operations["save_container_numbers_test_api_saas_forwarder_plans__plan_id__execution_card_containers__container_id__put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2296,6 +2364,49 @@ export interface components {
             /** Mean Adjusted Rate */
             mean_adjusted_rate: number;
         };
+        /** BusinessLine */
+        BusinessLine: {
+            /** Forwarder Share */
+            forwarder_share: number;
+            /** Label */
+            label: string;
+            /** Plans */
+            plans: components["schemas"]["PlanEconomics"][];
+            /** Voyage Count */
+            voyage_count: number;
+            /** Pallets */
+            pallets: number;
+            /** Fee Revenue */
+            fee_revenue: number;
+            /** Forwarder Cost */
+            forwarder_cost: number;
+            /** Variable Cost */
+            variable_cost: number;
+            /** Contribution Margin */
+            contribution_margin: number;
+            /** Fixed Cost Allocation */
+            fixed_cost_allocation: number;
+            /** Platform Net */
+            platform_net: number;
+            /** Settlement Gap */
+            settlement_gap: number;
+            /** Platform Net With Settlement */
+            platform_net_with_settlement: number;
+            /** Annual Contribution */
+            annual_contribution: number | null;
+            /** Annual Fixed Cost */
+            annual_fixed_cost: number;
+            /** Annual Net */
+            annual_net: number | null;
+            /** Annual Settlement Gap */
+            annual_settlement_gap: number | null;
+            /** Annual Net With Settlement */
+            annual_net_with_settlement: number | null;
+            /** Breakeven Pallets Per Voyage */
+            breakeven_pallets_per_voyage: number | null;
+            /** Remaining Pallets Per Voyage */
+            remaining_pallets_per_voyage: number | null;
+        };
         /** BusinessMatrix */
         BusinessMatrix: {
             /** Scenario Id */
@@ -2363,6 +2474,37 @@ export interface components {
              * @default []
              */
             basis: components["schemas"]["BasisComparison"][];
+        };
+        /** BusinessYears */
+        BusinessYears: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Years */
+            years: number;
+            /** Fee Rate */
+            fee_rate: number;
+            /** Base Fee Per Pallet */
+            base_fee_per_pallet: number;
+            /** Base Fee From Year */
+            base_fee_from_year: number;
+            /** Savings Per Pallet */
+            savings_per_pallet: {
+                [key: string]: number;
+            };
+            /** Savings Source */
+            savings_source: string;
+            /** Volumes */
+            volumes: components["schemas"]["YearVolume"][];
+            /** Subsidies */
+            subsidies: components["schemas"]["YearSubsidy"][];
+            /** Fixed Levels */
+            fixed_levels: components["schemas"]["FixedLevel"][];
+            /** Rules */
+            rules: string[];
+            /** Lines */
+            lines: components["schemas"]["YearLine"][];
+            /** Excluded Upside Source */
+            excluded_upside_source: string;
         };
         /** CancelEvent */
         CancelEvent: {
@@ -2748,6 +2890,23 @@ export interface components {
             seal_no: string;
             /** Mock */
             mock: boolean;
+            /**
+             * Booking No Mock
+             * @default true
+             */
+            booking_no_mock: boolean;
+            /**
+             * Container No Mock
+             * @default true
+             */
+            container_no_mock: boolean;
+            /**
+             * Seal No Mock
+             * @default true
+             */
+            seal_no_mock: boolean;
+            /** Entered At */
+            entered_at?: string | null;
             weight: components["schemas"]["VgmWeight"];
             setpoint: components["schemas"]["Setpoint"];
             empty_pickup: components["schemas"]["EmptyPickup"];
@@ -3402,6 +3561,64 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** EmissionLine */
+        EmissionLine: {
+            /** Destination */
+            destination: string;
+            /** Pallets */
+            pallets: number;
+            /** Tonnes Cargo */
+            tonnes_cargo: number;
+            /** Air Kg Co2 */
+            air_kg_co2: number;
+            /** Sea Kg Co2 */
+            sea_kg_co2: number;
+            /** Saved T Co2 */
+            saved_t_co2: number;
+        };
+        /** EmissionResult */
+        EmissionResult: {
+            /** Saved T Co2 */
+            saved_t_co2: number;
+            /** Air Avoided Pallets */
+            air_avoided_pallets: number;
+            /** Lines */
+            lines: components["schemas"]["EmissionLine"][];
+            /** Skipped Pallets */
+            skipped_pallets: number;
+            /** Skipped Reason */
+            skipped_reason: string | null;
+            /**
+             * Air G Per Tkm
+             * @default 602
+             */
+            air_g_per_tkm: number;
+            /**
+             * Road G Per Tkm
+             * @default 62
+             */
+            road_g_per_tkm: number;
+            /**
+             * Sea G Per Tkm
+             * @default 8
+             */
+            sea_g_per_tkm: number;
+            /**
+             * Factor Source
+             * @default IEA 운송수단별 CO₂ 배출계수(g CO₂/톤·km): 항공 602, 도로 62, 해상 8. The Geography of Transport Systems 인용값이며 IEA 원문 표는 확인 필요
+             */
+            factor_source: string;
+            /**
+             * Factor Source Url
+             * @default https://transportgeography.org/contents/chapter4/transportation-and-environment/co2-emissions-passenger-freight-transport-mode
+             */
+            factor_source_url: string;
+            /**
+             * Distance Source
+             * @default 가정: 인천–홍콩 항공 대권거리 약 2,060km, 부산신항–홍콩 해상 약 2,130km(1,150해리), 선과장→부산신항 육송 평균 100km. 항공 쪽 육송은 cost_params.air_trucking_km
+             */
+            distance_source: string;
+        };
         /** EmptyPickup */
         EmptyPickup: {
             /** Location */
@@ -3443,6 +3660,15 @@ export interface components {
             mock_note: string;
             /** Containers */
             containers: components["schemas"]["ContainerExecution"][];
+        };
+        /** ExecutionNumbersInput */
+        ExecutionNumbersInput: {
+            /** Booking No */
+            booking_no?: string | null;
+            /** Container No */
+            container_no?: string | null;
+            /** Seal No */
+            seal_no?: string | null;
         };
         /** ExecutionOrder */
         ExecutionOrder: {
@@ -4733,6 +4959,21 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** Metric */
+        Metric: {
+            /** Value */
+            value: number | null;
+            /** Numerator */
+            numerator?: number | null;
+            /** Denominator */
+            denominator?: number | null;
+            /** Unit */
+            unit: string;
+            /** Definition */
+            definition: string;
+            /** Reason */
+            reason?: string | null;
+        };
         /** ModeSwitch */
         ModeSwitch: {
             /** Lot Id */
@@ -5284,6 +5525,23 @@ export interface components {
             /** Route Changes */
             route_changes?: components["schemas"]["RouteChange"][];
         };
+        /** PlanEconomics */
+        PlanEconomics: {
+            /** Plan Id */
+            plan_id: string;
+            /** Departure */
+            departure: string | null;
+            /** Voyages */
+            voyages: components["schemas"]["VoyageEconomics"][];
+            /** Fee Revenue */
+            fee_revenue: number;
+            /** Contribution Margin */
+            contribution_margin: number;
+            /** Empty Slot Cost */
+            empty_slot_cost: number;
+            /** Tariff Operational Gap */
+            tariff_operational_gap: number;
+        };
         /** PlanListItem */
         PlanListItem: {
             /** Plan Id */
@@ -5390,6 +5648,25 @@ export interface components {
             totals: {
                 [key: string]: number;
             };
+        };
+        /** PlatformBusiness */
+        PlatformBusiness: {
+            /** Month */
+            month: string;
+            /** Plan Count */
+            plan_count: number;
+            /** Assumptions */
+            assumptions: components["schemas"]["freshswitch_backend__analysis__models__Assumption"][];
+            /** Empty Slot Cost */
+            empty_slot_cost: number;
+            /** Empty Slot Definition */
+            empty_slot_definition: string;
+            /** Tariff Operational Gap */
+            tariff_operational_gap: number;
+            /** Tariff Operational Definition */
+            tariff_operational_definition: string;
+            /** Lines */
+            lines: components["schemas"]["BusinessLine"][];
         };
         /** PlatformChangeRequest */
         PlatformChangeRequest: {
@@ -5498,6 +5775,50 @@ export interface components {
             shipper_org_id: string;
             /** Shipper Org Name */
             shipper_org_name: string;
+        };
+        /** PlatformMetrics */
+        PlatformMetrics: {
+            /** Month */
+            month: string;
+            /** Month Basis */
+            month_basis: string;
+            /** Plan Count */
+            plan_count: number;
+            /** Shipment Count */
+            shipment_count: number;
+            /** Shipment Pallets */
+            shipment_pallets: number;
+            /** Sea Pallets */
+            sea_pallets: number;
+            /** Air Pallets */
+            air_pallets: number;
+            /** Reefer Containers */
+            reefer_containers: number;
+            average_fill: components["schemas"]["Metric"];
+            /** Shipper Savings Krw */
+            shipper_savings_krw: number;
+            /** Platform Fee Krw */
+            platform_fee_krw: number;
+            /** Performance Fee Krw */
+            performance_fee_krw: number;
+            /** Usage Fee Krw */
+            usage_fee_krw: number;
+            /** Fee Before Refund Krw */
+            fee_before_refund_krw: number;
+            /** Quality Refund Krw */
+            quality_refund_krw: number;
+            /** Air Avoided Pallets */
+            air_avoided_pallets: number;
+            /** Air Avoided Definition */
+            air_avoided_definition: string;
+            order_confirmation_rate: components["schemas"]["Metric"];
+            plan_confirmation_rate: components["schemas"]["Metric"];
+            shipper_reuse_rate: components["schemas"]["Metric"];
+            average_replan_ms: components["schemas"]["Metric"];
+            average_arrival_loss_gap: components["schemas"]["Metric"];
+            co2: components["schemas"]["EmissionResult"];
+            /** Regions */
+            regions: components["schemas"]["RegionMetrics"][];
         };
         /** PlatformPlanRequest */
         PlatformPlanRequest: {
@@ -6123,6 +6444,21 @@ export interface components {
             new_pallets: number;
             /** Occurred At */
             occurred_at?: string | null;
+        };
+        /** RegionMetrics */
+        RegionMetrics: {
+            /** Region */
+            region: string;
+            /** Shipper Count */
+            shipper_count: number;
+            /** Pallets */
+            pallets: number;
+            /** Sea Pallets */
+            sea_pallets: number;
+            /** Savings Krw */
+            savings_krw: number;
+            /** Reefer Containers */
+            reefer_containers: number;
         };
         /** RegisteredDevice */
         RegisteredDevice: {
@@ -8285,6 +8621,95 @@ export interface components {
             fallback_reason?: string | null;
             /** Note */
             note: string;
+        };
+        /** YearLine */
+        YearLine: {
+            /** Forwarder Share */
+            forwarder_share: number;
+            /** Forwarder Label */
+            forwarder_label: string;
+            /**
+             * Base Fee Mode
+             * @enum {string}
+             */
+            base_fee_mode: "deducted" | "additive";
+            /**
+             * Fixed Level
+             * @enum {string}
+             */
+            fixed_level: "full" | "mvp_cash";
+            /** Fixed Label */
+            fixed_label: string;
+            /** Rows */
+            rows: components["schemas"]["YearRow"][];
+            /** Breakeven Year Before Subsidy */
+            breakeven_year_before_subsidy: number | null;
+            /** Breakeven Year After Subsidy */
+            breakeven_year_after_subsidy: number | null;
+            /** Payback Year Before Subsidy */
+            payback_year_before_subsidy: number | null;
+            /** Payback Year After Subsidy */
+            payback_year_after_subsidy: number | null;
+        };
+        /** YearRow */
+        YearRow: {
+            /** Year */
+            year: number;
+            /** Stage */
+            stage: string;
+            /** Pallets */
+            pallets: number;
+            /** Revenue */
+            revenue: number;
+            /** Performance Fee */
+            performance_fee: number;
+            /** Usage Fee */
+            usage_fee: number;
+            /** Forwarder Cost */
+            forwarder_cost: number;
+            /** Contribution */
+            contribution: number;
+            /** Fixed Cost */
+            fixed_cost: number;
+            /** Subsidy */
+            subsidy: number;
+            /** Net Before Subsidy */
+            net_before_subsidy: number;
+            /** Net After Subsidy */
+            net_after_subsidy: number;
+            /** Cumulative Before Subsidy */
+            cumulative_before_subsidy: number;
+            /** Cumulative After Subsidy */
+            cumulative_after_subsidy: number;
+            /**
+             * Excluded Upside
+             * @default 0
+             */
+            excluded_upside: number;
+        };
+        /** YearSubsidy */
+        YearSubsidy: {
+            /** Year */
+            year: number;
+            /** Amount */
+            amount: number;
+            /** Source */
+            source: string;
+        };
+        /** YearVolume */
+        YearVolume: {
+            /** Year */
+            year: number;
+            /** Tonnes */
+            tonnes: {
+                [key: string]: number;
+            };
+            /** Pallets */
+            pallets: {
+                [key: string]: number;
+            };
+            /** Source */
+            source: string;
         };
         /** Assumption */
         freshswitch_backend__analysis__models__Assumption: {
@@ -11195,6 +11620,111 @@ export interface operations {
             };
         };
     };
+    platform_metrics_test_api_saas_platform_metrics_get: {
+        parameters: {
+            query?: {
+                month?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMetrics"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    platform_business_test_api_saas_platform_business_get: {
+        parameters: {
+            query?: {
+                month?: string | null;
+                sensitivity_forwarder_share?: number;
+                ops_cost_per_voyage?: number;
+                variable_cost_per_pallet?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformBusiness"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    platform_business_years_test_api_saas_platform_business_years_get: {
+        parameters: {
+            query?: {
+                scenario_id?: string;
+                years?: number;
+                fee_rate?: number | null;
+                base_fee_per_pallet?: number;
+                base_fee_from_year?: number;
+                sensitivity_forwarder_share?: number;
+                fixed_cost?: number;
+                mvp_cash_fixed_cost?: number;
+                subsidies?: number[] | null;
+                volume_scale?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessYears"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_plans_test_api_saas_forwarder_plans_get: {
         parameters: {
             query?: {
@@ -11278,6 +11808,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExecutionCard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_container_numbers_test_api_saas_forwarder_plans__plan_id__execution_card_containers__container_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+                container_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExecutionNumbersInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContainerExecution"];
                 };
             };
             /** @description Validation Error */

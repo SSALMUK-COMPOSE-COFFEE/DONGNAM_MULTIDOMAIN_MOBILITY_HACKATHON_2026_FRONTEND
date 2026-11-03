@@ -58,3 +58,22 @@ export type AssignmentReasonCodeT = AssignmentReasonT['code'];
 
 export type PlatformAlertT = SaasSchemaT<'Alert'>;
 export type PlatformColdchainActionT = SaasSchemaT<'ColdchainAction'>;
+
+export type PlatformMetricsT = SaasSchemaT<'PlatformMetrics'>;
+export type PlatformMetricsParamsT = SaasQueryT<'/test/api/saas/platform/metrics'>;
+export type PlatformMetricT = SaasSchemaT<'Metric'>;
+export type PlatformRegionMetricsT = SaasSchemaT<'RegionMetrics'>;
+export type PlatformEmissionResultT = SaasSchemaT<'EmissionResult'>;
+export type PlatformEmissionLineT = SaasSchemaT<'EmissionLine'>;
+
+export type PlatformBusinessT = SaasSchemaT<'PlatformBusiness'>;
+export type PlatformBusinessParamsT = SaasQueryT<'/test/api/saas/platform/business'>;
+export type PlatformBusinessLineT = SaasSchemaT<'BusinessLine'>;
+export type PlatformPlanEconomicsT = SaasSchemaT<'PlanEconomics'>;
+
+export type BusinessYearsT = SaasSchemaT<'BusinessYears'>;
+export type BusinessYearsParamsT = SaasQueryT<'/test/api/saas/platform/business/years'>;
+export type BusinessYearLineT = SaasSchemaT<'YearLine'>;
+export type BusinessYearRowT = SaasSchemaT<'YearRow'>;
+export type BusinessYearVolumeT = SaasSchemaT<'YearVolume'>;
+export type BusinessYearSubsidyT = SaasSchemaT<'YearSubsidy'>;
