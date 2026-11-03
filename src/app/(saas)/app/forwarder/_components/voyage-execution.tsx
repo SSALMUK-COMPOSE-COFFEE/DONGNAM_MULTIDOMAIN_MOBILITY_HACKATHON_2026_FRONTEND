@@ -97,10 +97,13 @@ const buildSteps = (
   const etdPassed = passed(voyage?.etd, now);
   const progress = order ? orderProgress(order) : null;
   const isUnapplied = !!order && (order.status === 'rejected' || order.status === 'expired');
+  const status: string | null | undefined = session.status;
+  const awaitingShipper = status === 'pending_shipper_confirmation';
 
   const orderSub = (() => {
     if (orders.isPending) return '불러오는 중';
     if (orders.isError) return '불러오지 못함';
+    if (awaitingShipper && !orderOpen) return '화주 확인 대기';
     if (!order || !progress) return '변경 지시 없음 · 계획대로';
     if (isUnapplied) return `${ORDER_STATUS_LABEL[order.status]} · 계획대로`;
     return progress.total > 0
@@ -109,7 +112,7 @@ const buildSteps = (
   })();
 
   const orderState = (): StepItemT['state'] => {
-    if (orders.isPending || orders.isError) return 'cur';
+    if (orders.isPending || orders.isError || awaitingShipper) return 'cur';
     return orderOpen ? 'cur' : 'done';
   };
   const cyState = (): StepItemT['state'] => {
