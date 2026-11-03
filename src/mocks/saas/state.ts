@@ -245,6 +245,8 @@ export const moveSessionOrg = (org: MockOrgT) => {
   else MOCK_ORGS[index] = org;
 
   writeSession({ ...session, org });
-  const account = findAccount(session.email);
-  if (account) saveAccount({ ...account, org });
+  const accounts = readAccounts().map(account =>
+    account.org.org_id === org.org_id ? { ...account, org } : account
+  );
+  localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
 };

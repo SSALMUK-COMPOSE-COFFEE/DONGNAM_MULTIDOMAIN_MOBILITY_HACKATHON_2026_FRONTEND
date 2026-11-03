@@ -145,3 +145,68 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
     await expectPlatformPlanStatus(page, '확정');
   });
 });
+
+test('초대로 들어온 멤버도 관리자가 등록한 선과장 이후 출하를 보고 등록한다', async ({ page }) => {
+  await page.goto(LOGIN_PATH);
+  await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+
+  const result = await page.evaluate(async () => {
+    const call = async (method: string, path: string, body: unknown = null) => {
+      const response = await fetch(`/test/api${path}`, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'freshswitch' },
+        body: body === null ? null : JSON.stringify(body),
+      });
+      const text = await response.text();
+
+      return { status: response.status, data: text ? JSON.parse(text) : null };
+    };
+    const stamp = Date.now();
+    const admin = { email: `admin-${stamp}@example.com`, password: 'password-1', name: '관리자' };
+    const member = { email: `member-${stamp}@example.com`, password: 'password-2', name: '멤버' };
+
+    await call('POST', '/auth/signup', {
+      ...admin,
+      org_type: 'shipper',
+      org_name: `초대 검증 농가 ${stamp}`,
+    });
+    const invitation = await call('POST', '/saas/org/invitations', { role: 'member' });
+    await call('POST', '/auth/logout');
+    await call('POST', '/auth/signup', { ...member, invite_code: invitation.data.code });
+    await call('POST', '/auth/logout');
+
+    await call('POST', '/auth/login', { email: admin.email, password: admin.password });
+    const packhouse = await call('POST', '/saas/shipper/packhouses', {
+      name: '검증 선과장',
+      region: '경남 진주',
+      product_ids: ['strawberry'],
+    });
+    await call('POST', '/auth/logout');
+
+    const login = await call('POST', '/auth/login', {
+      email: member.email,
+      password: member.password,
+    });
+    const created = await call('POST', '/saas/shipper/lots', {
+      product: 'strawberry',
+      pallets: 2,
+      ready_date: '2026-12-01',
+      shipper: '',
+      destination: 'Singapore',
+      sell_window: 'normal',
+      scenario_id: 'default',
+    });
+    const lots = await call('GET', '/saas/shipper/lots');
+
+    return {
+      invitation: invitation.status,
+      packhouse: packhouse.status,
+      login: login.status,
+      created: created.status,
+      lots: Array.isArray(lots.data) ? lots.data.length : -1,
+    };
+  });
+
+  expect(result).toEqual({ invitation: 201, packhouse: 201, login: 200, created: 201, lots: 1 });
+});

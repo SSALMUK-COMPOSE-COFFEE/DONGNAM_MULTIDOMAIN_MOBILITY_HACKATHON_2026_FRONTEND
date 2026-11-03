@@ -490,7 +490,12 @@ const authHandlers = [
       if (account.password !== password)
         return fail(401, '이메일 또는 비밀번호가 올바르지 않습니다');
 
-      return startSession(account.org, email, account.name, account.role);
+      return startSession(
+        findOrg(account.org.org_id) ?? account.org,
+        email,
+        account.name,
+        account.role
+      );
     }
 
     return fail(401, '이메일 또는 비밀번호가 올바르지 않습니다');

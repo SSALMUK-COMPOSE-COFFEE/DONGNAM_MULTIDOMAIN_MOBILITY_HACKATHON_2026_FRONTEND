@@ -1,7 +1,7 @@
 import { HttpResponse } from 'msw';
 
 import { SAAS_API_BASE, SAAS_HEADERS, SAAS_REQUESTED_WITH } from '@/consts/api-saas';
-import { type MockOrgT, PLATFORM_ORG_ID, meOf } from '@/mocks/saas/orgs';
+import { type MockOrgT, PLATFORM_ORG_ID, findOrg, meOf } from '@/mocks/saas/orgs';
 import { type MockSessionT, mockDb, readSession } from '@/mocks/saas/state';
 import type { Me, OrgType } from '@/types/saas';
 
@@ -41,7 +41,9 @@ export const authenticate = (request: Request): PrincipalT | Response => {
     return fail(403, '이 조직에 속해 있지 않습니다');
   }
 
-  return { org: session.org, me: sessionMe(session) };
+  const org = findOrg(session.org.org_id) ?? session.org;
+
+  return { org, me: sessionMe({ ...session, org }) };
 };
 
 export const authorize = (request: Request, ...roles: OrgType[]): PrincipalT | Response => {
