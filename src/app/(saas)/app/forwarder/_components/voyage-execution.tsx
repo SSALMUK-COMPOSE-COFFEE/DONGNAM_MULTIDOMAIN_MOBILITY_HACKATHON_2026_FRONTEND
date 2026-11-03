@@ -97,8 +97,7 @@ const buildSteps = (
   const etdPassed = passed(voyage?.etd, now);
   const progress = order ? orderProgress(order) : null;
   const isUnapplied = !!order && (order.status === 'rejected' || order.status === 'expired');
-  const status: string | null | undefined = session.status;
-  const awaitingShipper = status === 'pending_shipper_confirmation';
+  const awaitingShipper = session.status === 'pending_shipper_confirmation';
 
   const orderSub = (() => {
     if (orders.isPending) return '불러오는 중';
