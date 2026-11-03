@@ -8,6 +8,7 @@ export type PlatformFuelShockResultT = SaasSchemaT<'FuelShockResult'>;
 
 export type ForecastOptionsT = SaasSchemaT<'ForecastOptions'>;
 export type ForecastPresetT = NonNullable<ForecastOptionsT['preset']>;
+export type ForecastWeatherT = ForecastOptionsT['weather'];
 export type DelayForecastRequestT = Partial<ForecastOptionsT>;
 export type DelayForecastResponseT = SaasSchemaT<'DelayForecastResponse'>;
 export type DelayForecastReplanT = SaasSchemaT<'DelayForecastReplan'>;
