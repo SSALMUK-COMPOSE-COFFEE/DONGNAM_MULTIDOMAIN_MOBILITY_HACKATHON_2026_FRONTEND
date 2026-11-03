@@ -26,6 +26,7 @@ import {
   demoCreatePlan,
   demoOrders,
   demoPlan,
+  demoReplan,
   demoReset,
 } from '@/mocks/saas/demo-bridge';
 import { executionNumberHandlers, withDocumentActions } from '@/mocks/saas/execution-numbers';
@@ -42,7 +43,7 @@ import settlementPreviewFixture from '@/mocks/saas/fixtures/settlement-preview.j
 import ulsanCongestionFixture from '@/mocks/saas/fixtures/ulsan-congestion.json';
 import { metricsHandlers } from '@/mocks/saas/metrics';
 import { orgMemberHandlers, redeemInvitation } from '@/mocks/saas/org-members';
-import { MOCK_ORGS, type MockOrgT, findOrg, firstOrgOfType } from '@/mocks/saas/orgs';
+import { MOCK_ORGS, type MockOrgT, findOrg, firstOrgOfType, orgOfShipper } from '@/mocks/saas/orgs';
 import { shipperProfileHandlers } from '@/mocks/saas/shipper-profile';
 import {
   type MockArrivalT,
@@ -69,6 +70,7 @@ import type {
   PlanSessionT,
   TwinStateT,
 } from '@/types/api';
+import type { SaasSchemaT } from '@/types/api-saas';
 import type { DemoLoginRequest, LoginRequest, SignupOrgType, SignupRequest } from '@/types/saas';
 import type {
   AirSeaComparisonT,
@@ -1484,6 +1486,161 @@ const analysisHandlers = [
   }),
 ];
 
+type MockPlanConfirmationT = SaasSchemaT<'PlanConfirmation'>;
+type MockConfirmationStateT = SaasSchemaT<'PlanConfirmationState'>;
+
+const MOCK_CONFIRMATION_ROUND = 1;
+
+const confirmationsOf = (session: PlanSessionT): MockPlanConfirmationT[] => {
+  const lotIdsByShipper = new Map<string, string[]>();
+  session.scenario.lots.forEach(lot => {
+    lotIdsByShipper.set(lot.shipper_id, [...(lotIdsByShipper.get(lot.shipper_id) ?? []), lot.id]);
+  });
+
+  return [...lotIdsByShipper].map(([shipperId, lotIds]) => ({
+    plan_id: session.plan_id,
+    round: MOCK_CONFIRMATION_ROUND,
+    shipper_id: shipperId,
+    shipper_org_id: orgOfShipper(shipperId)?.org_id ?? '',
+    lot_ids: lotIds,
+    status: 'accepted',
+    reason: null,
+    auto_accepted: false,
+    created_at: session.created_at,
+    decided_at: session.created_at,
+  }));
+};
+
+const confirmationStateOf = (session: PlanSessionT): MockConfirmationStateT => ({
+  plan_id: session.plan_id,
+  status: session.status,
+  version: session.version,
+  round: MOCK_CONFIRMATION_ROUND,
+  confirmations: confirmationsOf(session),
+  needs_replan: false,
+  replan_candidates: [],
+});
+
+const shipperConfirmationViewOf = (session: PlanSessionT, org: MockOrgT) => ({
+  plan_id: session.plan_id,
+  plan_status: session.status,
+  plan_version: session.version,
+  confirmations: confirmationsOf(session).filter(row => org.shipper_ids.includes(row.shipper_id)),
+});
+
+const planConfirmHandlers = [
+  http.get(api('/saas/platform/plan-confirmations'), ({ request }) => {
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+
+    return HttpResponse.json([] satisfies MockConfirmationStateT[]);
+  }),
+
+  http.get(api('/saas/platform/plans/:planId/confirmation'), async ({ request, params }) => {
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+
+    const planId = String(params.planId);
+    if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
+
+    return HttpResponse.json(confirmationStateOf(await demoPlan(planId)));
+  }),
+
+  http.post(
+    api('/saas/platform/plans/:planId/confirmation/auto-accept'),
+    async ({ request, params }) => {
+      const principal = authorize(request, 'platform');
+      if (principal instanceof Response) return principal;
+      if (!principal.org.sandbox) {
+        return fail(403, '전원 자동 수락은 데모(sandbox) 조직에서만 쓸 수 있습니다');
+      }
+
+      const planId = String(params.planId);
+      if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
+
+      return HttpResponse.json(confirmationStateOf(await demoPlan(planId)));
+    }
+  ),
+
+  http.post(api('/saas/platform/plans/:planId/confirmation/recompute'), ({ request, params }) => {
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+    if (!canReadPlan(String(params.planId), principal.org)) {
+      return fail(404, '계획을 찾을 수 없습니다');
+    }
+
+    return fail(422, '거절한 화주가 없습니다');
+  }),
+
+  http.get(api('/saas/shipper/plan-confirmations'), async ({ request }) => {
+    const principal = authorize(request, 'shipper');
+    if (principal instanceof Response) return principal;
+
+    const status = new URL(request.url).searchParams.get('status');
+    const sessions = (await currentSessions()).filter(session =>
+      canReadPlan(session.plan_id, principal.org)
+    );
+    const rows = sessions.flatMap(
+      session => shipperConfirmationViewOf(session, principal.org).confirmations
+    );
+
+    return HttpResponse.json(status ? rows.filter(row => row.status === status) : rows);
+  }),
+
+  http.get(api('/saas/shipper/plans/:planId/confirmation'), async ({ request, params }) => {
+    const principal = authorize(request, 'shipper');
+    if (principal instanceof Response) return principal;
+
+    const planId = String(params.planId);
+    if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
+
+    return HttpResponse.json(shipperConfirmationViewOf(await demoPlan(planId), principal.org));
+  }),
+
+  http.post(api('/saas/shipper/plans/:planId/confirmation'), async ({ request, params }) => {
+    const principal = authorize(request, 'shipper');
+    if (principal instanceof Response) return principal;
+
+    const planId = String(params.planId);
+    if (!canReadPlan(planId, principal.org)) return fail(404, '확인할 계획을 찾을 수 없습니다');
+
+    const view = shipperConfirmationViewOf(await demoPlan(planId), principal.org);
+    if (view.confirmations.length === 0) return fail(404, '확인할 계획을 찾을 수 없습니다');
+
+    return fail(409, '이미 수락한 계획입니다');
+  }),
+
+  http.post(api('/saas/platform/plans/:planId/add-lot'), async ({ request, params }) => {
+    const principal = authorize(request, 'platform');
+    if (principal instanceof Response) return principal;
+
+    const planId = String(params.planId);
+    if (!canReadPlan(planId, principal.org)) return fail(404, '계획을 찾을 수 없습니다');
+
+    const { lot_id } = (await request.json()) as { lot_id?: string };
+    const lot = mockDb.lots.find(item => item.id === lot_id);
+    if (!lot) return fail(404, '출하를 찾을 수 없습니다');
+    if (lot.status !== 'registered') return fail(409, '다른 계획에 들어갔거나 취소된 출하입니다');
+
+    const replan = await demoReplan(planId, {
+      type: 'add_lot',
+      lot: {
+        source: lot.source,
+        id: lot.id,
+        shipper_id: lot.shipper_id,
+        product_id: lot.product_id,
+        pallets: lot.pallets,
+        ready_date: lot.ready_date,
+        destination: lot.destination,
+        sell_by_date: lot.sell_by_date,
+        sell_window: lot.sell_window,
+      },
+    });
+
+    return HttpResponse.json(replan);
+  }),
+];
+
 const sandboxHandlers = [
   http.post(api('/saas/sandbox/reset'), async ({ request }) => {
     const principal = authorize(request, 'platform');
@@ -1526,6 +1683,7 @@ export const saasHandlers = [
   ...deviceHandlers,
   ...analysisHandlers,
   ...sandboxHandlers,
+  ...planConfirmHandlers,
   ...changeRequestHandlers,
   ...metricsHandlers,
   ...executionNumberHandlers,

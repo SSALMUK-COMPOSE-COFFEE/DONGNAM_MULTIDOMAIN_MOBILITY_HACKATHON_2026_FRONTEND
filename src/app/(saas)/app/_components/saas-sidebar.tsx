@@ -22,6 +22,7 @@ import { useMe } from '@/apis/saas/auth';
 import { useForwarderPlans } from '@/apis/saas/forwarder';
 import { usePlatformLots, usePlatformPlans } from '@/apis/saas/platform';
 import { useShipperLots } from '@/apis/saas/shipper';
+import { useShipperPlanConfirmations } from '@/apis/saas/shipper-confirm';
 import { LogoutButton } from '@/app/(saas)/app/_components/logout-button';
 import { OrgSwitcher } from '@/app/(saas)/app/_components/org-switcher';
 import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
@@ -136,7 +137,11 @@ function PlatformNav({ railTips }: RailTipsPropsT) {
 function ShipperNav({ railTips }: RailTipsPropsT) {
   const registeredLots = useShipperLots({ status: 'registered' });
   const tasks = useShipperTasks();
+  const planConfirmations = useShipperPlanConfirmations('pending');
   const tasksReady = tasks.plans.isSuccess && !tasks.isOrdersLoading && !tasks.isOrdersError;
+  const confirmPlanCount = planConfirmations.isSuccess
+    ? new Set(planConfirmations.data.map(({ plan_id }) => plan_id)).size
+    : 0;
 
   return (
     <SidebarNav
@@ -144,7 +149,9 @@ function ShipperNav({ railTips }: RailTipsPropsT) {
       railTips={railTips}
       counts={{
         shipperRegisteredLots: countOf(registeredLots),
-        shipperPendingConfirmations: tasksReady ? tasks.confirmations.length : null,
+        shipperPendingConfirmations: tasksReady
+          ? tasks.confirmations.length + confirmPlanCount
+          : null,
         shipperPendingRequests: tasksReady ? tasks.requests.length : null,
       }}
     />

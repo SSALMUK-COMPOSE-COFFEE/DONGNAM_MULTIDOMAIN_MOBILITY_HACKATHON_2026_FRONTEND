@@ -22,6 +22,7 @@ import {
 import { DelayForecastCard } from '@/app/(saas)/app/platform/plans/detail/_components/delay-forecast-card';
 import { PlatformOrderCard } from '@/app/(saas)/app/platform/plans/detail/_components/platform-order-card';
 import { ReplanAddLotTab } from '@/app/(saas)/app/platform/plans/detail/_components/replan-add-lot-tab';
+import { ReplanCandidatesCard } from '@/app/(saas)/app/platform/plans/detail/_components/replan-candidates-card';
 import { ReplanDelayTab } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
 import { ScheduleCheckCard } from '@/app/(saas)/app/platform/plans/detail/_components/schedule-check-card';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
@@ -123,6 +124,12 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
     flow.loadExternalReplan(replan);
   };
 
+  const runAddLot = (lotId: string, label: string) => {
+    clearRequest();
+    setTrigger({ label, focusContainerId: null });
+    flow.runAddLot(lotId);
+  };
+
   const dropRejected = (requestId: string) => {
     if (requestResult?.requestId === requestId) {
       clearRequest();
@@ -204,6 +211,8 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
 
   return (
     <div className="@container flex flex-col gap-4">
+      <ReplanCandidatesCard session={session} isReplanning={isBusy} onRun={runEvent} />
+
       <div className="grid grid-cols-1 items-start gap-4 @min-[900px]:grid-cols-2">
         <ScheduleCheckCard
           key={`schedule:${planId}:${session.version}`}
@@ -252,7 +261,7 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
               <ReplanDelayTab session={session} isReplanning={isBusy} onRun={runEvent} />
             )}
             {kind === 'add_lot' && (
-              <ReplanAddLotTab session={session} isReplanning={isBusy} onRun={runEvent} />
+              <ReplanAddLotTab session={session} isReplanning={isBusy} onAddLot={runAddLot} />
             )}
             {isLotKind && seaLots.length === 0 && (
               <p className="m2-sub mt-0">해상으로 가는 로트가 없어 바꿀 대상이 없습니다.</p>

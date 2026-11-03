@@ -23,8 +23,11 @@ import {
   fmtWon,
 } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
+import {
+  AIR_PLACEHOLDER,
+  UNASSIGNED_PLACEHOLDER,
+} from '@/app/(saas)/app/shipper/_components/vessel-label';
 import type { ShipperSettlementT } from '@/types/saas-shipper';
-import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 const BASIS_LABEL: Record<ShipperSettlementT['basis'], string> = {
   tariff: '정산표 단가',
@@ -38,6 +41,9 @@ const BASELINE_KIND_LABEL: Record<string, string> = {
   mixed: '단독 운송 대비',
 };
 const MANWON = 10_000;
+
+const noVesselOf = (row: ShipperSettlementT) =>
+  row.air_pallets > 0 && row.sea_pallets === 0 ? AIR_PLACEHOLDER : UNASSIGNED_PLACEHOLDER;
 
 const sumOf = (rows: ShipperSettlementT[], pick: (row: ShipperSettlementT) => number) =>
   rows.reduce((sum, row) => sum + pick(row), 0);
@@ -199,9 +205,12 @@ export function SettlementsView() {
                   <tr key={`${row.plan_id}:${row.shipper_id}`}>
                     <td className={CARD_MAIN}>
                       <div className="m2-who">
-                        {row.vessel ?? NO_VESSEL_LABEL}
+                        {row.vessel ?? noVesselOf(row)}
                         <small className="m2-num">
-                          출항 {fmtMonthDayTime(row.departure)} · v{row.version}
+                          {row.departure
+                            ? `출항 ${fmtMonthDayTime(row.departure)}`
+                            : noVesselOf(row)}{' '}
+                          · v{row.version}
                         </small>
                       </div>
                     </td>

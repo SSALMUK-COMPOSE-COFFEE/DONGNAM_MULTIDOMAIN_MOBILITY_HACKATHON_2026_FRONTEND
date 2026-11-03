@@ -4,7 +4,7 @@ import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
 import { type ReactNode, useMemo } from 'react';
 
-import { useShipperCatalog, useShipperLots } from '@/apis/saas/shipper';
+import { useShipperCatalog, useShipperLots, useShipperSettlements } from '@/apis/saas/shipper';
 import { lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { ownScopeOf } from '@/app/(saas)/app/shipper/_components/my-plan';
 import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
@@ -21,6 +21,12 @@ import {
   isRequestAwaitingForwarder,
   useShipperTasks,
 } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
+import {
+  departureText,
+  noVesselLabel,
+  palletSplitByPlan,
+  vesselText,
+} from '@/app/(saas)/app/shipper/_components/vessel-label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NO_VESSEL_LABEL, planOptionLabel } from '@/utils/plan-label';
 
@@ -52,6 +58,7 @@ export function RequestsView() {
     [lots.data, catalog.data]
   );
   const ownShipperIds = useMemo(() => ownScopeOf(catalog.data).shipperIds, [catalog.data]);
+  const splits = palletSplitByPlan(useShipperSettlements().data);
 
   if (plans.isError) {
     return (
@@ -78,7 +85,10 @@ export function RequestsView() {
     orders.flatMap(order =>
       order.requests.map(request => ({
         planId: plan.plan_id,
-        planLabel: planOptionLabel({ ...plan, plan_id: '' }),
+        planLabel: planOptionLabel({ ...plan, plan_id: '' }).replace(
+          NO_VESSEL_LABEL,
+          noVesselLabel(splits.get(plan.plan_id))
+        ),
         order,
         request,
       }))
@@ -123,9 +133,9 @@ export function RequestsView() {
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <p className="font-semibold">
-                  {plan.vessel ?? NO_VESSEL_LABEL}
+                  {vesselText(plan.vessel, splits.get(plan.plan_id))}
                   <span className="m2-sub m2-num mt-0 ml-2 inline">
-                    출항 {fmtMonthDayTime(plan.departure)}
+                    {departureText(plan.departure, splits.get(plan.plan_id))}
                   </span>
                 </p>
                 {mine.map(({ shipper_id, reason_text, net_cost_delta, deadline }) => (

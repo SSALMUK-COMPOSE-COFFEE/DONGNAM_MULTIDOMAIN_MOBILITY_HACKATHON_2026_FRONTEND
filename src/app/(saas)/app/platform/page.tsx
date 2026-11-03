@@ -4,10 +4,5 @@ import { NewPlanView } from '@/app/(saas)/app/platform/_components/new-plan-view
 export const instant = false;
 
 export default function PlatformHomePage() {
-  return (
-    <>
-      <PlatformKpiStrip />
-      <NewPlanView />
-    </>
-  );
+  return <NewPlanView afterHeader={<PlatformKpiStrip />} />;
 }

@@ -19,28 +19,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanEventT, PlanSessionT, SchemaT } from '@/types/api';
+import type { PlanSessionT } from '@/types/api';
 import type { PlatformLotT } from '@/types/saas-platform';
 
 type ReplanAddLotTabPropsT = {
   session: PlanSessionT;
   isReplanning: boolean;
-  onRun: (event: PlanEventT, label: string, focusContainerId: string | null) => void;
+  onAddLot: (lotId: string, label: string) => void;
 };
 
-const toLot = (lot: PlatformLotT): SchemaT<'Lot'> => ({
-  source: lot.source,
-  id: lot.id,
-  shipper_id: lot.shipper_id,
-  product_id: lot.product_id,
-  pallets: lot.pallets,
-  ready_date: lot.ready_date,
-  destination: lot.destination,
-  sell_by_date: lot.sell_by_date,
-  sell_window: lot.sell_window,
-});
-
-export function ReplanAddLotTab({ session, isReplanning, onRun }: ReplanAddLotTabPropsT) {
+export function ReplanAddLotTab({ session, isReplanning, onAddLot }: ReplanAddLotTabPropsT) {
   const { scenario } = session;
   const lotsQuery = usePlatformLots('registered');
   const [pickedId, setPickedId] = useState('');
@@ -91,8 +79,7 @@ export function ReplanAddLotTab({ session, isReplanning, onRun }: ReplanAddLotTa
     );
   }
 
-  const run = () =>
-    onRun({ type: 'add_lot', lot: toLot(lot) }, `출하 추가 · ${lotLabel(lot)}`, null);
+  const run = () => onAddLot(lot.id, `출하 추가 · ${lotLabel(lot)}`);
 
   return (
     <div className="flex min-w-0 flex-col gap-4">

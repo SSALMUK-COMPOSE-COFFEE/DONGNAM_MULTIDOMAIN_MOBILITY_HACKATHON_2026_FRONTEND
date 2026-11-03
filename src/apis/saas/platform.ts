@@ -52,6 +52,7 @@ export const PLATFORM_ENDPOINTS = {
   LOTS: '/saas/platform/lots',
   PLANS: '/saas/platform/plans',
   PLAN_PREVIEW: '/saas/platform/plans/preview',
+  PLAN_ADD_LOT: (planId: string) => `/saas/platform/plans/${encodeURIComponent(planId)}/add-lot`,
   PLAN_FORWARDER: (planId: string) =>
     `/saas/platform/plans/${encodeURIComponent(planId)}/forwarder`,
   SETTLEMENTS: '/saas/platform/settlements',
@@ -93,6 +94,9 @@ export const platformKeys = {
     [...platformKeys.all(orgId), 'plan-preview', ...lotIds] as const,
   planOrders: (orgId: string, planId: string) =>
     [...platformKeys.plan(orgId, planId), 'orders'] as const,
+  planConfirmation: (orgId: string, planId: string) =>
+    [...platformKeys.plan(orgId, planId), 'confirmation'] as const,
+  planConfirmations: (orgId: string) => [...platformKeys.all(orgId), 'plan-confirmations'] as const,
   settlements: (orgId: string) => [...platformKeys.all(orgId), 'settlements'] as const,
   forwarders: (orgId: string) => [...platformKeys.all(orgId), 'forwarders'] as const,
   devices: (orgId: string) => [...platformKeys.all(orgId), 'devices'] as const,
@@ -165,6 +169,16 @@ export const postPlatformPlanEvent = async (planId: string, event: PlanEventT) =
   const { data } = await saasApi.post<ReplanResponseT>(
     PLATFORM_ENDPOINTS.PLAN_EVENTS(planId),
     { event },
+    { params: { llm: false } }
+  );
+
+  return data;
+};
+
+export const postPlatformAddLot = async (planId: string, lotId: string) => {
+  const { data } = await saasApi.post<ReplanResponseT>(
+    PLATFORM_ENDPOINTS.PLAN_ADD_LOT(planId),
+    { lot_id: lotId },
     { params: { llm: false } }
   );
 
@@ -508,6 +522,12 @@ export const usePlatformReplanFlow = (planId: string) => {
     onError: toastSaasError('재최적화하지 못했습니다.'),
   });
 
+  const addLot = useMutation({
+    mutationFn: (lotId: string) => postPlatformAddLot(planId, lotId),
+    onSuccess: result => setExternal({ planId, result }),
+    onError: toastSaasError('출하를 넣어 다시 짜지 못했습니다.'),
+  });
+
   const replanResult = externalReplan ?? replan.data ?? null;
 
   const apply = useMutation({
@@ -516,9 +536,12 @@ export const usePlatformReplanFlow = (planId: string) => {
     onSuccess: updated => {
       queryClient.setQueryData(platformKeys.plan(orgId, planId), updated);
       queryClient.invalidateQueries({ queryKey: platformKeys.planOrders(orgId, planId) });
+      queryClient.invalidateQueries({ queryKey: platformKeys.planConfirmation(orgId, planId) });
+      queryClient.invalidateQueries({ queryKey: platformKeys.planConfirmations(orgId) });
       queryClient.invalidateQueries({ queryKey: platformKeys.plans(orgId), exact: true });
       queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
       queryClient.invalidateQueries({ queryKey: analysisKeys.plan(orgId, planId) });
+      queryClient.invalidateQueries({ queryKey: platformKeys.lots(orgId) });
       toast.success('대안을 적용했습니다. 화주·포워더 확정을 기다립니다.');
     },
     onError: toastSaasError('대안을 적용하지 못했습니다.'),
@@ -528,15 +551,23 @@ export const usePlatformReplanFlow = (planId: string) => {
 
   return {
     replanResult,
-    isReplanning: replan.isPending,
+    isReplanning: replan.isPending || addLot.isPending,
     runReplan: (event: PlanEventT) => {
       apply.reset();
+      addLot.reset();
       setExternal(null);
       replan.mutate(event);
+    },
+    runAddLot: (lotId: string) => {
+      apply.reset();
+      replan.reset();
+      setExternal(null);
+      addLot.mutate(lotId);
     },
     loadExternalReplan: (result: ReplanResponseT | null) => {
       apply.reset();
       replan.reset();
+      addLot.reset();
       setExternal(result?.plan_id === planId ? { planId, result } : null);
     },
     isExternalReplan: externalReplan !== null,

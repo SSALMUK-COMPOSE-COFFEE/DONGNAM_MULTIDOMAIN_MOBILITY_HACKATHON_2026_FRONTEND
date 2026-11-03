@@ -22,6 +22,7 @@ type SettlementTablePropsT = {
   scenario: ScenarioT;
   viewerShipperId?: string;
   airSettlements?: SettlementT[];
+  feeLabel?: string;
 };
 
 type AirSettlementRowT = Omit<SettlementT, 'sea_pallets' | 'air_pallets' | 'basis'> & {
@@ -57,6 +58,7 @@ export function SettlementTable({
   scenario,
   viewerShipperId,
   airSettlements = [],
+  feeLabel = '수수료 25%',
 }: SettlementTablePropsT) {
   const airRows = toAirRows(airSettlements, containerSettlements);
 
@@ -77,7 +79,7 @@ export function SettlementTable({
               <TableHead className="text-right">혼자 항공</TableHead>
               <TableHead className="text-right">공동적재</TableHead>
               <TableHead className="text-right">절감</TableHead>
-              <TableHead className="text-right">수수료 25%</TableHead>
+              <TableHead className="text-right">{feeLabel}</TableHead>
               <TableHead className="text-right">화주 몫</TableHead>
             </TableRow>
           </TableHeader>

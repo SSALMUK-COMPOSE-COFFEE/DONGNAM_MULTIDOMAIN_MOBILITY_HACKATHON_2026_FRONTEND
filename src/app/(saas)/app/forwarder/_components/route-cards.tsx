@@ -45,12 +45,18 @@ const gateText = (run: SceneRunT) => {
   return { text: '게이트 비혼잡', warn: false };
 };
 
+const MONEY_TEXT = /\d[\d,.]*\s*(만\s*)?원|운행비|운임|비용|요금|수수료/;
+
+const isMoneyText = (text: string) => MONEY_TEXT.test(text);
+
 export function RouteCards({ session, scene }: RouteCardsPropsT) {
   const runs = sortedRuns(scene);
   const totalKm = session.routes.reduce((sum, { pickup }) => sum + pickup.total_km, 0);
   const hasGrape = runs.some(({ tone }) => tone === 'grape');
   const hasBerry = runs.some(({ tone }) => tone === 'berry');
-  const assumptions = [...new Set(session.routes.flatMap(({ pickup }) => pickup.assumptions))];
+  const assumptions = [
+    ...new Set(session.routes.flatMap(({ pickup }) => pickup.assumptions)),
+  ].filter(text => !isMoneyText(text));
   const dropped = session.routes.flatMap(({ pickup }) => pickup.dropped_stop_ids);
 
   return (

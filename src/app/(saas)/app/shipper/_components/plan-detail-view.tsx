@@ -11,10 +11,13 @@ import {
   useShipperPlan,
   useShipperPlanOrders,
 } from '@/apis/saas/shipper';
+import { isReplanPending } from '@/apis/saas/shipper-confirm';
 import {
   viewerShipperIdOf,
   withLocatedPackhouses,
 } from '@/app/(saas)/app/shipper/_components/catalog';
+import { ContainerNumbersCard } from '@/app/(saas)/app/shipper/_components/container-numbers-card';
+import { settlementFeeLabel } from '@/app/(saas)/app/shipper/_components/fee-label';
 import { PLAN_STATUS_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
 import {
   type LotLabelMapT,
@@ -29,6 +32,7 @@ import {
   ownScopeOf,
 } from '@/app/(saas)/app/shipper/_components/my-plan';
 import { so2Text } from '@/app/(saas)/app/shipper/_components/plain-words';
+import { PlanConfirmCard } from '@/app/(saas)/app/shipper/_components/plan-confirm-card';
 import {
   CardSkeleton,
   EmptyState,
@@ -164,6 +168,15 @@ export function PlanDetailView() {
               <ShipperMapHero myPlan={myPlan} now={now} />
             </SectionErrorBoundary>
 
+            <SectionErrorBoundary message="계획 확인을 그리지 못했습니다." className="h-40">
+              <PlanConfirmCard
+                planId={plan.data.plan_id}
+                labels={labels}
+                planLabel={planSessionLabel({ ...plan.data, plan_id: '' })}
+                replanPending={isReplanPending(plan.data)}
+              />
+            </SectionErrorBoundary>
+
             <SectionErrorBoundary message="계획 카드를 그리지 못했습니다." className="h-64">
               <ShipperPlanCard
                 myPlan={myPlan}
@@ -173,6 +186,10 @@ export function PlanDetailView() {
                 showDetailLink={false}
                 showDecision={false}
               />
+            </SectionErrorBoundary>
+
+            <SectionErrorBoundary message="컨테이너 번호를 그리지 못했습니다." className="h-40">
+              <ContainerNumbersCard session={plan.data} />
             </SectionErrorBoundary>
 
             <SectionErrorBoundary message="운송계획을 그리지 못했습니다." className="h-96">
@@ -197,6 +214,7 @@ export function PlanDetailView() {
                       scenario={session.scenario}
                       viewerShipperId={viewerShipperId}
                       airSettlements={session.plan.settlements}
+                      feeLabel={settlementFeeLabel(session)}
                     />
                   </div>
                   <div className="flex min-w-0 flex-col gap-4">

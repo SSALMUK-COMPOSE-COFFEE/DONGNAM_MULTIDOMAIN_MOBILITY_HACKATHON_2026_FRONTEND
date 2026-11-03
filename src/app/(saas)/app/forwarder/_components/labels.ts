@@ -3,6 +3,7 @@ import type { ForwarderOrderT, ForwarderPlanItemT } from '@/types/saas-forwarder
 export const PLAN_STATUS_LABEL: Record<ForwarderPlanItemT['status'], string> = {
   committed: '확정',
   pending_confirmation: '변경 확인 중',
+  pending_shipper_confirmation: '화주 확인 대기',
 };
 
 export const ORDER_STATUS_LABEL: Record<ForwarderOrderT['status'], string> = {

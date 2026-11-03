@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { usePlatformPlans } from '@/apis/saas/platform';
+import { AWAITING_SHIPPERS_STATUS, usePlatformAttention } from '@/apis/saas/platform-confirm';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
@@ -15,6 +16,10 @@ import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 export function PlanListView() {
   const { data: plans, isPending, isError, error, refetch, isFetching } = usePlatformPlans();
   const unassigned = plans?.filter(({ forwarder }) => !forwarder).length ?? 0;
+  const attention = usePlatformAttention();
+  const attentionById = new Map((attention.data ?? []).map(state => [state.plan_id, state]));
+  const awaiting = plans?.filter(({ status }) => status === AWAITING_SHIPPERS_STATUS).length ?? 0;
+  const needsReplan = (attention.data ?? []).filter(({ needs_replan }) => needs_replan).length;
 
   return (
     <>
@@ -23,7 +28,14 @@ export function PlanListView() {
         title="항차별 공동적재 계획과 포워더 배정"
         sub={
           plans
-            ? `계획 ${plans.length}개 · 포워더 미배정 ${unassigned}개`
+            ? [
+                `계획 ${plans.length}개`,
+                `포워더 미배정 ${unassigned}개`,
+                awaiting > 0 ? `화주 확인 대기 ${awaiting}개` : '',
+                needsReplan > 0 ? `재계획 필요 ${needsReplan}개` : '',
+              ]
+                .filter(Boolean)
+                .join(' · ')
             : '만든 계획을 항차별로 모아 봅니다.'
         }
       >
@@ -78,7 +90,12 @@ export function PlanListView() {
                     <td className="r m2-num">{plan.shipper_count}곳</td>
                     <td className="r m2-num font-bold">{plan.total_pallets}</td>
                     <td>
-                      <PlanStatusBadge status={plan.status} />
+                      <span className="flex flex-wrap gap-1.5">
+                        <PlanStatusBadge
+                          status={plan.status}
+                          confirmation={attentionById.get(plan.plan_id) ?? null}
+                        />
+                      </span>
                     </td>
                     <td>
                       {plan.forwarder ? (

@@ -98,17 +98,17 @@ const sceneWithFullBounds = (scene: MapSceneT): MapSceneT => {
   return points.length > 0 ? { ...scene, bounds: points } : scene;
 };
 
-export function NewPlanView() {
+export function NewPlanView({ afterHeader = null }: { afterHeader?: ReactNode }) {
   const orgId = usePlatformOrgId();
 
   return (
     <MapLinkProvider key={orgId}>
-      <NewPlanScreen />
+      <NewPlanScreen afterHeader={afterHeader} />
     </MapLinkProvider>
   );
 }
 
-function NewPlanScreen() {
+function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
   const [filter, setFilter] = useState<FilterT>('registered');
   const lotsQuery = usePlatformLots();
   const registeredQuery = usePlatformLots('registered');
@@ -287,6 +287,8 @@ function NewPlanScreen() {
           {createPlan.isPending ? '계획 짜는 중' : '계획 생성'}
         </button>
       </PlatformHeader>
+
+      {afterHeader}
 
       <Steps
         items={planSteps({

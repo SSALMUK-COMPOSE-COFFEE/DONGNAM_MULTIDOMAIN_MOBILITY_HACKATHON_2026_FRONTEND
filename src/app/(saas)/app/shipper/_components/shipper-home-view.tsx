@@ -10,7 +10,8 @@ import {
   useShipperOrgId,
   useShipperPlan,
 } from '@/apis/saas/shipper';
-import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { isReplanPending, useShipperPlanConfirmations } from '@/apis/saas/shipper-confirm';
+import { lotLabel, lotLabelMap } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { MOBILE_STEPS } from '@/app/(saas)/app/shipper/_components/mobile';
 import { MyLotsCard } from '@/app/(saas)/app/shipper/_components/my-lots-card';
 import {
@@ -22,6 +23,10 @@ import {
   myPendingConfirmations,
   ownScopeOf,
 } from '@/app/(saas)/app/shipper/_components/my-plan';
+import {
+  PlanConfirmCard,
+  ReplanPendingNotice,
+} from '@/app/(saas)/app/shipper/_components/plan-confirm-card';
 import {
   CardSkeleton,
   EmptyState,
@@ -46,12 +51,25 @@ import {
 } from '@/app/(saas)/app/shipper/_components/shipper-plan-card';
 import { useNowMinute } from '@/app/(saas)/app/shipper/_components/use-now';
 import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
+import { UNASSIGNED_PLACEHOLDER } from '@/app/(saas)/app/shipper/_components/vessel-label';
 import { type StepItemT, Steps } from '@/components/map-hero';
 import { MapLinkProvider } from '@/components/map-link';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
-import type { ShipperCatalogT, ShipperLotT, ShipperOrderT } from '@/types/saas-shipper';
+import type {
+  ShipperCatalogT,
+  ShipperLotT,
+  ShipperOrderT,
+  ShipperPlanItemT,
+} from '@/types/saas-shipper';
+import { NO_VESSEL_LABEL, planOptionLabel } from '@/utils/plan-label';
 
 const NEW_LOT_ANCHOR = 'new-lot';
+const CONFIRM_CARD_LIMIT = 3;
+
+const planItemLabel = (item: ShipperPlanItemT | undefined) =>
+  item
+    ? planOptionLabel({ ...item, plan_id: '' }).replace(NO_VESSEL_LABEL, UNASSIGNED_PLACEHOLDER)
+    : '';
 
 type StepsInputT = {
   lots: ShipperLotT[];
@@ -61,6 +79,8 @@ type StepsInputT = {
   pending: PendingConfirmationT[] | null;
   orders: ShipperOrderT[] | null;
   now: number | null;
+  planConfirmPending: boolean;
+  replanPending: boolean;
 };
 
 const stepsOf = ({
@@ -71,6 +91,8 @@ const stepsOf = ({
   pending,
   orders,
   now,
+  planConfirmPending,
+  replanPending,
 }: StepsInputT): StepItemT[] => {
   const active = lots.filter(({ status }) => status !== 'cancelled');
   const latest = [...active].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
@@ -109,6 +131,24 @@ const stepsOf = ({
     !firstStop && voyage ? `${fmtMonthDayTime(voyage.etd)} 출항` : '',
   ].join('');
   const sailed = !!voyage && now !== null && timeOf(voyage.etd) <= now;
+
+  if (replanPending) {
+    return [
+      register,
+      { title: '계획 확인', sub: '다시 짜는 중', state: 'cur' },
+      { title: '확정', state: 'todo' },
+      { title: '집하·출항', state: 'todo' },
+    ];
+  }
+
+  if (planConfirmPending) {
+    return [
+      register,
+      { title: '계획 확인', sub: [planSub, '수락 대기'].filter(Boolean).join(' · '), state: 'cur' },
+      { title: '확정', state: 'todo' },
+      { title: '집하·출항', sub: pickupSub, state: 'todo' },
+    ];
+  }
 
   if (pending === null || orders === null) {
     return [
@@ -161,11 +201,20 @@ export function ShipperHomeView() {
 
   const own: OwnScopeT = useMemo(() => ownScopeOf(catalog.data), [catalog.data]);
 
+  const planConfirmations = useShipperPlanConfirmations('pending');
+  const confirmPlanIds = [...new Set((planConfirmations.data ?? []).map(({ plan_id }) => plan_id))];
+  const labels = useMemo(
+    () => lotLabelMap(lots.data, catalog.data ?? null),
+    [lots.data, catalog.data]
+  );
+
   const plansReady = !!tasks.plans.data && (!tasks.isOrdersLoading || tasks.isOrdersError);
   const latestPlanId =
     [...(tasks.plans.data ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
       ?.plan_id ?? '';
-  const focusPlanId = plansReady ? (tasks.confirmations[0]?.plan.plan_id ?? latestPlanId) : '';
+  const focusPlanId = plansReady
+    ? (tasks.confirmations[0]?.plan.plan_id ?? confirmPlanIds[0] ?? latestPlanId)
+    : '';
   const plan = useShipperPlan(focusPlanId);
 
   const myPlan = useMemo(
@@ -184,6 +233,17 @@ export function ShipperHomeView() {
     .sort((a, b) => timeOf(a) - timeOf(b))[0];
 
   const orgName = me.data?.active_org.org_name ?? '';
+  const planItemOf = (planId: string) =>
+    tasks.plans.data?.find(({ plan_id }) => plan_id === planId);
+  const focusReplanPending =
+    (isReplanPending(plan.data) || isReplanPending(planItemOf(focusPlanId))) &&
+    !confirmPlanIds.includes(focusPlanId);
+  const isReplanning =
+    (tasks.plans.data ?? []).some(
+      item => isReplanPending(item) && !confirmPlanIds.includes(item.plan_id)
+    ) || focusReplanPending;
+  const waitingCount = allPending.length + confirmPlanIds.length;
+  const waitingWord = confirmPlanIds.length > 0 ? '확인' : '확정';
 
   const heroArea = () => {
     if (tasks.plans.isError) {
@@ -248,8 +308,8 @@ export function ShipperHomeView() {
         eyebrow={now === null ? ' ' : fmtLongDate(now)}
         title={orgName ? `안녕하세요, ${orgName}님` : '안녕하세요'}
         sub={
-          allPending.length > 0
-            ? `확정을 기다리는 계획이 ${allPending.length}건 있어요.${
+          waitingCount > 0
+            ? `${waitingWord}을 기다리는 계획이 ${waitingCount}건 있어요.${
                 earliestDeadline ? ` ${fmtDayTime(earliestDeadline)}까지 확정해 주세요.` : ''
               }`
             : null
@@ -272,13 +332,44 @@ export function ShipperHomeView() {
           pending,
           orders: focusOrders,
           now,
+          planConfirmPending: confirmPlanIds.includes(focusPlanId),
+          replanPending: focusReplanPending,
         })}
       />
+
+      {isReplanning && <ReplanPendingNotice className="mb-4" />}
 
       {heroArea()}
 
       <div className="m2-grid grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
         <div className="m2-col">
+          {planConfirmations.isError && (
+            <QueryError
+              message="계획 확인 요청을 불러오지 못했습니다."
+              onRetry={() => planConfirmations.refetch()}
+              isRetrying={planConfirmations.isFetching}
+            />
+          )}
+          {confirmPlanIds.slice(0, CONFIRM_CARD_LIMIT).map(planId => (
+            <SectionErrorBoundary
+              key={planId}
+              message="계획 확인을 그리지 못했습니다."
+              className="h-40"
+            >
+              <PlanConfirmCard
+                planId={planId}
+                labels={labels}
+                planLabel={planItemLabel(planItemOf(planId))}
+                replanPending={isReplanPending(planItemOf(planId))}
+                showDetailLink
+              />
+            </SectionErrorBoundary>
+          ))}
+          {confirmPlanIds.length > CONFIRM_CARD_LIMIT && (
+            <Link href={SHIPPER_PATHS.PLANS} className="m2-btn m2-btn-sec self-start">
+              확인할 계획 {confirmPlanIds.length - CONFIRM_CARD_LIMIT}건 더 보기
+            </Link>
+          )}
           {tasks.isOrdersError && (
             <QueryError
               message="실행 지시를 불러오지 못했습니다."

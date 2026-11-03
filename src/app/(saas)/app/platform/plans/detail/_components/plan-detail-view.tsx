@@ -7,6 +7,11 @@ import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { usePlatformPlan, usePlatformPlans } from '@/apis/saas/platform';
+import {
+  AWAITING_SHIPPERS_STATUS,
+  confirmationCounts,
+  usePlatformConfirmation,
+} from '@/apis/saas/platform-confirm';
 import { ContainerPlanCard } from '@/app/(saas)/app/platform/_components/container-plan-card';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import {
@@ -38,6 +43,7 @@ import { BenchmarkCard } from '@/app/(saas)/app/platform/plans/detail/_component
 import { ForwarderAssignCard } from '@/app/(saas)/app/platform/plans/detail/_components/forwarder-assign-card';
 import { FuelShockSection } from '@/app/(saas)/app/platform/plans/detail/_components/fuel-shock-section';
 import { LearnedLossCard } from '@/app/(saas)/app/platform/plans/detail/_components/learned-loss-card';
+import { PlanConfirmationCard } from '@/app/(saas)/app/platform/plans/detail/_components/plan-confirmation-card';
 import { ProvenanceCard } from '@/app/(saas)/app/platform/plans/detail/_components/provenance-card';
 import { ReplanSection } from '@/app/(saas)/app/platform/plans/detail/_components/replan-section';
 import { ShipperSavingsCard } from '@/app/(saas)/app/platform/plans/detail/_components/shipper-savings-card';
@@ -104,6 +110,10 @@ export function PlanDetailView() {
 function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSessionT }) {
   const plansQuery = usePlatformPlans();
   const planItem = plansQuery.data?.find(item => item.plan_id === planId) ?? null;
+  const confirmation = usePlatformConfirmation(planId).data ?? null;
+  const planStatus = confirmation?.status ?? session.status;
+  const isAwaiting = planStatus === AWAITING_SHIPPERS_STATUS;
+  const counts = confirmationCounts(confirmation);
   const [pickedVoyageId, setPickedVoyageId] = useState<string | null>(null);
   const scene = useMemo(
     () => buildPickedScene(session, {}, pickedVoyageId),
@@ -133,14 +143,16 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
     },
     {
       title: '계획 생성',
-      sub: `v${session.version} · ${formatKstMonthDayTime(session.created_at)}`,
-      state: 'done',
+      sub: isAwaiting
+        ? `화주 확인 대기${counts.total > 0 ? ` ${counts.accepted}/${counts.total}` : ''}`
+        : `v${session.version} · ${formatKstMonthDayTime(session.created_at)}`,
+      state: isAwaiting ? 'cur' : 'done',
     },
     {
       title: '포워더 배정',
       sub:
         planItem?.forwarder?.org_name ?? (plansQuery.isPending ? '확인 중' : '포워더를 고르세요'),
-      state: planItem?.forwarder ? 'done' : 'cur',
+      state: forwarderStepState(!!planItem?.forwarder, isAwaiting),
     },
   ];
 
@@ -158,7 +170,7 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
           .filter(Boolean)
           .join(' · ')}
       >
-        <PlanStatusBadge status={session.status} />
+        <PlanStatusBadge status={planStatus} confirmation={confirmation} />
         <Link href={PLATFORM_PATHS.COLDCHAIN_OF(planId)} className="m2-btn m2-btn-sec">
           콜드체인 관제
         </Link>
@@ -188,7 +200,8 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
             <ShipperSavingsCard session={session} />
           </div>
           <div className="m2-col">
-            <ForwarderAssignCard planId={planId} />
+            <PlanConfirmationCard session={session} />
+            <ForwarderAssignCard planId={planId} planStatus={planStatus} />
             <ContainerPlanCard source={session} emptyText="" />
             <SettlementPreviewCard title="정산" source={session} emptyText="" />
             {plan.settlement_tariffs?.map(tariff => (
@@ -230,6 +243,12 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
     </>
   );
 }
+
+const forwarderStepState = (isAssigned: boolean, isAwaiting: boolean): StepItemT['state'] => {
+  if (isAssigned) return 'done';
+
+  return isAwaiting ? 'todo' : 'cur';
+};
 
 type PlanLotRowT = {
   lotId: string;
