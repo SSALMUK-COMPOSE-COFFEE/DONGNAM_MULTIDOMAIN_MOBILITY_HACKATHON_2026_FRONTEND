@@ -1,4 +1,4 @@
-import { HttpResponse, delay, http, sse } from 'msw';
+import { HttpResponse, delay, http } from 'msw';
 
 import { API_BASE_URL } from '@/consts/api';
 import { BASE_PATH, SAAS_ENDPOINTS } from '@/consts/api-saas';
@@ -1095,35 +1095,52 @@ const coldchainHandlers = [
 const streamHandlers = streamOverlapsDemo()
   ? []
   : [
-      sse<{ alert: string }>(api('/coldchain/alerts/stream'), ({ client, request }) => {
+      http.get(api('/coldchain/alerts/stream'), ({ request }) => {
+        if (!readSession()) return HttpResponse.error();
+
         const url = new URL(request.url);
         const since = Number(url.searchParams.get('since') ?? 0);
         const pending = alerts.filter(alert => alert.seq > since);
-        if (!readSession()) {
-          client.error();
+        const encoder = new TextEncoder();
+        let timer: ReturnType<typeof setInterval> | null = null;
+        const stop = () => {
+          if (timer !== null) clearInterval(timer);
+          timer = null;
+        };
 
-          return;
-        }
+        const body = new ReadableStream<Uint8Array>({
+          start(controller) {
+            timer = setInterval(() => {
+              const alert = pending.shift();
+              if (!alert || request.signal.aborted || controller.desiredSize === null) {
+                stop();
 
-        const timer = setInterval(() => {
-          const alert = pending.shift();
-          if (!alert || request.signal.aborted) {
-            clearInterval(timer);
+                return;
+              }
 
-            return;
-          }
+              const data = JSON.stringify({ ...alert, created_at: nowIso() });
+              try {
+                controller.enqueue(
+                  encoder.encode(`id:${alert.seq}\nevent:alert\ndata:${data}\n\n`)
+                );
+              } catch {
+                stop();
+              }
+            }, SSE_TICK_MS);
+          },
+          cancel() {
+            stop();
+          },
+        });
+        request.signal.addEventListener('abort', stop, { once: true });
 
-          try {
-            client.send({
-              id: String(alert.seq),
-              event: 'alert',
-              data: JSON.stringify({ ...alert, created_at: nowIso() }),
-            });
-          } catch {
-            clearInterval(timer);
-          }
-        }, SSE_TICK_MS);
-        request.signal.addEventListener('abort', () => clearInterval(timer), { once: true });
+        return new HttpResponse(body, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            Connection: 'keep-alive',
+          },
+        });
       }),
     ];
 
