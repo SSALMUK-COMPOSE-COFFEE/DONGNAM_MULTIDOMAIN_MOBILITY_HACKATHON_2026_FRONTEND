@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { usePlatformPlan } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
-import { PLAN_DETAIL_QUERY, PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
+import { PLATFORM_PATHS, readPlanQuery } from '@/app/(saas)/app/platform/_components/paths';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { ForwarderAssignCard } from '@/app/(saas)/app/platform/plans/detail/_components/forwarder-assign-card';
@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatKstMonthDayTime } from '@/utils/kst';
 
 export function PlanDetailView() {
-  const planId = useSearchParams().get(PLAN_DETAIL_QUERY) ?? '';
+  const planId = readPlanQuery(useSearchParams()) ?? '';
   const { data: session, isPending, isError, error, refetch, isFetching } = usePlatformPlan(planId);
 
   if (!planId || (isError && isAxiosError(error) && error.response?.status === 404)) {

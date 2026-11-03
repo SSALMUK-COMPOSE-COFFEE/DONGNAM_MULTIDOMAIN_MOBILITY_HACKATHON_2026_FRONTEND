@@ -16,6 +16,7 @@ import {
   usePlatformSimulation,
 } from '@/apis/saas/platform';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
+import { readPlanQuery, withPlanQuery } from '@/app/(saas)/app/platform/_components/paths';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { ActionList } from '@/components/action-list';
 import { AlertFeed } from '@/components/alert-feed';
@@ -36,7 +37,6 @@ import type { TwinSummaryT } from '@/types/saas-platform';
 import { formatPercent } from '@/utils/format';
 import { planOptionLabel } from '@/utils/plan-label';
 
-const PLAN_QUERY = 'plan';
 const SAAS_EMPTY_TEXT = '기기를 연결하면 측정값이 들어옵니다.';
 
 const STATUS_STYLE: Record<TwinSummaryT['status'], { label: string; className: string }> = {
@@ -58,12 +58,12 @@ export function ColdchainView() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const planId = searchParams.get(PLAN_QUERY) ?? plansQuery.data?.[0]?.plan_id ?? '';
+  const planId = readPlanQuery(searchParams) ?? plansQuery.data?.[0]?.plan_id ?? '';
 
   const selectPlan = (nextPlanId: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(PLAN_QUERY, nextPlanId);
-    router.replace(`${pathname}?${params}`);
+    router.replace(
+      `${pathname}?${withPlanQuery(new URLSearchParams(searchParams.toString()), nextPlanId)}`
+    );
   };
 
   if (plansQuery.isError) {
