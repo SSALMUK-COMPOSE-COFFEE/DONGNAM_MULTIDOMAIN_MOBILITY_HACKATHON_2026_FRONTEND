@@ -28,6 +28,7 @@ import {
   demoPlan,
   demoReset,
 } from '@/mocks/saas/demo-bridge';
+import { executionNumberHandlers } from '@/mocks/saas/execution-numbers';
 import airSeaFixture from '@/mocks/saas/fixtures/air-sea.json';
 import arrivalFixture from '@/mocks/saas/fixtures/arrival.json';
 import benchmarkFixture from '@/mocks/saas/fixtures/benchmark.json';
@@ -39,6 +40,7 @@ import provenanceFixture from '@/mocks/saas/fixtures/provenance.json';
 import scheduleCheckFixture from '@/mocks/saas/fixtures/schedule-check.json';
 import settlementPreviewFixture from '@/mocks/saas/fixtures/settlement-preview.json';
 import ulsanCongestionFixture from '@/mocks/saas/fixtures/ulsan-congestion.json';
+import { metricsHandlers } from '@/mocks/saas/metrics';
 import { orgMemberHandlers, redeemInvitation } from '@/mocks/saas/org-members';
 import { MOCK_ORGS, type MockOrgT, findOrg, firstOrgOfType } from '@/mocks/saas/orgs';
 import { shipperProfileHandlers } from '@/mocks/saas/shipper-profile';
@@ -1506,6 +1508,8 @@ export const saasHandlers = [
   ...analysisHandlers,
   ...sandboxHandlers,
   ...changeRequestHandlers,
+  ...metricsHandlers,
+  ...executionNumberHandlers,
   ...shipperProfileHandlers,
   ...orgMemberHandlers,
   ...coldchainHandlers,

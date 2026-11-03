@@ -1,0 +1,186 @@
+{
+  "month": "2026-11",
+  "plan_count": 1,
+  "assumptions": [
+    {
+      "key": "ops_cost_per_voyage",
+      "value": 2884615.0,
+      "unit": "원/항차",
+      "source": "가정: 기획서 ㅍ3 8-1 고정비 연 150,000,000원 ÷ 연 52항차(주 1회)"
+    },
+    {
+      "key": "variable_cost_per_pallet",
+      "value": 0.0,
+      "unit": "원/파렛트",
+      "source": "가정: 항차마다 드는 플랫폼 변동비. 기본 0원"
+    },
+    {
+      "key": "voyages_per_year",
+      "value": 52.0,
+      "unit": "항차/년",
+      "source": "가정: 주 1회 출항. 연 환산 = 항차당 공헌이익 평균 × 연 항차"
+    }
+  ],
+  "empty_slot_cost": 2265000,
+  "empty_slot_definition": "쓴 컨테이너의 빈 칸 비용 = 컨테이너 비용 × 빈 파렛트 ÷ 용량. 정산 단가(파렛트당)로 받지 못하는 몫. 정산 차이(settlement_gap)에 이미 들어 있어 따로 빼지 않는 참고 항목",
+  "tariff_operational_gap": -2048453,
+  "tariff_operational_definition": "화주 정산액(total_shared_cost) − 운영비(total_operational_cost). 음수면 정산 단가가 실제 운영비를 못 덮어 플랫폼(혼적 주선자)이 진다. 각 line 의 settlement_gap 으로 들어가 platform_net_with_settlement·annual_net_with_settlement 에 더한다. platform_net·annual_net 은 이 차이를 반영하지 않은 값",
+  "lines": [
+    {
+      "forwarder_share": 0.0,
+      "label": "기준선(최종 기획서: 포워더는 실행 파트너, 자기 운임·수수료를 화주에게 별도 청구. 성과보수 배분 없음)",
+      "plans": [
+        {
+          "plan_id": "1e7189a4-5d67-4dc1-93b1-d652118734b3",
+          "departure": "2026-11-18T18:00:00+09:00",
+          "voyages": [
+            {
+              "voyage_id": "V-2611A",
+              "vessel_name": "MV FRESH HARMONY",
+              "etd": "2026-11-18T18:00:00+09:00",
+              "containers_used": 2,
+              "pallets": 35,
+              "capacity_pallets": 40,
+              "fill": 0.875,
+              "savings": 10318577,
+              "fee_revenue": 2579644,
+              "forwarder_share": 0,
+              "ops_cost": 2884615,
+              "platform_net": -304971,
+              "variable_cost": 0,
+              "contribution_margin": 2579644,
+              "fixed_cost_allocation": 2884615,
+              "usage_fee_rule_revenue": 1418250,
+              "breakeven_containers": 2.24,
+              "containers": [
+                {
+                  "container_id": "CA-01",
+                  "pallets": 17,
+                  "capacity_pallets": 20,
+                  "fill": 0.85,
+                  "container_cost": 9060000,
+                  "savings": 4233000,
+                  "margin_per_pallet": 781941,
+                  "breakeven_savings_pallets": 11.59,
+                  "breakeven_platform_pallets": 18.96,
+                  "breakeven_platform_fill": 0.948
+                },
+                {
+                  "container_id": "CA-02",
+                  "pallets": 18,
+                  "capacity_pallets": 20,
+                  "fill": 0.9,
+                  "container_cost": 9060000,
+                  "savings": 6085577,
+                  "margin_per_pallet": 841421,
+                  "breakeven_savings_pallets": 10.77,
+                  "breakeven_platform_pallets": 72.12,
+                  "breakeven_platform_fill": 3.606
+                }
+              ]
+            }
+          ],
+          "fee_revenue": 2579644,
+          "contribution_margin": 2579644,
+          "empty_slot_cost": 2265000,
+          "tariff_operational_gap": -2048453
+        }
+      ],
+      "voyage_count": 1,
+      "pallets": 35,
+      "fee_revenue": 2579644,
+      "forwarder_cost": 0,
+      "variable_cost": 0,
+      "contribution_margin": 2579644,
+      "fixed_cost_allocation": 2884615,
+      "platform_net": -304971,
+      "settlement_gap": -2048453,
+      "platform_net_with_settlement": -2353424,
+      "annual_contribution": 134141488,
+      "annual_fixed_cost": 149999980,
+      "annual_net": -15858492,
+      "annual_settlement_gap": -106519556,
+      "annual_net_with_settlement": -122378048,
+      "breakeven_pallets_per_voyage": 39.1,
+      "remaining_pallets_per_voyage": 4.1
+    },
+    {
+      "forwarder_share": 0.4,
+      "label": "민감도(가정(포워더 배분형))",
+      "plans": [
+        {
+          "plan_id": "1e7189a4-5d67-4dc1-93b1-d652118734b3",
+          "departure": "2026-11-18T18:00:00+09:00",
+          "voyages": [
+            {
+              "voyage_id": "V-2611A",
+              "vessel_name": "MV FRESH HARMONY",
+              "etd": "2026-11-18T18:00:00+09:00",
+              "containers_used": 2,
+              "pallets": 35,
+              "capacity_pallets": 40,
+              "fill": 0.875,
+              "savings": 10318577,
+              "fee_revenue": 2579644,
+              "forwarder_share": 1031858,
+              "ops_cost": 2884615,
+              "platform_net": -1336829,
+              "variable_cost": 0,
+              "contribution_margin": 1547786,
+              "fixed_cost_allocation": 2884615,
+              "usage_fee_rule_revenue": 1418250,
+              "breakeven_containers": 3.73,
+              "containers": [
+                {
+                  "container_id": "CA-01",
+                  "pallets": 17,
+                  "capacity_pallets": 20,
+                  "fill": 0.85,
+                  "container_cost": 9060000,
+                  "savings": 4233000,
+                  "margin_per_pallet": 781941,
+                  "breakeven_savings_pallets": 11.59,
+                  "breakeven_platform_pallets": 23.88,
+                  "breakeven_platform_fill": 1.194
+                },
+                {
+                  "container_id": "CA-02",
+                  "pallets": 18,
+                  "capacity_pallets": 20,
+                  "fill": 0.9,
+                  "container_cost": 9060000,
+                  "savings": 6085577,
+                  "margin_per_pallet": 841421,
+                  "breakeven_savings_pallets": 10.77,
+                  "breakeven_platform_pallets": 120.19,
+                  "breakeven_platform_fill": 6.0095
+                }
+              ]
+            }
+          ],
+          "fee_revenue": 2579644,
+          "contribution_margin": 1547786,
+          "empty_slot_cost": 2265000,
+          "tariff_operational_gap": -2048453
+        }
+      ],
+      "voyage_count": 1,
+      "pallets": 35,
+      "fee_revenue": 2579644,
+      "forwarder_cost": 1031858,
+      "variable_cost": 0,
+      "contribution_margin": 1547786,
+      "fixed_cost_allocation": 2884615,
+      "platform_net": -1336829,
+      "settlement_gap": -2048453,
+      "platform_net_with_settlement": -3385282,
+      "annual_contribution": 80484872,
+      "annual_fixed_cost": 149999980,
+      "annual_net": -69515108,
+      "annual_settlement_gap": -106519556,
+      "annual_net_with_settlement": -176034664,
+      "breakeven_pallets_per_voyage": 65.2,
+      "remaining_pallets_per_voyage": 30.2
+    }
+  ]
+}

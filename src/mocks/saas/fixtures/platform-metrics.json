@@ -1,0 +1,106 @@
+{
+  "month": "2026-11",
+  "month_basis": "계획의 첫 출항일(KST) 기준 월. 쓴 항차가 없으면 계획 생성일",
+  "plan_count": 1,
+  "shipment_count": 6,
+  "shipment_pallets": 37,
+  "sea_pallets": 35,
+  "air_pallets": 2,
+  "reefer_containers": 2,
+  "average_fill": {
+    "value": 0.875,
+    "numerator": 35.0,
+    "denominator": 40.0,
+    "unit": "비율",
+    "definition": "쓴 리퍼 컨테이너의 적재 파렛트 합 ÷ 용량 합(파렛트 가중 평균)",
+    "reason": null
+  },
+  "shipper_savings_krw": 10318577,
+  "platform_fee_krw": 2579644,
+  "performance_fee_krw": 2579644,
+  "usage_fee_krw": 0,
+  "fee_before_refund_krw": 2579644,
+  "quality_refund_krw": 0,
+  "air_avoided_pallets": 17,
+  "air_avoided_definition": "혼자면 항공이었을 파렛트(단독 항공 기준선 품목, 이용료 품목 제외) 중 해상으로 간 것",
+  "order_confirmation_rate": {
+    "value": 0.6667,
+    "numerator": 2.0,
+    "denominator": 3.0,
+    "unit": "비율",
+    "definition": "이번 달 계획의 실행 지시 중 포워더 확정(forwarder_confirmed)·실행(executed) 비율",
+    "reason": null
+  },
+  "plan_confirmation_rate": {
+    "value": 1.0,
+    "numerator": 1.0,
+    "denominator": 1.0,
+    "unit": "비율",
+    "definition": "이번 달 계획 중 화주 확인 대기(pending_confirmation)가 아닌 확정(committed) 비율",
+    "reason": null
+  },
+  "shipper_reuse_rate": {
+    "value": 0.0,
+    "numerator": 0.0,
+    "denominator": 5.0,
+    "unit": "비율",
+    "definition": "이번 달 계획에 참여한 화주 중 이 달 말까지 계획 2건 이상에 참여한 화주 비율",
+    "reason": null
+  },
+  "average_replan_ms": {
+    "value": null,
+    "numerator": 0.0,
+    "denominator": 0.0,
+    "unit": "ms",
+    "definition": "이번 달 계획에 적용된 재최적화(apply)의 계산 시간 평균",
+    "reason": "이번 달 계획에 적용된 재계산 이력이 없다"
+  },
+  "average_arrival_loss_gap": {
+    "value": null,
+    "numerator": null,
+    "denominator": 0.0,
+    "unit": "손실률 차이(검수 − 예측)",
+    "definition": "도착 검수 손실률에서 계획 예측 손실률을 뺀 값의 로트 평균",
+    "reason": "이번 달 계획에 도착 검수 기록이 없다"
+  },
+  "co2": {
+    "saved_t_co2": 8.738,
+    "air_avoided_pallets": 17,
+    "lines": [
+      {
+        "destination": "HKHKG",
+        "pallets": 17,
+        "tonnes_cargo": 7.055,
+        "air_kg_co2": 8902.1,
+        "sea_kg_co2": 164.0,
+        "saved_t_co2": 8.738
+      }
+    ],
+    "skipped_pallets": 0,
+    "skipped_reason": null,
+    "air_g_per_tkm": 602.0,
+    "road_g_per_tkm": 62.0,
+    "sea_g_per_tkm": 8.0,
+    "factor_source": "IEA 운송수단별 CO₂ 배출계수(g CO₂/톤·km): 항공 602, 도로 62, 해상 8. The Geography of Transport Systems 인용값이며 IEA 원문 표는 확인 필요",
+    "factor_source_url": "https://transportgeography.org/contents/chapter4/transportation-and-environment/co2-emissions-passenger-freight-transport-mode",
+    "distance_source": "가정: 인천–홍콩 항공 대권거리 약 2,060km, 부산신항–홍콩 해상 약 2,130km(1,150해리), 선과장→부산신항 육송 평균 100km. 항공 쪽 육송은 cost_params.air_trucking_km"
+  },
+  "regions": [
+    {
+      "region": "부울경",
+      "shipper_count": 3,
+      "pallets": 19,
+      "sea_pallets": 17,
+      "savings_krw": 4233000,
+      "reefer_containers": 1
+    },
+    {
+      "region": "경북",
+      "shipper_count": 2,
+      "pallets": 18,
+      "sea_pallets": 18,
+      "savings_krw": 6085577,
+      "reefer_containers": 1
+    }
+  ]
+}
