@@ -4008,6 +4008,7 @@ export interface components {
             document_action_label?: string | null;
             /** Plain Text */
             plain_text?: string | null;
+            saas_basis?: components["schemas"]["RequestBasis"] | null;
             /**
              * Status
              * @default pending
@@ -7058,6 +7059,34 @@ export interface components {
             alternatives: components["schemas"]["AlternativeSummary"][];
             /** Thresholds */
             thresholds: components["schemas"]["Threshold"][];
+        };
+        /** RequestBasis */
+        RequestBasis: {
+            /** Head */
+            head: string;
+            /** Container Kind */
+            container_kind: string;
+            /**
+             * Si Cutoff
+             * Format: date-time
+             */
+            si_cutoff: string;
+            /**
+             * Vgm Cutoff
+             * Format: date-time
+             */
+            vgm_cutoff: string;
+            /**
+             * Cy Cutoff
+             * Format: date-time
+             */
+            cy_cutoff: string;
+            /** Net Kg Before */
+            net_kg_before: number;
+            /** Net Kg After */
+            net_kg_after: number;
+            /** Setting */
+            setting: string;
         };
         /** RequestDraft */
         RequestDraft: {
