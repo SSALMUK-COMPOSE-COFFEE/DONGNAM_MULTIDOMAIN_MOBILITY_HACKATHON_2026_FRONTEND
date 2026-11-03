@@ -1,0 +1,147 @@
+import { type Page, expect, test } from '@playwright/test';
+
+const LOGIN_PATH = '/test/login';
+
+const enterAs = async (
+  page: Page,
+  role: 'platform' | 'shipper' | 'forwarder',
+  shipperOrgId?: string
+) => {
+  const index = { platform: 0, shipper: 1, forwarder: 2 }[role];
+
+  if (shipperOrgId) {
+    await page.getByRole('button', { name: '다른 화주로 바꾸기' }).click();
+    await page.getByLabel('데모 화주 조직').selectOption(shipperOrgId);
+  }
+  await page
+    .getByRole('button', { name: /들어가기/ })
+    .nth(index)
+    .click();
+  await page.waitForURL(new RegExp(`/test/app/${role}`));
+};
+
+const logout = async (page: Page) => {
+  await page.getByRole('button', { name: '로그아웃' }).click();
+  await page.waitForURL(/\/test\/login/);
+};
+
+const menu = (page: Page, name: RegExp) =>
+  page.getByRole('complementary', { name: '주 메뉴' }).getByRole('link', { name });
+
+const expectPlatformPlanStatus = async (page: Page, status: '확정' | '확정 대기') => {
+  await menu(page, /공동적재 계획/).click();
+  const row = page
+    .getByRole('main')
+    .first()
+    .getByRole('row')
+    .filter({ hasText: 'MV FRESH HARMONY' })
+    .first();
+  await expect(row.getByText(status, { exact: true })).toBeVisible();
+};
+
+test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진다', async ({ page }) => {
+  await page.goto(LOGIN_PATH);
+  await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+
+  await test.step('화주가 새 출하를 등록한다', async () => {
+    await enterAs(page, 'shipper');
+    const main = page.getByRole('main').first();
+    await expect(main.getByRole('heading', { level: 1 })).toContainText('진주 딸기 수출농가 A');
+    const registered = main.getByRole('row').filter({ hasText: '등록됨' });
+    await expect(registered).toHaveCount(1);
+
+    await main.getByRole('button', { name: '한 팔레트 늘리기' }).click();
+    await main.getByRole('button', { name: '출하 등록' }).click();
+    await expect(registered).toHaveCount(2);
+    await logout(page);
+  });
+
+  await test.step('플랫폼이 출하 풀에서 계획을 만든다', async () => {
+    await enterAs(page, 'platform');
+    const main = page.getByRole('main').first();
+    await expect(main.getByRole('heading', { name: '출하 풀' })).toBeVisible();
+    await expect(main.getByRole('checkbox', { name: /lot-.* 선택$/ })).toHaveCount(3);
+
+    await main.getByRole('checkbox', { name: '등록된 출하 모두 선택' }).check();
+    await expect(main.getByRole('button', { name: '계획 생성' })).toBeEnabled();
+    await main.getByRole('button', { name: '계획 생성' }).click();
+    await page.waitForURL(/\/platform\/plans\/detail\?plan_id=/);
+
+    await expect(main.getByRole('heading', { name: '포워더 배정' })).toBeVisible();
+    await expect(main.getByRole('combobox', { name: '포워더' })).toHaveText('동남 콜드체인 포워딩');
+    await expect(
+      main.getByRole('img', { name: 'CA-01 17/20 파렛트, 진주 8, 산청 5, 밀양 4' }).first()
+    ).toBeVisible();
+  });
+
+  await test.step('플랫폼이 감축 재최적화를 적용한다', async () => {
+    const main = page.getByRole('main').first();
+    await main.getByRole('button', { name: '한 파렛트 줄이기' }).click();
+    await main.getByRole('button', { name: '한 파렛트 줄이기' }).click();
+    await main.getByRole('button', { name: '진주 2파렛트 취소하고 다시 짜기' }).click();
+    await expect(
+      main.getByRole('heading', { name: /^3가지 안을 다시 계산했습니다/ })
+    ).toBeVisible();
+
+    await main.getByRole('button', { name: '이 안으로 적용' }).first().click();
+    await expect(main.getByRole('button', { name: '적용됨' })).toBeVisible();
+    await expect(main).toContainText(/실행 지시\s*화주 확인 대기/);
+    await expectPlatformPlanStatus(page, '확정 대기');
+    await logout(page);
+  });
+
+  await test.step('당겨 실린 화주가 계획을 확정한다', async () => {
+    await enterAs(page, 'shipper', 'shipper-miryang');
+    const main = page.getByRole('main').first();
+    await expect(main.getByText(/확정을 기다리는 계획이 1건/)).toBeVisible();
+
+    await menu(page, /계획 확정/).click();
+    await main.getByRole('link', { name: '확정하러 가기' }).click();
+    await page.waitForURL(/\/shipper\/plans\/detail\?plan_id=/);
+
+    await expect(
+      main.getByRole('img', { name: /^CA-01 17\/20 파렛트, 내 출하 6, 다른 화주/ })
+    ).toBeVisible();
+    await expect(main).not.toContainText('진주 딸기 수출농가 A');
+    await expect(main).not.toContainText('산청 딸기 수출농가 B');
+
+    await main.getByRole('button', { name: '계획 확정하기' }).click();
+    await expect(main).toContainText(/실행 지시\s*포워더 확정 대기/);
+    await logout(page);
+  });
+
+  await test.step('포워더가 실행 지시를 확정한다', async () => {
+    await enterAs(page, 'forwarder');
+    const main = page.getByRole('main').first();
+    await expect(main.getByRole('link', { name: '확정할 실행 지시 1건' })).toBeVisible();
+
+    await menu(page, /실행 지시/).click();
+    await expect(main.getByRole('heading', { name: '실행 지시 v2' })).toBeVisible();
+    await expect(main).toContainText('정산 금액 비공개');
+    await expect(main).not.toContainText(/\d원/);
+
+    await main.getByRole('button', { name: '실행 지시 확정' }).click();
+    await expect(main.getByText(/내 확정 대기 0건 · 끝난 지시 1건/)).toBeVisible();
+    const done = main.getByRole('row').filter({ hasText: 'MV FRESH HARMONY' });
+    await expect(done).toContainText('확정 완료');
+
+    await done.getByRole('link', { name: '항차 상세' }).click();
+    await page.waitForURL(/\/forwarder\/plans\/detail\?plan_id=/);
+    await expect(main.getByRole('button', { name: '확정됨 · v2' })).toBeVisible();
+
+    const accept = main.getByRole('button', { name: '수락', exact: true });
+    await expect(accept.first()).toBeVisible();
+    while ((await accept.count()) > 0) {
+      const remaining = await accept.count();
+      await accept.first().click();
+      await expect(accept).toHaveCount(remaining - 1);
+    }
+    await expect(main.getByRole('checkbox', { name: / 미완료$/ })).toHaveCount(0);
+    await logout(page);
+  });
+
+  await test.step('플랫폼 목록에서 계획이 확정으로 바뀐다', async () => {
+    await enterAs(page, 'platform');
+    await expectPlatformPlanStatus(page, '확정');
+  });
+});

@@ -1,4 +1,4 @@
-import { PalletBar, type PalletSegmentT } from '@/components/pallet-bar';
+import { PalletBar, type PalletSegmentT, palletBarLabel } from '@/components/pallet-bar';
 import type { ContainerLoadT, PlanT, ScenarioT } from '@/types/api';
 import {
   getOtherShipperLabel,
@@ -73,6 +73,13 @@ export function ContainerLoadBar({
       description={voyage?.vessel_name}
       capacity={container.capacity_pallets}
       segments={segments}
+      ariaLabel={palletBarLabel(
+        container.container_id,
+        container.capacity_pallets,
+        segments.map(segment =>
+          segment.key === viewerShipperId ? { ...segment, label: '내 출하' } : segment
+        )
+      )}
     />
   );
 }

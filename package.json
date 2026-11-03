@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:mock": "NEXT_PUBLIC_API_MOCKING=enabled NEXT_PUBLIC_BASE_PATH=/test next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "next typegen && tsc --noEmit",
+    "test:e2e": "playwright test",
     "gen:api": "openapi-typescript https://freshswitch.ssalhub.xyz/api/openapi.json -o src/types/openapi.d.ts",
     "gen:api:saas": "openapi-typescript ${SAAS_OPENAPI:-https://freshswitch.ssalhub.xyz/test/api/openapi.json} -o src/types/openapi-saas.d.ts"
   },
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/node": "^20",

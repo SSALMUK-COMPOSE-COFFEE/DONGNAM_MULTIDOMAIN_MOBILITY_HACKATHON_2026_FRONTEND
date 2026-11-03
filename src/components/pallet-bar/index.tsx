@@ -13,10 +13,24 @@ type PalletBarPropsT = {
   description?: string;
   capacity: number;
   segments: PalletSegmentT[];
+  ariaLabel?: string;
+};
+
+export const palletBarLabel = (
+  name: string,
+  capacity: number,
+  segments: Pick<PalletSegmentT, 'label' | 'pallets'>[]
+) => {
+  const filled = segments.reduce((sum, { pallets }) => sum + pallets, 0);
+
+  return [
+    `${name} ${filled}/${capacity} 파렛트`,
+    ...segments.map(({ label, pallets }) => `${label} ${pallets}`),
+  ].join(', ');
 };
 
 /** 컨테이너 한 대를 파렛트 칸으로 보여준다. 화주별로 색을 나누고 빈 칸은 테두리만 그린다 */
-export function PalletBar({ title, description, capacity, segments }: PalletBarPropsT) {
+export function PalletBar({ title, description, capacity, segments, ariaLabel }: PalletBarPropsT) {
   const cells = segments.flatMap(({ key, pallets, colorClassName }) =>
     Array.from({ length: pallets }, (_, index) => ({ id: `${key}-${index}`, colorClassName }))
   );
@@ -37,7 +51,11 @@ export function PalletBar({ title, description, capacity, segments }: PalletBarP
         </p>
       </div>
 
-      <div className="flex gap-1">
+      <div
+        role="img"
+        aria-label={ariaLabel ?? palletBarLabel(title, capacity, segments)}
+        className="flex gap-1"
+      >
         {cells.map(({ id, colorClassName }) => (
           <span key={id} className={cn('h-10 flex-1 rounded-[4px]', colorClassName)} />
         ))}
