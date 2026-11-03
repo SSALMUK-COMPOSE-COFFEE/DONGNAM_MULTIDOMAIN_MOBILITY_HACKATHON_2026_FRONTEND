@@ -4,8 +4,10 @@ import { MinusIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePlatformReplanFlow } from '@/apis/saas/platform';
-import { ContainerLoadBar } from '@/components/container-load-bar';
-import { ExecutionOrderPanel } from '@/components/execution-order';
+import { ContainerBlock } from '@/app/(saas)/app/platform/_components/container-plan-card';
+import { containerViews } from '@/app/(saas)/app/platform/_components/plan-model';
+import { SegTabs } from '@/app/(saas)/app/platform/_components/seg-tabs';
+import { PlatformOrderCard } from '@/app/(saas)/app/platform/plans/detail/_components/platform-order-card';
 import { ReplanAlternatives } from '@/components/replan-alternatives';
 import {
   Select,
@@ -14,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PlanEventT, PlanSessionT } from '@/types/api';
 import { getProductName, getShipperShortName } from '@/utils/scenario';
 
@@ -39,6 +40,8 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
   };
   const isUnchanged = kind === 'reduce' && pallets === maxPallets;
   const container = plan.containers.find(({ container_id }) => container_id === lot?.container_id);
+  const containerView =
+    containerViews(session).find(({ id }) => id === container?.container_id) ?? null;
 
   const flow = usePlatformReplanFlow(planId);
 
@@ -67,26 +70,37 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
   return (
     <div className="@container flex flex-col gap-4">
       <section className="m2-card">
-        <div className="mb-4">
-          <h2 className="m2-h2">재최적화</h2>
-          <p className="m2-sub">
-            화주 취소·감축이나 항공 전환이 생기면 세 가지 안을 다시 계산해 고릅니다.
-          </p>
+        <div className="m2-card-h">
+          <div>
+            <h2 className="m2-h2">재최적화</h2>
+            <p className="m2-sub">
+              화주 취소·감축이나 항공 전환이 생기면 세 가지 안을 다시 계산해 고릅니다.
+            </p>
+          </div>
         </div>
-        <div className="grid grid-cols-1 items-start gap-8 @min-[960px]:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 items-start gap-6 @min-[900px]:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
           {seaLots.length === 0 ? (
             <p className="m2-sub mt-0">해상으로 가는 로트가 없어 바꿀 대상이 없습니다.</p>
           ) : (
-            <div className="flex flex-col gap-5">
-              <Tabs value={kind} onValueChange={value => setKind(value as ChangeKindT)}>
-                <TabsList>
-                  <TabsTrigger value="reduce">취소 · 감축</TabsTrigger>
-                  <TabsTrigger value="air_switch">항공 전환</TabsTrigger>
-                </TabsList>
-              </Tabs>
+            <div className="flex min-w-0 flex-col gap-4">
+              <div className="m2-lbl">바꿀 일</div>
+              <SegTabs<ChangeKindT>
+                label="바꿀 일"
+                value={kind}
+                onChange={setKind}
+                options={[
+                  { value: 'reduce', label: '취소 · 감축' },
+                  { value: 'air_switch', label: '항공 전환' },
+                ]}
+                className="self-start"
+              />
 
+              <div className="m2-lbl">대상 로트</div>
               <Select value={lot?.lot_id ?? ''} onValueChange={setPickedLotId}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger
+                  aria-label="대상 로트"
+                  className="h-10 w-full min-w-0 rounded-[12px] bg-white *:data-[slot=select-value]:truncate"
+                >
                   <SelectValue placeholder="로트 선택" />
                 </SelectTrigger>
                 <SelectContent>
@@ -144,10 +158,10 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
             </div>
           )}
 
-          <div className="flex flex-col gap-4 border-m2-line @min-[960px]:border-l @min-[960px]:pl-8">
-            <h3 className="m2-h3">지금 계획</h3>
-            {container ? (
-              <ContainerLoadBar container={container} plan={plan} scenario={scenario} />
+          <div className="flex min-w-0 flex-col gap-3">
+            <div className="m2-lbl">지금 계획</div>
+            {containerView ? (
+              <ContainerBlock container={containerView} />
             ) : (
               <p className="m2-sub mt-0">로트를 고르면 실린 컨테이너를 보여줍니다.</p>
             )}
@@ -168,9 +182,7 @@ export function ReplanSection({ session }: { session: PlanSessionT }) {
         />
       )}
 
-      {flow.latestOrder && (
-        <ExecutionOrderPanel planId={planId} order={flow.latestOrder} role="platform" />
-      )}
+      {flow.latestOrder && <PlatformOrderCard order={flow.latestOrder} />}
     </div>
   );
 }

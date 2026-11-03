@@ -138,12 +138,16 @@ function ReadyPanel({
     <HeroPanel
       label={label}
       value={
-        <>
-          {wonNumber(plan.total_savings)}
-          <small>원</small>
-        </>
+        plan.total_savings === 0 ? (
+          <Placeholder text="단독 발송과 총비용이 같습니다" />
+        ) : (
+          <>
+            {wonNumber(plan.total_savings)}
+            <small>원</small>
+          </>
+        )
       }
-      sub={`단독 대비 총비용 −${ratioPercent(plan.total_savings, plan.total_baseline_cost)}`}
+      sub={savingsSub(plan.total_savings, plan.total_baseline_cost)}
       rows={[
         ...containerRows,
         ...(airText ? [{ k: '항공 전환', v: airText }] : []),
@@ -188,12 +192,8 @@ function PendingPanel({
     return (
       <HeroPanel
         label={label}
-        value="–"
-        sub={
-          errorText
-            ? `미리 계산하지 못했습니다. ${errorText}`
-            : '미리 계산하지 못했습니다. 잠시 뒤 다시 시도하세요.'
-        }
+        value={<Placeholder text="미리 계산하지 못했습니다" />}
+        sub={errorText ? errorText : '잠시 뒤 다시 시도하세요.'}
         className={PANEL_FIT_CLASS}
       >
         {onRetry ? (
@@ -225,8 +225,30 @@ function PendingPanel({
     );
   }
 
-  return <HeroPanel label={label} value="–" sub={idleText} />;
+  return (
+    <HeroPanel
+      label={label}
+      value={<Placeholder text="출하를 고르면 절감액이 여기에 나옵니다" />}
+      sub={idleText}
+    />
+  );
 }
+
+function Placeholder({ text }: { text: string }) {
+  return (
+    <span className="block text-[15px] leading-[1.4] font-semibold tracking-normal text-m2-faint">
+      {text}
+    </span>
+  );
+}
+
+const savingsSub = (savings: number, baseline: number) => {
+  if (baseline <= 0 || savings === 0) return null;
+  const ratio = ratioPercent(Math.abs(savings), baseline);
+  if (ratio === '0.0%') return null;
+
+  return savings > 0 ? `단독 대비 총비용 −${ratio}` : `단독 대비 총비용 +${ratio}`;
+};
 
 function PlanLegend({ source }: { source: PlanSourceT }) {
   const containers = containerViews(source);

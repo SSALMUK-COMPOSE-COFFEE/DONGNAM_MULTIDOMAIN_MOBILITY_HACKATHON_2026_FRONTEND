@@ -31,11 +31,11 @@ import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { SettlementPreviewCard } from '@/app/(saas)/app/platform/_components/settlement-preview-card';
 import { ForwarderAssignCard } from '@/app/(saas)/app/platform/plans/detail/_components/forwarder-assign-card';
 import { ReplanSection } from '@/app/(saas)/app/platform/plans/detail/_components/replan-section';
+import { ShipperSavingsCard } from '@/app/(saas)/app/platform/plans/detail/_components/shipper-savings-card';
+import { TariffSheetCard } from '@/app/(saas)/app/platform/plans/detail/_components/tariff-sheet-card';
 import { type StepItemT, Steps, buildPlanScene } from '@/components/map-hero';
 import { MapLinkProvider, useMapLinkTarget } from '@/components/map-link';
-import { TariffCard } from '@/components/plan-detail/tariff-card';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
-import { SettlementTable } from '@/components/settlement-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PlanSessionT } from '@/types/api';
 import { formatKstMonthDayTime } from '@/utils/kst';
@@ -170,18 +170,18 @@ function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSe
         <div className="m2-grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
           <div className="m2-col">
             <PlanLotsCard session={session} runs={scene.runs} />
-            <SettlementTable
-              containerSettlements={plan.container_settlements ?? []}
-              scenario={session.scenario}
-              airSettlements={plan.settlements}
-            />
+            <ShipperSavingsCard session={session} />
           </div>
           <div className="m2-col">
             <ForwarderAssignCard planId={planId} />
             <ContainerPlanCard source={session} emptyText="" />
             <SettlementPreviewCard title="정산" source={session} emptyText="" />
             {plan.settlement_tariffs?.map(tariff => (
-              <TariffCard key={tariff.product_id} tariff={tariff} scenario={session.scenario} />
+              <TariffSheetCard
+                key={tariff.product_id}
+                tariff={tariff}
+                scenario={session.scenario}
+              />
             ))}
           </div>
         </div>
@@ -248,15 +248,14 @@ function PlanLotsCard({
       {rows.length === 0 ? (
         <EmptyState compact title="이 계획에 담긴 출하가 없습니다" />
       ) : (
-        <div className="-mx-2.5 overflow-x-auto px-2.5">
+        <div className="-mx-2.5 overflow-x-auto px-2.5 pb-1">
           <table className="m2-table">
             <thead>
               <tr>
                 <th>화주 · 로트</th>
                 <th>품목</th>
                 <th className="r">파렛트</th>
-                <th>준비일</th>
-                <th>판매기한</th>
+                <th>준비 → 기한</th>
                 <th>판정</th>
               </tr>
             </thead>
@@ -306,10 +305,10 @@ function PlanLotRow({
 
   return (
     <tr {...link} className={cn(verdict?.mode === 'out' && 'is-dis', linkClassName)}>
-      <td>
+      <td className="whitespace-normal">
         <div className="m2-who">
           {getShipperName(session.scenario, row.shipperId)}
-          <small className="m2-mono">{row.lotId}</small>
+          <small className="m2-mono break-all whitespace-normal">{row.lotId}</small>
         </div>
       </td>
       <td>
@@ -323,9 +322,10 @@ function PlanLotRow({
         )}
       </td>
       <td className="r m2-num font-bold">{row.pallets}</td>
-      <td className="m2-num">{monthDay(row.readyDate)}</td>
-      <td className="m2-num">{monthDay(row.sellByDate)}</td>
-      <td>
+      <td className="m2-num">
+        {monthDay(row.readyDate)} → {monthDay(row.sellByDate)}
+      </td>
+      <td className="min-w-[112px] whitespace-normal">
         {verdict ? (
           <span className={cn('m2-chip', toneClass)} title={verdict.reason ?? verdict.label}>
             {verdict.label}
@@ -334,7 +334,9 @@ function PlanLotRow({
           '–'
         )}
         {verdict?.reason ? (
-          <span className="ml-1.5 text-[11.5px] text-m2-muted">{verdict.reason}</span>
+          <span className="mt-1 block text-[11.5px] leading-snug text-m2-muted">
+            {verdict.reason}
+          </span>
         ) : null}
       </td>
     </tr>

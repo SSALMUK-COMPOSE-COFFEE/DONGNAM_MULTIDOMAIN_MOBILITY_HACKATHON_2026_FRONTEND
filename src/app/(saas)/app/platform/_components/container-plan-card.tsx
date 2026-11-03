@@ -96,7 +96,7 @@ function ContainerPlanBody({
   );
 }
 
-function ContainerBlock({ container }: { container: ContainerViewT }) {
+export function ContainerBlock({ container }: { container: ContainerViewT }) {
   const { className: linkClassName, ...link } = useMapLinkTarget(container.keys);
 
   return (

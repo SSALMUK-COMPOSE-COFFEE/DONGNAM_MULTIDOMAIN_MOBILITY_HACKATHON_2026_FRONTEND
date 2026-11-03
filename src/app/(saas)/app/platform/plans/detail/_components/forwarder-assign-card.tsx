@@ -49,7 +49,7 @@ export function ForwarderAssignCard({ planId }: { planId: string }) {
           />
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-col gap-2">
         {plansQuery.isError && (
           <QueryError
             error={plansQuery.error}
@@ -71,19 +71,24 @@ export function ForwarderAssignCard({ planId }: { planId: string }) {
           <p className="m2-sub mt-0">가입한 포워더 조직이 없습니다.</p>
         )}
         {!!forwardersQuery.data?.length && plansQuery.isSuccess && (
-          <>
-            <Select value={forwarderId} onValueChange={setPicked}>
-              <SelectTrigger aria-label="포워더" className="min-w-0 flex-1 rounded-[12px] bg-white">
-                <SelectValue placeholder="포워더 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                {forwardersQuery.data.map(({ org_id, org_name }) => (
-                  <SelectItem key={org_id} value={org_id}>
-                    {org_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Select value={forwarderId} onValueChange={setPicked}>
+            <SelectTrigger
+              aria-label="포워더"
+              className="h-10 w-full min-w-0 rounded-[12px] bg-white *:data-[slot=select-value]:truncate"
+            >
+              <SelectValue placeholder="포워더 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              {forwardersQuery.data.map(({ org_id, org_name }) => (
+                <SelectItem key={org_id} value={org_id}>
+                  {org_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {!!forwardersQuery.data?.length && plansQuery.isSuccess && (
             <button
               type="button"
               className="m2-btn m2-btn-pri"
@@ -92,30 +97,30 @@ export function ForwarderAssignCard({ planId }: { planId: string }) {
             >
               {assignLabel}
             </button>
-          </>
-        )}
-        {current && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button type="button" className="m2-btn m2-btn-sec" disabled={isBusy}>
-                배정 해제
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>포워더 배정을 해제할까요?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {current.org_name}의 화면에서 이 계획이 사라지고, 실행 지시를 확정할 수 없게
-                  됩니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction onClick={() => unassign.mutate()}>해제</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+          )}
+          {current && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button type="button" className="m2-btn m2-btn-sec" disabled={isBusy}>
+                  배정 해제
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>포워더 배정을 해제할까요?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {current.org_name}의 화면에서 이 계획이 사라지고, 실행 지시를 확정할 수 없게
+                    됩니다.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => unassign.mutate()}>해제</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
     </section>
   );

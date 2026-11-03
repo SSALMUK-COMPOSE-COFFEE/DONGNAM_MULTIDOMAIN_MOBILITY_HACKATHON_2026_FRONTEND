@@ -1,6 +1,12 @@
 import { cn } from 'cn';
 import type { ReactNode } from 'react';
 
+import {
+  type BillingRuleT,
+  billingRuleLabel,
+  distinctRules,
+  usageFeePerPalletOf,
+} from '@/app/(saas)/app/platform/_components/billing';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { feeRateOf, percentLabel, won } from '@/app/(saas)/app/platform/_components/m2-format';
 import {
@@ -9,6 +15,13 @@ import {
 } from '@/app/(saas)/app/platform/_components/plan-model';
 import { CompareBars } from '@/components/map-hero';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const feeLineLabel = (rules: BillingRuleT[], feeRate: number | null, usage: number | null) => {
+  if (rules.every(rule => rule === 'performance'))
+    return billingRuleLabel('performance', feeRate, null);
+  if (rules.every(rule => rule === 'usage_fee')) return billingRuleLabel('usage_fee', null, usage);
+  return '성과보수 · 이용료';
+};
 
 type SettlementPreviewCardPropsT = {
   title: string;
@@ -28,6 +41,14 @@ export function SettlementPreviewCard({
   footer,
 }: SettlementPreviewCardPropsT) {
   const summary = source ? settlementSummary(source, feeRateOf(source.scenario)) : null;
+  const rules = source ? distinctRules(source.plan.settlements) : [];
+  const isPerformanceOnly = rules.every(rule => rule === 'performance');
+  const feeRate = isPerformanceOnly && summary ? summary.feeRate : null;
+  const feeLabel = feeLineLabel(
+    rules,
+    summary ? summary.feeRate : null,
+    source ? usageFeePerPalletOf(source.scenario) : null
+  );
 
   return (
     <section className="m2-card" aria-busy={isPending || isStale}>
@@ -58,13 +79,11 @@ export function SettlementPreviewCard({
           />
           <div className="m2-lines">
             <div>
-              <span>
-                화주 몫 {summary.feeRate === null ? '' : percentLabel(1 - summary.feeRate)}
-              </span>
+              <span>화주 몫 {feeRate === null ? '' : percentLabel(1 - feeRate)}</span>
               <b>{won(summary.gain)}</b>
             </div>
             <div>
-              <span>성과보수 {summary.feeRate === null ? '' : percentLabel(summary.feeRate)}</span>
+              <span>{feeLabel}</span>
               <b>{won(summary.fee)}</b>
             </div>
             <div>
