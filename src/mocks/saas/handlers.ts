@@ -1240,9 +1240,17 @@ const recordArrival = (
   };
 };
 
+const resolvedOptionsOf = (
+  base: DelayForecastResponseT['options'],
+  body: DelayForecastRequestT | null
+): DelayForecastResponseT['options'] =>
+  body?.preset === 'typhoon'
+    ? { ...base, weather: 'typhoon', congestion: 'high', quantile: 'p90' }
+    : { ...base, weather: body?.weather ?? 'normal' };
+
 const weatherUseOf = (body: DelayForecastRequestT | null): WeatherUseT => {
   const preset = body?.preset === 'typhoon';
-  const weather = body?.weather ?? 'auto';
+  const weather = body?.weather ?? 'normal';
   const manualLevel = weather === 'auto' ? 'normal' : weather;
   const level = preset ? 'typhoon' : manualLevel;
 
@@ -1352,7 +1360,7 @@ const analysisHandlers = [
 
     return HttpResponse.json({
       ...forecast,
-      options: { ...forecast.options, weather: body?.weather ?? forecast.options.weather },
+      options: resolvedOptionsOf(forecast.options, body),
       weather: forecast.weather ?? weatherUseOf(body),
       remaining_risk_voyages: forecast.remaining_risk_voyages ?? [],
     });
