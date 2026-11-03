@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
 import { analysisKeys } from '@/apis/saas/keys';
-import { platformKeys, usePlatformOrgId } from '@/apis/saas/platform';
+import { invalidatePlatformMetrics, platformKeys, usePlatformOrgId } from '@/apis/saas/platform';
 import { saasRetry } from '@/apis/saas/retry';
 import type {
   ChangeRequestAppliedT,
@@ -149,6 +149,7 @@ export const useApplyChangeRequest = () => {
       queryClient.invalidateQueries({ queryKey: platformKeys.lots(orgId) });
       queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
       queryClient.invalidateQueries({ queryKey: analysisKeys.plan(orgId, planId) });
+      invalidatePlatformMetrics(queryClient, orgId);
       toast.success('변경 요청을 계획에 반영했습니다. 화주·포워더 확정을 기다립니다.');
     },
     onError: toastSaasError('변경 요청을 반영하지 못했습니다.'),

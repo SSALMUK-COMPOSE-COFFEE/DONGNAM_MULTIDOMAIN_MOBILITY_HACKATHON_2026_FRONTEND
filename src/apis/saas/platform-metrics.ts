@@ -25,7 +25,7 @@ const METRICS_STALE_MS = 60 * 1000;
 const REPEATED_PARAMS = { indexes: null };
 
 export const platformMetricsKeys = {
-  all: (orgId: string) => [...platformKeys.all(orgId), 'metrics'] as const,
+  all: platformKeys.metrics,
   metrics: (orgId: string, params: PlatformMetricsParamsT) =>
     [...platformMetricsKeys.all(orgId), 'kpi', params] as const,
   business: (orgId: string, params: PlatformBusinessParamsT) =>

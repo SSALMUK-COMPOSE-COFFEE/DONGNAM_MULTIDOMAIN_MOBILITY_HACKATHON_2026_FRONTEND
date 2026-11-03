@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
 import { analysisKeys } from '@/apis/saas/keys';
-import { platformKeys, usePlatformOrgId } from '@/apis/saas/platform';
+import { invalidatePlatformMetrics, platformKeys, usePlatformOrgId } from '@/apis/saas/platform';
 import { saasRetry } from '@/apis/saas/retry';
 import type { SaasSchemaT } from '@/types/api-saas';
 
@@ -114,6 +114,7 @@ const useInvalidatePlanState = (planId: string) => {
     queryClient.invalidateQueries({ queryKey: platformKeys.plans(orgId), exact: true });
     queryClient.invalidateQueries({ queryKey: platformConfirmKeys.attention(orgId) });
     queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
+    invalidatePlatformMetrics(queryClient, orgId);
   };
 };
 

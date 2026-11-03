@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  type QueryClient,
   keepPreviousData,
   queryOptions,
   useMutation,
@@ -99,6 +100,7 @@ export const platformKeys = {
     [...platformKeys.plan(orgId, planId), 'confirmation'] as const,
   planConfirmations: (orgId: string) => [...platformKeys.all(orgId), 'plan-confirmations'] as const,
   settlements: (orgId: string) => [...platformKeys.all(orgId), 'settlements'] as const,
+  metrics: (orgId: string) => [...platformKeys.all(orgId), 'metrics'] as const,
   forwarders: (orgId: string) => [...platformKeys.all(orgId), 'forwarders'] as const,
   devices: (orgId: string) => [...platformKeys.all(orgId), 'devices'] as const,
   containers: (orgId: string, planId: string) =>
@@ -106,6 +108,9 @@ export const platformKeys = {
   twin: (orgId: string, planId: string, containerId: string) =>
     [...platformKeys.containers(orgId, planId), containerId] as const,
 };
+
+export const invalidatePlatformMetrics = (queryClient: QueryClient, orgId: string) =>
+  queryClient.invalidateQueries({ queryKey: platformKeys.metrics(orgId) });
 
 export const usePlatformOrgId = () => useMe().data?.active_org.org_id ?? '';
 
@@ -415,6 +420,7 @@ export const useCreatePlatformPlan = () => {
       queryClient.invalidateQueries({ queryKey: platformKeys.lots(orgId) });
       queryClient.invalidateQueries({ queryKey: platformKeys.plans(orgId), exact: true });
       queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
+      invalidatePlatformMetrics(queryClient, orgId);
     },
   });
 };
@@ -549,6 +555,7 @@ export const usePlatformReplanFlow = (planId: string) => {
       queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
       queryClient.invalidateQueries({ queryKey: analysisKeys.plan(orgId, planId) });
       queryClient.invalidateQueries({ queryKey: platformKeys.lots(orgId) });
+      invalidatePlatformMetrics(queryClient, orgId);
       toast.success('대안을 적용했습니다. 화주·포워더 확정을 기다립니다.');
     },
     onError: toastSaasError('대안을 적용하지 못했습니다.'),

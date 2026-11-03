@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { saasApi } from '@/apis/saas/client';
 import { saasErrorDetail, saasErrorStatus, toastSaasError } from '@/apis/saas/errors';
 import { analysisKeys } from '@/apis/saas/keys';
-import { platformKeys, usePlatformOrgId } from '@/apis/saas/platform';
+import { invalidatePlatformMetrics, platformKeys, usePlatformOrgId } from '@/apis/saas/platform';
 import { saasRetry } from '@/apis/saas/retry';
 import type { ReplanResponseT } from '@/types/api';
 import type {
@@ -283,6 +283,7 @@ export const useArrivalInspection = (planId: string) => {
       queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
       queryClient.invalidateQueries({ queryKey: analysisKeys.plan(orgId, planId) });
       queryClient.invalidateQueries({ queryKey: [...analysisKeys.all(orgId), 'loss-rates'] });
+      invalidatePlatformMetrics(queryClient, orgId);
       toast.success(`${result.lot_id} 도착 검수를 반영했습니다.`);
     },
     onError: toastSaasError('도착 검수를 반영하지 못했습니다.'),
