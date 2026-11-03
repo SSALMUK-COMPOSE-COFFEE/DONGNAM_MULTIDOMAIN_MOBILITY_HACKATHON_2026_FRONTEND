@@ -1,18 +1,14 @@
 import { Suspense } from 'react';
 
 import { PlanDetailView } from '@/app/(saas)/app/shipper/_components/plan-detail-view';
-import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-page-header';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '@/app/(saas)/app/shipper/_components/query-state';
 
 export const instant = false;
 
 export default function ShipperPlanDetailPage() {
   return (
-    <>
-      <ShipperPageHeader title="운송계획 상세" headline="내 파렛트와" highlight="절감액" />
-      <Suspense fallback={<Skeleton className="h-96" />}>
-        <PlanDetailView />
-      </Suspense>
-    </>
+    <Suspense fallback={<CardSkeleton height={480} />}>
+      <PlanDetailView />
+    </Suspense>
   );
 }

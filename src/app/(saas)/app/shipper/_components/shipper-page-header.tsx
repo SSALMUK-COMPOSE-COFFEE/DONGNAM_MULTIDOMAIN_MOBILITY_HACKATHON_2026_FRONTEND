@@ -1,28 +1,21 @@
 import type { ReactNode } from 'react';
 
 type ShipperPageHeaderPropsT = {
-  title: string;
-  headline: string;
-  highlight?: string;
+  eyebrow: ReactNode;
+  title: ReactNode;
+  sub?: ReactNode;
   children?: ReactNode;
 };
 
-export function ShipperPageHeader({
-  title,
-  headline,
-  highlight,
-  children,
-}: ShipperPageHeaderPropsT) {
+export function ShipperPageHeader({ eyebrow, title, sub, children }: ShipperPageHeaderPropsT) {
   return (
-    <div className="mb-8 flex items-end gap-6">
-      <div className="flex flex-1 flex-col gap-3">
-        <span className="text-lg font-bold text-muted-foreground">{title}</span>
-        <h1 className="text-5xl leading-tight font-black tracking-tight">
-          {headline}
-          {highlight && <span className="text-brand"> {highlight}</span>}
-        </h1>
+    <div className="m2-head max-[720px]:flex-col max-[720px]:items-start">
+      <div className="min-w-0">
+        <div className="m2-eyebrow">{eyebrow}</div>
+        <h1 className="m2-h1">{title}</h1>
+        {sub ? <div className="m2-sub">{sub}</div> : null}
       </div>
-      {children}
+      {children ? <div className="m2-acts">{children}</div> : null}
     </div>
   );
 }

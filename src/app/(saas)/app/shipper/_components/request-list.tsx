@@ -9,18 +9,17 @@ import {
   REQUEST_STATUS_LABEL,
 } from '@/app/(saas)/app/shipper/_components/labels';
 import { errorDetail } from '@/app/(saas)/app/shipper/_components/query-state';
+import { fmtMonthDayTime } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import {
   isRequestAddressedToShipper,
   isRequestAnswerable,
   isRequestAwaitingForwarder,
 } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { ShipperOrderT, ShipperRequestT } from '@/types/saas-shipper';
-import { formatKstMonthDayTime } from '@/utils/kst';
 
 export type RequestItemT = {
   planId: string;
+  planLabel?: string;
   order: ShipperOrderT;
   request: ShipperRequestT;
 };
@@ -34,7 +33,7 @@ const awaitingForwarderLabel = (order: ShipperOrderT) =>
 export function RequestList({ items, emptyText }: { items: RequestItemT[]; emptyText: string }) {
   const answer = useAnswerShipperRequest();
 
-  if (items.length === 0) return <p className="text-sm text-muted-foreground">{emptyText}</p>;
+  if (items.length === 0) return <p className="m2-sub mt-0">{emptyText}</p>;
 
   const respond = ({ planId, order, request }: RequestItemT, accepted: boolean) =>
     answer.mutate(
@@ -46,7 +45,7 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
     );
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-2.5">
       {items.map(item => {
         const { order, request } = item;
         const canAnswer = isRequestAnswerable(order, request);
@@ -58,32 +57,29 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
         return (
           <li
             key={`${order.order_id}:${request.request_id}`}
-            className={cn(
-              'flex items-start gap-4 rounded-xl border p-4',
-              canAnswer && 'border-brand bg-brand-soft/40'
-            )}
+            className="m2-block flex items-start gap-4"
+            style={canAnswer ? { boxShadow: '0 0 0 1.5px var(--m2-brand)' } : {}}
           >
-            <div className="flex flex-1 flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">{REQUEST_KIND_LABEL[request.kind]}</Badge>
-                <span className="font-bold text-navy">{request.counterparty}</span>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="m2-chip">{REQUEST_KIND_LABEL[request.kind]}</span>
+                <span className="font-semibold">{request.counterparty}</span>
                 {!isRequestAddressedToShipper(request) && (
-                  <span className="text-sm text-muted-foreground">포워더가 회신 기록</span>
+                  <span className="m2-sub mt-0">포워더가 회신 기록</span>
                 )}
-                <span className="text-sm text-muted-foreground">{request.channel}</span>
+                <span className="m2-sub mt-0">{request.channel}</span>
               </div>
-              <p>{request.text}</p>
-              <p className="flex flex-wrap gap-x-6 text-sm text-muted-foreground">
+              {item.planLabel && <p className="m2-sub mt-0">{item.planLabel}</p>}
+              <p className="text-[13.5px]">{request.text}</p>
+              <p className="m2-sub mt-0 flex flex-wrap gap-x-5">
                 <span>
                   기한{' '}
-                  <span className="num text-foreground">
-                    {formatKstMonthDayTime(request.deadline)}
-                  </span>
+                  <span className="m2-num text-m2-ink">{fmtMonthDayTime(request.deadline)}</span>
                 </span>
-                {request.container_id && <span className="num">{request.container_id}</span>}
+                {request.container_id && <span className="m2-num">{request.container_id}</span>}
                 {request.pallets_before !== request.pallets_after && (
-                  <span className="num">
-                    {request.pallets_before} → {request.pallets_after}파렛트
+                  <span className="m2-num">
+                    {request.pallets_before} → {request.pallets_after}팔레트
                   </span>
                 )}
                 {request.note && <span>메모 {request.note}</span>}
@@ -91,25 +87,29 @@ export function RequestList({ items, emptyText }: { items: RequestItemT[]; empty
             </div>
             {canAnswer ? (
               <div className="flex shrink-0 gap-2">
-                <Button size="sm" disabled={isBusy} onClick={() => respond(item, true)}>
+                <button
+                  type="button"
+                  className="m2-btn m2-btn-pri m2-btn-sm"
+                  disabled={isBusy}
+                  onClick={() => respond(item, true)}
+                >
                   수락
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
+                </button>
+                <button
+                  type="button"
+                  className="m2-btn m2-btn-sec m2-btn-sm"
                   disabled={isBusy}
                   onClick={() => respond(item, false)}
                 >
                   거절
-                </Button>
+                </button>
               </div>
             ) : (
-              <Badge
-                variant="secondary"
-                className={cn(request.status === 'accepted' && 'bg-ok-soft text-ok')}
+              <span
+                className={cn('m2-chip flex-none', request.status === 'accepted' && 'm2-chip-ok')}
               >
                 {statusLabel}
-              </Badge>
+              </span>
             )}
           </li>
         );

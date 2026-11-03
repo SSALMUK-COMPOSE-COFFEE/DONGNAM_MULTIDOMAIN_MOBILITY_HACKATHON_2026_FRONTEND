@@ -10,11 +10,13 @@ import {
   SELL_WINDOW_LABEL,
 } from '@/app/(saas)/app/shipper/_components/labels';
 import { LotEditDialog } from '@/app/(saas)/app/shipper/_components/lot-edit-dialog';
+import { LotStatusChip } from '@/app/(saas)/app/shipper/_components/lot-status-chip';
 import {
   EmptyState,
   QueryError,
   errorDetail,
 } from '@/app/(saas)/app/shipper/_components/query-state';
+import { fmtDay, fmtMonthDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,21 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ShipperCatalogT, ShipperLotStatusT, ShipperLotT } from '@/types/saas-shipper';
-import { formatMonthDay } from '@/utils/format';
 import { getPortName, getProductName } from '@/utils/scenario';
 
 type FilterT = 'all' | ShipperLotStatusT;
@@ -67,6 +56,8 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
   const productName = (productId: string) =>
     catalog ? getProductName(catalog, productId) : productId;
   const portName = (portId: string) => (catalog ? getPortName(catalog, portId) : portId);
+  const packhouseName = (packhouseId: string | null | undefined) =>
+    catalog?.packhouses.find(({ id }) => id === packhouseId)?.name ?? '';
 
   const setStatus = (lot: ShipperLotT, status: 'registered' | 'cancelled') =>
     updateLot.mutate(
@@ -79,65 +70,69 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
     );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-4">
+    <section className="m2-card" aria-label="내 출하 목록">
+      <div className="m2-card-h flex-wrap">
+        <h2 className="m2-h2">
           내 출하
           {lots.data && (
-            <span className="text-base font-medium text-muted-foreground">
-              <span className="num">{lots.data.length}</span>건
+            <span className="m2-sub mt-0 ml-2 inline font-medium">
+              <span className="m2-num">{lots.data.length}</span>건
             </span>
           )}
-          <Tabs
-            value={filter}
-            onValueChange={value => setFilter(value as FilterT)}
-            className="ml-auto"
-          >
-            <TabsList>
-              {FILTERS.map(({ value, label }) => (
-                <TabsTrigger key={value} value={value}>
-                  {label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {lots.isError && (
-          <QueryError
-            message="출하 목록을 불러오지 못했습니다."
-            onRetry={() => lots.refetch()}
-            isRetrying={lots.isFetching}
-          />
-        )}
-        {lots.isPending && <Skeleton className="h-48" />}
-        {lots.data && visible.length === 0 && (
-          <EmptyState
-            title={filter === 'all' ? '등록한 출하가 없습니다' : '이 상태의 출하가 없습니다'}
-            description={
-              filter === 'all' && !!catalog?.shippers.length
-                ? '위 양식으로 첫 출하를 등록하세요.'
-                : ''
-            }
-          />
-        )}
-        {visible.length > 0 && (
-          <Table className="[&_td]:whitespace-normal [&_th]:whitespace-normal">
-            <TableHeader>
-              <TableRow>
-                <TableHead>로트</TableHead>
-                <TableHead>품목</TableHead>
-                <TableHead className="text-right">파렛트</TableHead>
-                <TableHead className="text-right">출하일</TableHead>
-                <TableHead className="text-right">판매기한</TableHead>
-                <TableHead>판매 기간</TableHead>
-                <TableHead>목적지</TableHead>
-                <TableHead>상태</TableHead>
-                <TableHead className="text-right">관리</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        </h2>
+        <div
+          role="tablist"
+          aria-label="출하 상태"
+          className="flex flex-wrap gap-1 rounded-[12px] bg-[rgba(15,27,51,.05)] p-1"
+        >
+          {FILTERS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={filter === value}
+              onClick={() => setFilter(value)}
+              className="h-8 rounded-[9px] border-0 bg-transparent px-3 text-[12.5px] font-semibold text-m2-muted transition-colors duration-200 ease-[cubic-bezier(.2,.8,.2,1)] aria-selected:bg-white aria-selected:text-m2-ink aria-selected:shadow-[0_1px_2px_rgba(15,27,51,.08)] motion-reduce:transition-none"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {lots.isError && (
+        <QueryError
+          message="출하 목록을 불러오지 못했습니다."
+          onRetry={() => lots.refetch()}
+          isRetrying={lots.isFetching}
+        />
+      )}
+      {lots.isPending && <Skeleton className="h-48" />}
+      {lots.data && visible.length === 0 && (
+        <EmptyState
+          title={filter === 'all' ? '등록한 출하가 없습니다' : '이 상태의 출하가 없습니다'}
+          description={
+            filter === 'all' && !!catalog?.shippers.length
+              ? '위 양식으로 첫 출하를 등록하세요.'
+              : ''
+          }
+        />
+      )}
+      {visible.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="m2-table">
+            <thead>
+              <tr>
+                <th>출하</th>
+                <th className="r">팔레트</th>
+                <th>준비일</th>
+                <th>판매기한</th>
+                <th>판매 기간</th>
+                <th>목적지</th>
+                <th>상태</th>
+                <th className="r">관리</th>
+              </tr>
+            </thead>
+            <tbody>
               {visible.map(lot => {
                 const isLocked = LOCKED_LOT_STATUSES.includes(lot.status);
                 const isBusy =
@@ -145,78 +140,77 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                   (deleteLot.isPending && deleteLot.variables === lot.id);
 
                 return (
-                  <TableRow key={lot.id}>
-                    <TableCell className="font-bold num break-all">{lot.id}</TableCell>
-                    <TableCell>{productName(lot.product_id)}</TableCell>
-                    <TableCell className="text-right num">{lot.pallets}</TableCell>
-                    <TableCell className="text-right num">
-                      {formatMonthDay(lot.ready_date)}
-                    </TableCell>
-                    <TableCell className="text-right num">
-                      {formatMonthDay(lot.sell_by_date)}
-                    </TableCell>
-                    <TableCell>{SELL_WINDOW_LABEL[lot.sell_window]}</TableCell>
-                    <TableCell>{portName(lot.destination)}</TableCell>
-                    <TableCell>
-                      <Badge variant={lot.status === 'cancelled' ? 'outline' : 'secondary'}>
-                        {LOT_STATUS_LABEL[lot.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
+                  <tr key={lot.id} className={lot.status === 'cancelled' ? 'is-dis' : ''}>
+                    <td>
+                      <div className="m2-who">
+                        {productName(lot.product_id)}
+                        <small>
+                          <span className="m2-mono">{lot.id}</span>
+                          {packhouseName(lot.packhouse) ? ` · ${packhouseName(lot.packhouse)}` : ''}
+                        </small>
+                      </div>
+                    </td>
+                    <td className="r m2-num">{lot.pallets}</td>
+                    <td className="m2-num">{fmtDay(lot.ready_date)}</td>
+                    <td className="m2-num">{fmtMonthDay(lot.sell_by_date)}</td>
+                    <td>{SELL_WINDOW_LABEL[lot.sell_window]}</td>
+                    <td>{portName(lot.destination)}</td>
+                    <td>
+                      <LotStatusChip status={lot.status} />
+                    </td>
+                    <td className="r">
                       {isLocked ? (
-                        <span className="text-sm text-muted-foreground">
-                          계획 확정 후 변경 불가
-                        </span>
+                        <span className="text-[12px] text-m2-muted">계획 확정 후 변경 불가</span>
                       ) : (
-                        <div className="flex flex-wrap justify-end gap-2">
+                        <div className="flex justify-end gap-1.5">
                           {lot.status === 'registered' && (
                             <>
-                              <Button
-                                size="sm"
-                                variant="outline"
+                              <button
+                                type="button"
+                                className="m2-btn m2-btn-sec m2-btn-sm"
                                 disabled={isBusy || !catalog}
                                 onClick={() => setEditing(lot)}
                               >
                                 수정
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
+                              </button>
+                              <button
+                                type="button"
+                                className="m2-btn m2-btn-sec m2-btn-sm"
                                 disabled={isBusy}
                                 onClick={() => setStatus(lot, 'cancelled')}
                               >
                                 취소
-                              </Button>
+                              </button>
                             </>
                           )}
                           {lot.status === 'cancelled' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
+                            <button
+                              type="button"
+                              className="m2-btn m2-btn-sec m2-btn-sm"
                               disabled={isBusy}
                               onClick={() => setStatus(lot, 'registered')}
                             >
                               되살리기
-                            </Button>
+                            </button>
                           )}
-                          <Button
-                            size="sm"
-                            variant="destructive"
+                          <button
+                            type="button"
+                            className="m2-btn m2-btn-sm bg-m2-berry-soft text-m2-berry-ink"
                             disabled={isBusy}
                             onClick={() => setDeleting(lot)}
                           >
                             삭제
-                          </Button>
+                          </button>
                         </div>
                       )}
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 );
               })}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {editing && catalog && (
         <LotEditDialog lot={editing} catalog={catalog} onClose={() => setEditing(null)} />
@@ -248,6 +242,6 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </section>
   );
 }

@@ -12,6 +12,7 @@ const CLOSED_ORDER_STATUSES: readonly ShipperOrderT['status'][] = [
 export type ShipperPlanOrdersT = {
   plan: ShipperPlanItemT;
   orders: ShipperOrderT[];
+  ordersLoaded: boolean;
 };
 
 export type PendingRequestT = {
@@ -57,6 +58,7 @@ export const useShipperTasks = () => {
   const byPlan: ShipperPlanOrdersT[] = planList.map((plan, index) => ({
     plan,
     orders: ordersQueries[index]?.data ?? [],
+    ordersLoaded: !!ordersQueries[index]?.data,
   }));
   const confirmations = byPlan.flatMap(({ plan, orders }) =>
     pendingConfirmationsOf(orders).map(order => ({ plan, order }))

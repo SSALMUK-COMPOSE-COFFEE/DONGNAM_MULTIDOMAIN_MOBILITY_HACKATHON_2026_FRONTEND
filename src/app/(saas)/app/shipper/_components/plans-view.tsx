@@ -5,25 +5,20 @@ import Link from 'next/link';
 
 import { useShipperPlans } from '@/apis/saas/shipper';
 import { PLAN_STATUS_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
-import { EmptyState, QueryError } from '@/app/(saas)/app/shipper/_components/query-state';
-import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
-import { Badge } from '@/components/ui/badge';
-import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { formatKstMonthDayTime } from '@/utils/kst';
+  CardSkeleton,
+  EmptyState,
+  QueryError,
+} from '@/app/(saas)/app/shipper/_components/query-state';
+import { fmtMonthDayTime } from '@/app/(saas)/app/shipper/_components/shipper-format';
+import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
+import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
 import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 export function PlansView() {
   const plans = useShipperPlans();
+  const { confirmations } = useShipperTasks();
+  const pendingPlanIds = new Set(confirmations.map(({ plan }) => plan.plan_id));
 
   if (plans.isError) {
     return (
@@ -34,36 +29,37 @@ export function PlansView() {
       />
     );
   }
-  if (plans.isPending) return <Skeleton className="h-96" />;
+  if (plans.isPending) return <CardSkeleton height={360} />;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          내 출하가 들어간 계획 <span className="num text-brand">{plans.data.length}</span>건
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {plans.data.length === 0 ? (
-          <EmptyState
-            title="아직 들어간 운송계획이 없습니다"
-            description="출하를 등록하면 플랫폼이 다른 화주 출하와 묶어 계획을 만듭니다."
-            action={{ href: SHIPPER_PATHS.LOTS, label: '출하 등록하기' }}
-          />
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>선박</TableHead>
-                <TableHead className="text-right">출항</TableHead>
-                <TableHead>상태</TableHead>
-                <TableHead className="text-right">내 출하</TableHead>
-                <TableHead className="text-right">내 파렛트 / 전체</TableHead>
-                <TableHead className="text-right">만든 시각</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+    <section className="m2-card" aria-label="계획 목록">
+      <div className="m2-card-h">
+        <h2 className="m2-h2">
+          내 출하가 들어간 계획{' '}
+          <span className="m2-num text-m2-brand-ink">{plans.data.length}</span>건
+        </h2>
+      </div>
+      {plans.data.length === 0 ? (
+        <EmptyState
+          title="아직 들어간 운송계획이 없습니다"
+          description="출하를 등록하면 플랫폼이 다른 화주 출하와 묶어 계획을 만듭니다."
+          action={{ href: SHIPPER_PATHS.LOTS, label: '출하 등록하기' }}
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="m2-table">
+            <thead>
+              <tr>
+                <th>선박</th>
+                <th>출항</th>
+                <th>상태</th>
+                <th className="r">내 출하</th>
+                <th className="r">내 팔레트 / 전체</th>
+                <th>만든 시각</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
               {plans.data.map(
                 ({
                   plan_id,
@@ -75,42 +71,44 @@ export function PlansView() {
                   total_pallets,
                   created_at,
                 }) => (
-                  <TableRow key={plan_id}>
-                    <TableCell className="font-bold text-navy">
-                      {vessel ?? NO_VESSEL_LABEL}
-                    </TableCell>
-                    <TableCell className="text-right num">
-                      {formatKstMonthDayTime(departure)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={status === 'committed' ? 'default' : 'secondary'}>
-                        {PLAN_STATUS_LABEL[status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right num">{my_lot_ids.length}건</TableCell>
-                    <TableCell className="text-right num">
-                      <span className="font-bold">{my_pallets}</span>
-                      <span className="text-muted-foreground"> / {total_pallets}</span>
-                    </TableCell>
-                    <TableCell className="text-right num text-muted-foreground">
-                      {formatKstMonthDayTime(created_at)}
-                    </TableCell>
-                    <TableCell className="text-right">
+                  <tr key={plan_id}>
+                    <td className="font-semibold">{vessel ?? NO_VESSEL_LABEL}</td>
+                    <td className="m2-num">{fmtMonthDayTime(departure)}</td>
+                    <td>
+                      {pendingPlanIds.has(plan_id) ? (
+                        <span className="m2-chip m2-chip-brand">확정 대기</span>
+                      ) : (
+                        <span
+                          className={
+                            status === 'committed' ? 'm2-chip m2-chip-ok' : 'm2-chip m2-chip-warn'
+                          }
+                        >
+                          {PLAN_STATUS_LABEL[status] ?? status}
+                        </span>
+                      )}
+                    </td>
+                    <td className="r m2-num">{my_lot_ids.length}건</td>
+                    <td className="r m2-num">
+                      <b className="font-semibold">{my_pallets}</b>
+                      <span className="text-m2-muted"> / {total_pallets}</span>
+                    </td>
+                    <td className="m2-num text-m2-muted">{fmtMonthDayTime(created_at)}</td>
+                    <td className="r">
                       <Link
                         href={SHIPPER_PATHS.PLAN(plan_id)}
-                        className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                        className="m2-btn m2-btn-sec m2-btn-sm"
                       >
-                        상세
-                        <ArrowRightIcon />
+                        {pendingPlanIds.has(plan_id) ? '확정하러 가기' : '상세'}
+                        <ArrowRightIcon size={14} />
                       </Link>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 )
               )}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }

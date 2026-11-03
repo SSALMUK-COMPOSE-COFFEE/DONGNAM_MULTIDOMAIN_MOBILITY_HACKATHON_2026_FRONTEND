@@ -7,9 +7,9 @@ export default function ShipperPlansPage() {
   return (
     <>
       <ShipperPageHeader
-        title="운송계획 확인"
-        headline="내 출하가 실린"
-        highlight="공동적재 계획"
+        eyebrow="계획 확정"
+        title="내 출하가 실린 공동적재 계획"
+        sub="계획이 바뀌면 여기서 확인하고 확정합니다."
       />
       <PlansView />
     </>

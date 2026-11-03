@@ -7,9 +7,9 @@ export default function ShipperSettlementsPage() {
   return (
     <>
       <ShipperPageHeader
-        title="절감액 · 정산"
-        headline="아낀 돈에서만"
-        highlight="수수료를 냅니다"
+        eyebrow="정산"
+        title="아낀 돈에서만 수수료를 냅니다"
+        sub="혼자 항공으로 보냈을 때와 공동적재 비용의 차이가 절감액입니다."
       />
       <SettlementsView />
     </>
