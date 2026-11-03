@@ -19,6 +19,10 @@ import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { StatTile } from '@/app/(saas)/app/platform/_components/stat-tile';
+import { BusinessPnlCard } from '@/app/(saas)/app/platform/settlements/_components/business-pnl-card';
+import { BusinessYearsCard } from '@/app/(saas)/app/platform/settlements/_components/business-years-card';
+import { RegionCard } from '@/app/(saas)/app/platform/settlements/_components/region-card';
+import { RevenueMixCard } from '@/app/(saas)/app/platform/settlements/_components/revenue-mix-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PlatformSettlementT } from '@/types/saas-platform';
 import { formatKstMonthDayTime } from '@/utils/kst';
@@ -73,6 +77,9 @@ export function SettlementView() {
           title="아직 정산할 계획이 없습니다"
           description="공동적재 계획을 만들면 화주별 절감액과 성과보수·이용료가 계산됩니다."
         />
+        <div className="mt-4">
+          <BusinessYearsCard />
+        </div>
       </SettlementShell>
     );
   }
@@ -106,6 +113,18 @@ export function SettlementView() {
         <StatTile label="화주에게 돌아간 몫" value={wonNumber(totalSaving - totalFee)} unit="원" />
       </div>
 
+      <div className="mb-4 grid items-start gap-4 min-[1280px]:grid-cols-2">
+        <div className="flex min-w-0 flex-col gap-4">
+          <RevenueMixCard rows={data} labelOf={ruleLabel} />
+          <RegionCard />
+        </div>
+        <BusinessPnlCard />
+      </div>
+
+      <div className="mb-4">
+        <BusinessYearsCard />
+      </div>
+
       <section className="m2-card">
         <div className="m2-card-h">
           <h2 className="m2-h2">계획별 정산</h2>
@@ -119,6 +138,9 @@ export function SettlementView() {
                 <th>출항</th>
                 <th>과금 규칙 · 기준</th>
                 <th className="r">절감</th>
+                <th className="r">성과보수</th>
+                <th className="r">이용료</th>
+                <th className="r">품질 환급</th>
                 <th className="r">플랫폼 수익</th>
                 <th className="r">화주 몫</th>
               </tr>
@@ -144,6 +166,12 @@ export function SettlementView() {
                       />
                     </td>
                     <td className="r m2-num text-m2-ok-ink">{won(row.total_saving_krw)}</td>
+                    <FeeCells
+                      performance={row.performance_fee_krw}
+                      usage={row.usage_fee_krw}
+                      refund={row.quality_refund_krw}
+                      pilot={row.pilot}
+                    />
                     <td className="r m2-num">{won(row.platform_fee_krw)}</td>
                     <td className="r m2-num">{won(row.total_saving_krw - row.platform_fee_krw)}</td>
                   </tr>
@@ -171,6 +199,12 @@ export function SettlementView() {
                           </div>
                         </td>
                         <td className="r m2-num">{won(share.saving_krw)}</td>
+                        <FeeCells
+                          performance={share.performance_fee_krw}
+                          usage={share.usage_fee_krw}
+                          refund={share.quality_refund_krw}
+                          pilot={share.pilot || row.pilot}
+                        />
                         <td className="r m2-num">{won(share.fee_krw)}</td>
                         <td className="r m2-num">{won(share.saving_krw - share.fee_krw)}</td>
                       </tr>
@@ -214,5 +248,39 @@ function RuleChips({
         ) : null;
       })}
     </div>
+  );
+}
+
+function FeeCells({
+  performance,
+  usage,
+  refund,
+  pilot,
+}: {
+  performance: number;
+  usage: number;
+  refund: number;
+  pilot: boolean;
+}) {
+  if (pilot) {
+    return (
+      <>
+        <td className="r m2-num text-m2-muted">
+          <s>{won(performance)}</s> 면제
+        </td>
+        <td className="r m2-num text-m2-muted">
+          <s>{won(usage)}</s> 면제
+        </td>
+        <td className="r m2-num text-m2-muted">–</td>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <td className="r m2-num">{won(performance)}</td>
+      <td className="r m2-num">{won(usage)}</td>
+      <td className="r m2-num">{refund > 0 ? `−${won(refund)}` : '–'}</td>
+    </>
   );
 }
