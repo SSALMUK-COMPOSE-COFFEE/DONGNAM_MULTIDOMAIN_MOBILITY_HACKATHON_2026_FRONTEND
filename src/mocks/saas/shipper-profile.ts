@@ -32,13 +32,37 @@ const productOptions = scenario.products.map(product => ({
   name: product.name,
 }));
 
+const PROFILES_STORAGE_KEY = 'fs.saas.mock.shipper-profiles';
+
 const profiles = new Map<string, OrgProfileT>();
-let seq = 0;
 
 onMockReset(() => {
   profiles.clear();
-  seq = 0;
 });
+
+const readStoredProfiles = (): Record<string, OrgProfileT> => {
+  try {
+    const raw = localStorage.getItem(PROFILES_STORAGE_KEY);
+
+    return raw ? (JSON.parse(raw) as Record<string, OrgProfileT>) : {};
+  } catch {
+    return {};
+  }
+};
+
+const persistProfile = (org: MockOrgT, stored: OrgProfileT) => {
+  if (org.sandbox) return;
+  try {
+    localStorage.setItem(
+      PROFILES_STORAGE_KEY,
+      JSON.stringify({ ...readStoredProfiles(), [org.org_id]: stored })
+    );
+  } catch {
+    return;
+  }
+};
+
+const newPackhouseId = () => `ph-mock-${crypto.randomUUID().slice(0, 8)}`;
 
 const seedProfile = (org: MockOrgT): OrgProfileT => {
   const shipper = scenario.shippers.find(item => org.shipper_ids.includes(item.id));
@@ -75,6 +99,13 @@ const seedProfile = (org: MockOrgT): OrgProfileT => {
 const profileOf = (org: MockOrgT) => {
   const existing = profiles.get(org.org_id);
   if (existing) return existing;
+
+  const persisted = !org.sandbox && readStoredProfiles()[org.org_id];
+  if (persisted) {
+    profiles.set(org.org_id, persisted);
+
+    return persisted;
+  }
 
   const seeded = seedProfile(org);
   profiles.set(org.org_id, seeded);
@@ -113,6 +144,31 @@ const invalidCoordinates = ({ lat, lon }: { lat?: number | null; lon?: number | 
   }
 
   return null;
+};
+
+export const registeredTenantOf = (org: MockOrgT) => {
+  const stored = profileOf(org);
+  const profile = stored?.profile;
+  if (!stored || !profile || profile.source !== REGISTERED_SOURCE) return null;
+
+  return {
+    shipper: {
+      id: profile.shipper_id,
+      name: profile.name,
+      packhouse_id: profile.packhouse_id,
+      source: profile.source,
+    },
+    packhouses: stored.packhouses
+      .filter(item => item.packhouse_id === profile.packhouse_id)
+      .map(({ packhouse_id, name, region, lat, lon, source }) => ({
+        id: packhouse_id,
+        name,
+        region,
+        lat,
+        lon,
+        source,
+      })),
+  };
 };
 
 const writable = (request: Request) => {
@@ -169,6 +225,7 @@ export const shipperProfileHandlers = [
     }
     if (body.name?.trim()) profile.name = body.name.trim();
     if (body.product_ids) profile.product_ids = [...new Set(body.product_ids)];
+    persistProfile(org, stored);
 
     return HttpResponse.json(profile);
   }),
@@ -194,9 +251,8 @@ export const shipperProfileHandlers = [
 
     let { org } = principal;
     const stored = profileOf(org);
-    seq += 1;
     const packhouse: StoredPackhouseT = {
-      packhouse_id: `ph-mock-${seq}`,
+      packhouse_id: newPackhouseId(),
       name: body.name.trim(),
       region: body.region.trim(),
       lat: body.lat,
@@ -219,6 +275,7 @@ export const shipperProfileHandlers = [
     } else if (productIds.length) {
       stored.profile.product_ids = [...new Set([...stored.profile.product_ids, ...productIds])];
     }
+    persistProfile(org, stored);
 
     const created = packhousesOut(org, stored).find(
       item => item.packhouse_id === packhouse.packhouse_id
@@ -243,6 +300,7 @@ export const shipperProfileHandlers = [
     if (body.region?.trim()) packhouse.region = body.region.trim();
     if (body.lat != null) packhouse.lat = body.lat;
     if (body.lon != null) packhouse.lon = body.lon;
+    persistProfile(principal.org, stored);
 
     const updated = packhousesOut(principal.org, stored).find(
       item => item.packhouse_id === packhouse.packhouse_id
@@ -262,6 +320,7 @@ export const shipperProfileHandlers = [
       return fail(409, PACKHOUSE_IN_USE);
     }
     stored.packhouses.splice(index, 1);
+    persistProfile(principal.org, stored);
 
     return new HttpResponse(null, { status: 204 });
   }),

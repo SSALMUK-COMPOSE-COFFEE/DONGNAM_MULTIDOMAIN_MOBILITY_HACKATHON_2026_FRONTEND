@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useUpdateShipperLot } from '@/apis/saas/shipper';
 import { toIntakeOptions } from '@/app/(saas)/app/shipper/_components/catalog';
-import { SELL_WINDOW_LABEL } from '@/app/(saas)/app/shipper/_components/labels';
+import { SELL_WINDOW_LABEL, lotWarningsOf } from '@/app/(saas)/app/shipper/_components/labels';
 import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { errorDetail, toFieldErrors } from '@/app/(saas)/app/shipper/_components/query-state';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +33,7 @@ type LotEditDialogPropsT = {
   lot: ShipperLotT;
   catalog: ShipperCatalogT;
   onClose: () => void;
+  onCloseAutoFocus?: (event: Event) => void;
 };
 
 const EDIT_FIELDS = ['product', 'destination', 'pallets', 'ready_date', 'sell_window'] as const;
@@ -60,7 +62,7 @@ const changedFields = (lot: ShipperLotT, form: EditFormT): ShipperLotPatchT => {
   return patch;
 };
 
-export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
+export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEditDialogPropsT) {
   const options = toIntakeOptions(catalog);
   const updateLot = useUpdateShipperLot();
   const [form, setForm] = useState<EditFormT>({
@@ -74,15 +76,15 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
   const fieldErrors = toFieldErrors(updateLot.error);
   const errorOf = (field: EditFieldT) => fieldErrors.find(error => error.field === field)?.message;
   const otherErrors = otherFieldMessages(updateLot.error);
+  const label = lotLabel(lot, catalog);
 
   return (
     <Dialog open onOpenChange={open => !open && onClose()}>
-      <DialogContent>
+      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
           <DialogTitle>출하 수정</DialogTitle>
           <DialogDescription>
-            <span title={lot.id}>{lotLabel(lot, catalog)}</span> · 계획에 들어가기 전까지만 바꿀 수
-            있습니다.
+            <span title={lot.id}>{label}</span> · 계획에 들어가기 전까지만 바꿀 수 있습니다.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -99,8 +101,14 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
             updateLot.mutate(
               { lotId: lot.id, patch },
               {
-                onSuccess: () => {
-                  toast.success('출하를 수정했습니다.');
+                onSuccess: updated => {
+                  const warnings = lotWarningsOf(updated);
+                  const message = `${lotLabel(updated, catalog)} 출하를 수정했습니다.`;
+                  if (warnings.length > 0) {
+                    toast.warning(message, { description: plainWords(warnings.join(' · ')) });
+                  } else {
+                    toast.success(message);
+                  }
                   onClose();
                 },
                 onError: error => {
@@ -117,68 +125,83 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
           }}
         >
           <EditField label="품목" error={errorOf('product')}>
-            <Select value={form.product} onValueChange={product => update({ product })}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {options.products.map(({ id, label }) => (
-                  <SelectItem key={id} value={id}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {field => (
+              <Select value={form.product} onValueChange={product => update({ product })}>
+                <SelectTrigger className="w-full" {...field}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.products.map(({ id, label: optionLabel }) => (
+                    <SelectItem key={id} value={id}>
+                      {optionLabel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </EditField>
           <EditField label="수량 (파렛트)" error={errorOf('pallets')}>
-            <Input
-              type="number"
-              min={1}
-              className="num"
-              value={form.pallets}
-              onChange={event => update({ pallets: Number(event.target.value) })}
-            />
+            {field => (
+              <Input
+                {...field}
+                type="number"
+                min={1}
+                className="num"
+                value={form.pallets}
+                onChange={event => update({ pallets: Number(event.target.value) })}
+              />
+            )}
           </EditField>
           <EditField label="목적지" error={errorOf('destination')}>
-            <Select value={form.destination} onValueChange={destination => update({ destination })}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {options.destinations.map(({ id, label }) => (
-                  <SelectItem key={id} value={id}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {field => (
+              <Select
+                value={form.destination}
+                onValueChange={destination => update({ destination })}
+              >
+                <SelectTrigger className="w-full" {...field}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.destinations.map(({ id, label: optionLabel }) => (
+                    <SelectItem key={id} value={id}>
+                      {optionLabel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </EditField>
           <EditField label="출하 가능일" error={errorOf('ready_date')}>
-            <Input
-              type="date"
-              className="num"
-              value={form.ready_date}
-              onChange={event => update({ ready_date: event.target.value })}
-            />
+            {field => (
+              <Input
+                {...field}
+                type="date"
+                className="num"
+                value={form.ready_date}
+                onChange={event => update({ ready_date: event.target.value })}
+              />
+            )}
           </EditField>
           <EditField label="판매 기간" error={errorOf('sell_window')}>
-            <Select
-              value={form.sell_window}
-              onValueChange={sellWindow =>
-                update({ sell_window: sellWindow as EditFormT['sell_window'] })
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(SELL_WINDOW_LABEL) as EditFormT['sell_window'][]).map(value => (
-                  <SelectItem key={value} value={value}>
-                    {SELL_WINDOW_LABEL[value]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {field => (
+              <Select
+                value={form.sell_window}
+                onValueChange={sellWindow =>
+                  update({ sell_window: sellWindow as EditFormT['sell_window'] })
+                }
+              >
+                <SelectTrigger className="w-full" {...field}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(SELL_WINDOW_LABEL) as EditFormT['sell_window'][]).map(value => (
+                    <SelectItem key={value} value={value}>
+                      {SELL_WINDOW_LABEL[value]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </EditField>
           {otherErrors.length > 0 && (
             <p role="alert" className="text-sm text-berry">
@@ -199,6 +222,12 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
   );
 }
 
+type EditFieldPropsT = {
+  id: string;
+  'aria-invalid': boolean;
+  'aria-describedby'?: string;
+};
+
 function EditField({
   label,
   error,
@@ -206,13 +235,25 @@ function EditField({
 }: {
   label: string;
   error?: string;
-  children: React.ReactNode;
+  children: (field: EditFieldPropsT) => ReactNode;
 }) {
+  const id = useId();
+  const errorId = `${id}-error`;
+  const field: EditFieldPropsT = {
+    id,
+    'aria-invalid': !!error,
+    ...(error ? { 'aria-describedby': errorId } : {}),
+  };
+
   return (
     <div className="flex flex-col gap-2">
-      <Label>{label}</Label>
-      {children}
-      {error && <p className="text-sm text-berry">{error}</p>}
+      <Label htmlFor={id}>{label}</Label>
+      {children(field)}
+      {error && (
+        <p id={errorId} className="text-sm text-berry">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

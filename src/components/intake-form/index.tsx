@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +36,6 @@ type IntakeFormPropsT = {
   hideShipperField?: boolean;
 };
 
-/** 화주가 넣는 건 품목·수량·선과장·목적지·출하일 다섯 개뿐이다 */
 export function IntakeForm({
   scenario,
   isPending,
@@ -83,73 +82,90 @@ export function IntakeForm({
           }}
         >
           <Field label="품목" error={errorOf('product')}>
-            <Select value={form.product} onValueChange={product => update({ product })}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {products.map(({ id, label }) => (
-                  <SelectItem key={id} value={id}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field label="수량 (파렛트)" error={errorOf('pallets')}>
-            <Input
-              type="number"
-              min={1}
-              className="num"
-              value={form.pallets}
-              onChange={event => update({ pallets: Number(event.target.value) })}
-            />
-          </Field>
-
-          {hideShipperField && errorOf('shipper') && (
-            <p className="text-sm text-berry">{errorOf('shipper')}</p>
-          )}
-
-          {!hideShipperField && (
-            <Field label="화주 · 선과장" error={errorOf('shipper')}>
-              <Select value={form.shipper} onValueChange={shipper => update({ shipper })}>
-                <SelectTrigger className="w-full">
+            {field => (
+              <Select value={form.product} onValueChange={product => update({ product })}>
+                <SelectTrigger className="w-full" {...field}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {shippers.map(({ id, label }) => (
+                  {products.map(({ id, label }) => (
                     <SelectItem key={id} value={id}>
                       {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            )}
+          </Field>
+
+          <Field label="수량 (파렛트)" error={errorOf('pallets')}>
+            {field => (
+              <Input
+                {...field}
+                type="number"
+                min={1}
+                className="num"
+                value={form.pallets}
+                onChange={event => update({ pallets: Number(event.target.value) })}
+              />
+            )}
+          </Field>
+
+          {hideShipperField && errorOf('shipper') && (
+            <p role="alert" className="text-sm text-berry">
+              {errorOf('shipper')}
+            </p>
+          )}
+
+          {!hideShipperField && (
+            <Field label="화주 · 선과장" error={errorOf('shipper')}>
+              {field => (
+                <Select value={form.shipper} onValueChange={shipper => update({ shipper })}>
+                  <SelectTrigger className="w-full" {...field}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {shippers.map(({ id, label }) => (
+                      <SelectItem key={id} value={id}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </Field>
           )}
 
           <Field label="목적지" error={errorOf('destination')}>
-            <Select value={form.destination} onValueChange={destination => update({ destination })}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {destinations.map(({ id, label }) => (
-                  <SelectItem key={id} value={id}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {field => (
+              <Select
+                value={form.destination}
+                onValueChange={destination => update({ destination })}
+              >
+                <SelectTrigger className="w-full" {...field}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {destinations.map(({ id, label }) => (
+                    <SelectItem key={id} value={id}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </Field>
 
           <Field label="출하 가능일" error={errorOf('ready_date')}>
-            <Input
-              type="date"
-              className="num"
-              value={form.ready_date}
-              onChange={event => update({ ready_date: event.target.value })}
-            />
+            {field => (
+              <Input
+                {...field}
+                type="date"
+                className="num"
+                value={form.ready_date}
+                onChange={event => update({ ready_date: event.target.value })}
+              />
+            )}
           </Field>
 
           <Button type="submit" size="lg" disabled={isPending}>
@@ -174,12 +190,17 @@ const toShipperOptions = (scenario: ScenarioT): IntakeOptionT[] =>
   }));
 
 const toDestinationOptions = (scenario: ScenarioT): IntakeOptionT[] => {
-  // 출발항(부산신항)은 목적지에서 뺀다
   const destinationIds = new Set(scenario.voyages.map(({ destination }) => destination));
 
   return scenario.ports
     .filter(({ id }) => destinationIds.has(id))
     .map(({ id, name }) => ({ id, label: name }));
+};
+
+type FieldPropsT = {
+  id: string;
+  'aria-invalid': boolean;
+  'aria-describedby'?: string;
 };
 
 function Field({
@@ -189,13 +210,25 @@ function Field({
 }: {
   label: string;
   error?: string;
-  children: React.ReactNode;
+  children: (field: FieldPropsT) => ReactNode;
 }) {
+  const id = useId();
+  const errorId = `${id}-error`;
+  const field: FieldPropsT = {
+    id,
+    'aria-invalid': !!error,
+    ...(error ? { 'aria-describedby': errorId } : {}),
+  };
+
   return (
     <div className="flex flex-col gap-2">
-      <Label>{label}</Label>
-      {children}
-      {error && <p className="text-sm text-berry">{error}</p>}
+      <Label htmlFor={id}>{label}</Label>
+      {children(field)}
+      {error && (
+        <p id={errorId} className="text-sm text-berry">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

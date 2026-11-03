@@ -44,7 +44,8 @@ import ulsanCongestionFixture from '@/mocks/saas/fixtures/ulsan-congestion.json'
 import { metricsHandlers } from '@/mocks/saas/metrics';
 import { orgMemberHandlers, redeemInvitation } from '@/mocks/saas/org-members';
 import { MOCK_ORGS, type MockOrgT, findOrg, firstOrgOfType, orgOfShipper } from '@/mocks/saas/orgs';
-import { shipperProfileHandlers } from '@/mocks/saas/shipper-profile';
+import { seasonCheckOf, seasonWarningOf } from '@/mocks/saas/season';
+import { registeredTenantOf, shipperProfileHandlers } from '@/mocks/saas/shipper-profile';
 import {
   type MockArrivalT,
   type MockBindingT,
@@ -314,13 +315,19 @@ const catalogFor = (session: PlanSessionT, org: MockOrgT) => {
   const scenario = session.scenario;
   if (org.org_type === 'platform') return { ...scenario, lots: [] };
 
-  const shippers = scenario.shippers.filter(shipper => org.shipper_ids.includes(shipper.id));
+  const tenant = registeredTenantOf(org);
+  const shippers = [
+    ...scenario.shippers.filter(shipper => org.shipper_ids.includes(shipper.id)),
+    ...(tenant ? [tenant.shipper] : []),
+  ];
   const packhouseIds = new Set(shippers.map(shipper => shipper.packhouse_id));
 
   return {
     ...scenario,
     shippers,
-    packhouses: scenario.packhouses.filter(packhouse => packhouseIds.has(packhouse.id)),
+    packhouses: [...scenario.packhouses, ...(tenant?.packhouses ?? [])].filter(packhouse =>
+      packhouseIds.has(packhouse.id)
+    ),
     lots: [],
   };
 };
@@ -355,11 +362,27 @@ const addDays = (date: string, days: number) => {
   return value.toISOString().slice(0, 10);
 };
 
-const intakePreview = (lot: MockLotT, session: PlanSessionT): IntakePreviewT => {
+const MOCK_SELL_BY_DAYS = 7;
+
+const mockSellBy = (readyDate: string) => addDays(readyDate, MOCK_SELL_BY_DAYS);
+
+const defaultsAppliedOf = (lot: MockLotT, productName: string) => [
+  ...(lot.sell_by_date === mockSellBy(lot.ready_date)
+    ? [
+        `sell_by_date = 출하 가능일 + ${productName} 신선 유지 기간 ${MOCK_SELL_BY_DAYS}일 = ${lot.sell_by_date} (출처: 가정)`,
+      ]
+    : []),
+  `lot_id 자동 생성: ${lot.id}`,
+];
+
+const intakePreview = (lot: MockLotT, session: PlanSessionT, org: MockOrgT): IntakePreviewT => {
   const preview = intakeStrawberryFixture as unknown as IntakePreviewT;
+  const catalog = catalogFor(session, org);
   const product = session.scenario.products.find(item => item.id === lot.product_id);
-  const shipper = session.scenario.shippers.find(item => item.id === lot.shipper_id);
-  const packhouse = session.scenario.packhouses.find(item => item.id === shipper?.packhouse_id);
+  const shipper = catalog.shippers.find(item => item.id === lot.shipper_id);
+  const packhouse = catalog.packhouses.find(item => item.id === shipper?.packhouse_id);
+  const season = seasonCheckOf(product, lot.ready_date);
+  const seasonWarning = seasonWarningOf(season, lot.ready_date);
   const port = session.scenario.ports.find(item => item.id === lot.destination);
   const lotBody = {
     source: lot.source,
@@ -377,6 +400,12 @@ const intakePreview = (lot: MockLotT, session: PlanSessionT): IntakePreviewT => 
     ...preview,
     lot: lotBody,
     event: { type: 'add_lot', lot: lotBody },
+    defaults_applied: defaultsAppliedOf(lot, product?.name ?? lot.product_id),
+    hints: {
+      ...preview.hints,
+      warnings: [...(seasonWarning ? [seasonWarning] : []), ...preview.hints.warnings],
+      ...(season ? { season } : {}),
+    },
     resolved: {
       ...preview.resolved,
       product_id: lot.product_id,
@@ -633,10 +662,11 @@ const shipperHandlers = [
       pallets: body.pallets,
       ready_date: body.ready_date,
       destination: body.destination,
-      sell_by_date: body.sell_by_date || addDays(body.ready_date, 7),
+      sell_by_date: body.sell_by_date || mockSellBy(body.ready_date),
       sell_window: body.sell_window,
       packhouse:
-        session.scenario.shippers.find(shipper => shipper.id === shipperId)?.packhouse_id ?? null,
+        catalogFor(session, principal.org).shippers.find(shipper => shipper.id === shipperId)
+          ?.packhouse_id ?? null,
       source: '화주 간편 등록',
       status: 'registered',
       created_at: now,
@@ -645,7 +675,7 @@ const shipperHandlers = [
     mockDb.lots.unshift(lot);
     await delay(300);
 
-    return HttpResponse.json(intakePreview(lot, session), { status: 201 });
+    return HttpResponse.json(intakePreview(lot, session, principal.org), { status: 201 });
   }),
 
   http.patch(api('/saas/shipper/lots/:lotId'), async ({ request, params }) => {
@@ -824,11 +854,11 @@ const shipperHandlers = [
       pallets: body.pallets,
       ready_date: body.ready_date,
       destination: body.destination,
-      sell_by_date: body.sell_by_date || addDays(body.ready_date, 7),
+      sell_by_date: body.sell_by_date || mockSellBy(body.ready_date),
       sell_window: body.sell_window,
       packhouse:
-        session.scenario.shippers.find(shipper => shipper.id === body.shipper)?.packhouse_id ??
-        null,
+        catalogFor(session, principal.org).shippers.find(shipper => shipper.id === body.shipper)
+          ?.packhouse_id ?? null,
       source: '화주 간편 등록',
       status: 'registered',
       created_at: now,
@@ -836,7 +866,7 @@ const shipperHandlers = [
     };
     await delay(200);
 
-    return HttpResponse.json({ ...intakePreview(lot, session), registered: null });
+    return HttpResponse.json({ ...intakePreview(lot, session, principal.org), registered: null });
   }),
 ];
 

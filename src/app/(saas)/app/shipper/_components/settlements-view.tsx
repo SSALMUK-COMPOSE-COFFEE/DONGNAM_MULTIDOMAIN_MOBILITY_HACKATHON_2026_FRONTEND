@@ -3,6 +3,7 @@
 import { cn } from 'cn';
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 import { useShipperSettlements } from '@/apis/saas/shipper';
 import {
@@ -35,11 +36,40 @@ const BASIS_LABEL: Record<ShipperSettlementT['basis'], string> = {
   mixed: '혼합',
 };
 
-const BASELINE_KIND_LABEL: Record<string, string> = {
-  air_solo: '단독 항공 대비',
-  sea_solo: '단독 해상 대비',
-  mixed: '단독 운송 대비',
+const BASIS_HINT: Record<ShipperSettlementT['basis'], string> = {
+  tariff: '팀이 정한 정산표 단가(일부 가정 포함)로 계획 시점 비용을 추정했습니다',
+  operational: '트럭·보관·운임 운영비 모델(일부 가정 포함)로 계획 시점 비용을 추정했습니다',
+  mixed: '품목마다 정산표 단가와 운영비 모델을 섞어 계획 시점 비용을 추정했습니다',
 };
+
+const RULE_HINT: Record<string, string> = {
+  performance: '성과보수: 아낀 금액에서 정해진 비율만 수수료로 냅니다',
+  usage_fee: '파렛트 이용료: 포도처럼 원래 배로 가던 품목은 성과보수 대신 파렛트당 이용료만 냅니다',
+  mixed: '품목에 따라 성과보수와 파렛트 이용료를 함께 냅니다',
+};
+
+const BASELINE_HINT = '혼자 항공으로 보냈다면 드는 예상 비용';
+const SHARED_HINT = '같이 실을 때 드는 예상 비용';
+const SAVINGS_HINT = '비교 기준 − 공동적재';
+const FEE_HINT = '환급 뒤 실제 내는 금액';
+const REFUND_HINT = '손실이 예측을 넘어 돌려받은 수수료';
+const GAIN_HINT = '절감 − 수수료';
+
+const PILOT_HINT = '무료 시범 항차: 수수료를 받지 않고, 원래 냈을 금액만 함께 보여 드립니다';
+
+const COLUMNS: { key: string; title: string; hint: string; right?: boolean }[] = [
+  { key: 'vessel', title: '선박 · 출항', hint: '내 화물이 탄 배' },
+  { key: 'rule', title: '근거 · 과금', hint: '비용 계산 근거와 수수료 방식' },
+  { key: 'pallets', title: '해상 / 항공 파렛트', hint: '이 계획의 내 파렛트', right: true },
+  { key: 'baseline', title: '비교 기준', hint: BASELINE_HINT, right: true },
+  { key: 'shared', title: '공동적재', hint: SHARED_HINT, right: true },
+  { key: 'savings', title: '절감', hint: SAVINGS_HINT, right: true },
+  { key: 'fee', title: '수수료', hint: FEE_HINT, right: true },
+  { key: 'refund', title: '품질 환급', hint: REFUND_HINT, right: true },
+  { key: 'gain', title: '내 몫', hint: GAIN_HINT, right: true },
+];
+
+const SAVINGS_BASELINE_LABEL = '단독 항공 대비';
 const MANWON = 10_000;
 
 const noVesselOf = (row: ShipperSettlementT) =>
@@ -65,14 +95,21 @@ const textOf = (row: ShipperSettlementT, key: string) => {
 
 const billingRuleOf = (row: ShipperSettlementT) => textOf(row, 'billing_rule') ?? 'performance';
 
-const baselineKindOf = (row: ShipperSettlementT) =>
-  textOf(row, 'baseline_kind') ?? (billingRuleOf(row) === 'usage_fee' ? 'sea_solo' : 'air_solo');
-
 const baselineLabelOf = (row: ShipperSettlementT) =>
-  textOf(row, 'baseline_label') ??
-  textOf(row, 'savings_baseline_label') ??
-  BASELINE_KIND_LABEL[baselineKindOf(row)] ??
-  '단독 항공 대비';
+  textOf(row, 'savings_baseline_label') ?? SAVINGS_BASELINE_LABEL;
+
+const feeBasisLabelOf = (row: ShipperSettlementT) => {
+  const label = textOf(row, 'baseline_label');
+
+  return label && label !== baselineLabelOf(row) ? label : null;
+};
+
+const ruleHintOf = (row: ShipperSettlementT) => {
+  const hint = RULE_HINT[billingRuleOf(row)] ?? '';
+  const feeBasis = feeBasisLabelOf(row);
+
+  return feeBasis ? `${hint} (이용료 기준 ${feeBasis})` : hint;
+};
 
 const fmtManwon = (krw: number) =>
   `${(krw / MANWON).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}만 원`;
@@ -101,6 +138,9 @@ const billingLabelOf = (row: ShipperSettlementT) => {
 
 const isPilot = (row: ShipperSettlementT) => fieldOf(row, 'pilot') === true;
 
+const originalFeeOf = (row: ShipperSettlementT) =>
+  (numberOf(row, 'performance_fee') ?? 0) + (numberOf(row, 'usage_fee') ?? 0);
+
 function Stat({
   label,
   value,
@@ -123,6 +163,28 @@ function Stat({
         <small className="ml-0.5 text-[14px] font-semibold text-m2-ink-2">원</small>
       </div>
       {note ? <div className="m2-sub mt-1 text-[12px]">{note}</div> : null}
+    </div>
+  );
+}
+
+function MobileLine({
+  label,
+  hint,
+  tone,
+  children,
+}: {
+  label: string;
+  hint: string;
+  tone?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <span>
+        {label}
+        <small className="block text-[11px]">{hint}</small>
+      </span>
+      <b className={tone}>{children}</b>
     </div>
   );
 }
@@ -160,17 +222,27 @@ export function SettlementsView() {
   const totalGain = sumOf(rows, ({ shipper_gain }) => shipper_gain);
   const totalRefund = sumOf(rows, ({ quality_refund }) => quality_refund);
   const baselineLabels = [...new Set(rows.map(baselineLabelOf))];
+  const pilotRows = rows.filter(isPilot);
+  const pilotWaivedFee = sumOf(pilotRows, originalFeeOf);
+  const feeNote = () => {
+    if (pilotRows.length === 0) return FEE_HINT;
+    if (pilotRows.length === rows.length) return `무료 시범 · 원래 ${fmtWon(pilotWaivedFee)}`;
+
+    return `무료 시범 ${pilotRows.length}건 ${fmtWon(pilotWaivedFee)} 면제 뒤 금액`;
+  };
+  const rules = [...new Set(rows.map(billingRuleOf))];
+  const bases = [...new Set(rows.map(({ basis }) => basis))];
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="m2-grid grid-cols-4 max-[1180px]:grid-cols-2">
+      <div className="m2-grid grid-cols-4 max-[1180px]:grid-cols-2 max-[479.98px]:grid-cols-1">
         <Stat
           label="내 절감 합계"
           value={totalSavings}
           tone="var(--m2-ok-ink)"
           note={baselineLabels.length === 1 ? baselineLabels[0] : '계획마다 기준이 다릅니다'}
         />
-        <Stat label="수수료" value={totalFee} />
+        <Stat label="수수료" value={totalFee} note={feeNote()} />
         <Stat label="내 몫" value={totalGain} tone="var(--m2-navy)" />
         <Stat label="품질 환급" value={totalRefund} />
       </div>
@@ -184,16 +256,17 @@ export function SettlementsView() {
           <table className={cn('m2-table', CARD_TABLE)}>
             <thead>
               <tr>
-                <th>선박 · 출항</th>
-                <th>근거 · 과금</th>
-                <th className="r">해상 / 항공 파렛트</th>
-                <th className="r">비교 기준</th>
-                <th className="r">공동적재</th>
-                <th className="r">절감</th>
-                <th className="r">수수료</th>
-                <th className="r">품질 환급</th>
-                <th className="r">내 몫</th>
-                <th />
+                {COLUMNS.map(column => (
+                  <th key={column.key} scope="col" className={column.right ? 'r' : ''}>
+                    {column.title}
+                    <span className="block text-[11px] font-normal whitespace-normal text-m2-muted normal-case">
+                      {column.hint}
+                    </span>
+                  </th>
+                ))}
+                <th scope="col">
+                  <span className="sr-only">계획 보기</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -216,10 +289,16 @@ export function SettlementsView() {
                     </td>
                     <td className={CARD_MAIN}>
                       <div className="flex flex-wrap gap-1.5">
-                        <span className="m2-chip">{BASIS_LABEL[row.basis] ?? row.basis}</span>
-                        <span className="m2-chip m2-chip-brand">{billingLabelOf(row)}</span>
+                        <span className="m2-chip" title={BASIS_HINT[row.basis]}>
+                          {BASIS_LABEL[row.basis] ?? row.basis}
+                        </span>
+                        <span className="m2-chip m2-chip-brand" title={ruleHintOf(row)}>
+                          {billingLabelOf(row)}
+                        </span>
                         {pilot && (
-                          <span className="m2-chip m2-chip-ok">시범 항차 · 수수료 0원</span>
+                          <span className="m2-chip m2-chip-ok" title={PILOT_HINT}>
+                            무료 시범
+                          </span>
                         )}
                       </div>
                     </td>
@@ -236,41 +315,48 @@ export function SettlementsView() {
                     <td className={cn('r m2-num font-semibold text-m2-ok-ink', CARD_HIDE)}>
                       {fmtWon(row.savings)}
                     </td>
-                    <td className={cn('r m2-num', CARD_HIDE)}>{fmtWon(row.fee)}</td>
+                    <td className={cn('r m2-num', CARD_HIDE)}>
+                      <div className="m2-who font-normal">
+                        {fmtWon(row.fee)}
+                        {pilot && <small>원래 {fmtWon(originalFeeOf(row))}</small>}
+                      </div>
+                    </td>
                     <td className={cn('r m2-num', CARD_HIDE)}>{fmtWon(row.quality_refund)}</td>
                     <td className={cn('r m2-num font-semibold', CARD_HIDE)}>
                       {fmtWon(row.shipper_gain)}
                     </td>
                     <td className={cn(MOBILE_BLOCK, CARD_MAIN)}>
                       <div className="m2-lines m2-num mt-0">
-                        <div>
-                          <span>{baselineLabel}</span>
-                          <b>{fmtWon(row.baseline_cost)}</b>
-                        </div>
-                        <div>
-                          <span>공동적재</span>
-                          <b>{fmtWon(row.shared_cost)}</b>
-                        </div>
-                        <div>
-                          <span>절감</span>
-                          <b className="text-m2-ok-ink">{fmtWon(row.savings)}</b>
-                        </div>
-                        <div>
-                          <span>수수료 · 품질 환급</span>
-                          <b>
-                            {fmtWon(row.fee)} · {fmtWon(row.quality_refund)}
-                          </b>
-                        </div>
-                        <div>
-                          <span>내 몫</span>
-                          <b>{fmtWon(row.shipper_gain)}</b>
-                        </div>
+                        <MobileLine label={baselineLabel} hint={BASELINE_HINT}>
+                          {fmtWon(row.baseline_cost)}
+                        </MobileLine>
+                        <MobileLine label="공동적재" hint={SHARED_HINT}>
+                          {fmtWon(row.shared_cost)}
+                        </MobileLine>
+                        <MobileLine label="절감" hint={SAVINGS_HINT} tone="text-m2-ok-ink">
+                          {fmtWon(row.savings)}
+                        </MobileLine>
+                        <MobileLine label="수수료" hint={FEE_HINT}>
+                          {fmtWon(row.fee)}
+                        </MobileLine>
+                        {pilot && (
+                          <MobileLine label="무료 시범 · 원래 냈을 수수료" hint={PILOT_HINT}>
+                            {fmtWon(originalFeeOf(row))}
+                          </MobileLine>
+                        )}
+                        <MobileLine label="품질 환급" hint={REFUND_HINT}>
+                          {fmtWon(row.quality_refund)}
+                        </MobileLine>
+                        <MobileLine label="내 몫" hint={GAIN_HINT}>
+                          {fmtWon(row.shipper_gain)}
+                        </MobileLine>
                       </div>
                     </td>
                     <td className={cn('r', CARD_PUSH)}>
                       <Link
                         href={SHIPPER_PATHS.PLAN(row.plan_id)}
                         className="m2-btn m2-btn-sec m2-btn-sm"
+                        aria-label={`${row.vessel ?? noVesselOf(row)} 계획 보기`}
                       >
                         계획
                         <ArrowRightIcon size={14} />
@@ -282,6 +368,17 @@ export function SettlementsView() {
             </tbody>
           </table>
         </div>
+        <ul className="m2-sub mt-3 flex flex-col gap-1 text-[12px]" aria-label="적용 규칙 설명">
+          {bases.map(basis => (
+            <li key={basis}>
+              <b className="text-m2-ink-2">{BASIS_LABEL[basis] ?? basis}</b> · {BASIS_HINT[basis]}
+            </li>
+          ))}
+          {rules.map(rule => (
+            <li key={rule}>{RULE_HINT[rule] ?? rule}</li>
+          ))}
+          {pilotRows.length > 0 && <li>{PILOT_HINT}</li>}
+        </ul>
       </section>
     </div>
   );

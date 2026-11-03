@@ -1,0 +1,242 @@
+import AxeBuilder from '@axe-core/playwright';
+import { type Page, expect, test } from '@playwright/test';
+
+const SIGNUP_PATH = '/test/signup';
+const LOGIN_PATH = '/test/login';
+const RAW_LOT_ID = /\blot-[a-z0-9-]+/;
+const MOBILE_WIDTH = 390;
+
+const menu = (page: Page, name: RegExp) =>
+  page.getByRole('complementary', { name: '주 메뉴' }).getByRole('link', { name });
+
+const expectNoSeriousAxe = async (page: Page, screen: string, scope = 'main') => {
+  const result = await new AxeBuilder({ page }).include(scope).analyze();
+  const blocking = result.violations
+    .filter(({ impact }) => impact === 'serious' || impact === 'critical')
+    .map(({ id, impact, nodes }) => ({
+      id,
+      impact,
+      targets: nodes.slice(0, 5).map(({ target }) => target.join(' ')),
+    }));
+
+  expect(blocking, `${screen} axe serious·critical`).toEqual([]);
+};
+
+const expectNoRawLotId = async (page: Page) => {
+  const text = await page.getByRole('main').first().innerText();
+
+  expect(text).not.toMatch(RAW_LOT_ID);
+};
+
+const expectFitsMobile = async (page: Page, screen: string) => {
+  await page.setViewportSize({ width: MOBILE_WIDTH, height: 844 });
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  expect(overflow, `${screen} 가로 넘침(px)`).toBeLessThanOrEqual(0);
+  await page.setViewportSize({ width: 1440, height: 900 });
+};
+
+const seasonNumbers = async (page: Page) => {
+  const card = page.getByRole('region', { name: '이번 시즌 내가 아낀 금액' });
+  await expect(card).toBeVisible();
+  const valueOf = (label: string) =>
+    card
+      .locator('div')
+      .filter({ has: page.locator('dt', { hasText: label }) })
+      .locator('dd');
+
+  return {
+    savings: (await valueOf('아낀 금액').innerText()).trim(),
+    fee: (await valueOf('수수료').innerText()).trim(),
+    gain: (await valueOf('내 몫').innerText()).trim(),
+  };
+};
+
+test('새 화주가 화면만으로 선과장을 등록하고 수출 시기 밖 출하를 등록한 뒤 홈 시즌 카드를 본다', async ({
+  page,
+}) => {
+  const stamp = Date.now();
+
+  await test.step('가입하면 홈에서 선과장 등록으로 안내한다', async () => {
+    await page.goto(SIGNUP_PATH);
+    await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+    await page.getByLabel('회사 이름').fill(`온보딩 검증 농가 ${stamp}`);
+    await page.getByLabel('담당자 이름').fill('검증 담당');
+    await page.getByLabel('이메일').fill(`onboarding-${stamp}@example.com`);
+    await page.getByLabel('비밀번호').fill('password-1');
+    await page.getByRole('button', { name: '가입하고 시작하기' }).click();
+    await page.waitForURL(/\/test\/app\/shipper/);
+
+    const main = page.getByRole('main').first();
+    await expect(main.getByRole('heading', { name: '먼저 선과장을 등록하세요' })).toBeVisible();
+    await expect(main.getByText('먼저 선과장을 등록하세요')).toHaveCount(1);
+    await expect(main.getByRole('link', { name: '선과장 등록하기' })).toHaveCount(1);
+    await expectNoSeriousAxe(page, '화주 홈(가입 직후)');
+    await main.getByRole('link', { name: '선과장 등록하기' }).click();
+    await page.waitForURL(/\/test\/app\/shipper\/onboarding/);
+  });
+
+  await test.step('빈 칸으로 내면 오류가 입력칸에 연결된다', async () => {
+    const form = page.getByRole('form', { name: '선과장 등록' });
+    await form.getByRole('button', { name: '선과장 등록' }).click();
+    const name = form.getByLabel('선과장 이름');
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expect(name).toBeFocused();
+    await expect(name).toHaveAccessibleDescription('선과장 이름을 넣으세요.');
+    await expect(form.getByLabel('위도')).toHaveAttribute('aria-invalid', 'true');
+    await expect(form.getByLabel('딸기')).toHaveAccessibleDescription(
+      '취급 품목을 하나 이상 고르세요.'
+    );
+    await expectNoSeriousAxe(page, '선과장 등록');
+  });
+
+  await test.step('지도 대신 좌표를 직접 넣어 선과장을 등록한다', async () => {
+    const form = page.getByRole('form', { name: '선과장 등록' });
+    await form.getByLabel('선과장 이름').fill('검증 선과장');
+    await form.getByLabel('주소 · 지역').fill('경남 진주시 문산읍');
+    await form.getByLabel('위도').fill('36.180');
+    await form.getByLabel('경도').fill('128.107');
+    await form.getByLabel('딸기').check();
+    await form.getByRole('button', { name: '선과장 등록' }).click();
+
+    const main = page.getByRole('main').first();
+    const done = main.getByRole('heading', { name: '선과장 등록을 마쳤어요' });
+    await expect(done).toBeVisible();
+    await expect(done).toBeFocused();
+    await expect(main.getByRole('link', { name: '첫 출하 등록하기' })).toBeVisible();
+    await expectFitsMobile(page, '선과장 등록');
+  });
+
+  await test.step('좌표를 고친 선과장을 더 등록하고 기본 선과장으로 바꾼다', async () => {
+    const main = page.getByRole('main').first();
+    const form = page.getByRole('form', { name: '선과장 등록' });
+    await expect(main.getByRole('heading', { name: '다른 선과장 추가' })).toBeVisible();
+    await form.getByLabel('선과장 이름').fill('문산 선별장');
+    await form.getByLabel('주소 · 지역').fill('경남 진주시 문산읍');
+    await form.getByLabel('위도').fill('35.180');
+    await form.getByLabel('경도').fill('128.107');
+    await form.getByLabel('딸기').check();
+    await form.getByRole('button', { name: '선과장 등록' }).click();
+
+    const done = main.getByRole('heading', { name: '선과장을 하나 더 등록했어요' });
+    await expect(done).toBeFocused();
+    await expect(main.getByText(/문산 선별장에서 집하하려면/)).toBeVisible();
+    await main.getByRole('button', { name: '문산 선별장 기본 선과장으로 지정' }).click();
+    await expect(
+      main.getByRole('listitem').filter({ hasText: '문산 선별장' }).getByText('기본 선과장')
+    ).toBeVisible();
+    await expect(main.getByText(/문산 선별장에서 집하하려면/)).toHaveCount(0);
+    await expect(done).toBeFocused();
+    await expectNoSeriousAxe(page, '선과장 추가');
+    await main.getByRole('link', { name: '출하 등록하기' }).click();
+    await page.waitForURL(/\/test\/app\/shipper\/lots/);
+  });
+
+  await test.step('새로고침해도 등록한 선과장이 남아 있다', async () => {
+    await page.reload();
+    await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+    const form = page.getByRole('region', { name: '새 출하 등록' });
+    await expect(form.getByLabel('선과장')).toHaveValue('문산 선별장 · 경남 진주시 문산읍');
+  });
+
+  await test.step('수출 시기 밖 출하일이면 미리보기와 등록 결과에 경고가 뜬다', async () => {
+    const form = page.getByRole('region', { name: '새 출하 등록' });
+    const ready = form.getByLabel('출하 가능일');
+    await ready.fill('2027-07-01');
+    const warning = form
+      .getByRole('status')
+      .filter({ hasText: /딸기 수출 시기\(11~5월\) 밖의 출하일입니다/ });
+    await expect(warning).toBeVisible();
+    await expect(ready).toHaveAccessibleDescription(/수출 시기/);
+    await expectNoSeriousAxe(page, '출하 등록(경고)');
+
+    await form.getByRole('button', { name: '출하 등록' }).click();
+    const main = page.getByRole('main').first();
+    await expect(main.getByRole('status').filter({ hasText: '수출 시기 밖 출하' })).toBeVisible();
+    const row = main.getByRole('row').filter({ hasText: '딸기 07/01 · 1파렛트' });
+    await expect(row).toHaveCount(1);
+    const edit = row.getByRole('button', { name: '딸기 07/01 · 1파렛트 수정' });
+    await expect(edit).toBeVisible();
+    await expect(main.getByText(/판매기한 = .*2027-07-08/)).toBeVisible();
+    await expect(main.getByText(/2026-11-24/)).toHaveCount(0);
+    await expectNoRawLotId(page);
+
+    await edit.click();
+    await expect(page.getByRole('dialog', { name: '출하 수정' })).toBeVisible();
+    await expectNoSeriousAxe(page, '출하 수정 창', '[role="dialog"]');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: '출하 수정' })).toHaveCount(0);
+    await expect(edit).toBeFocused();
+
+    const remove = row.getByRole('button', { name: '딸기 07/01 · 1파렛트 삭제' });
+    await remove.click();
+    await expect(page.getByRole('alertdialog', { name: '출하를 삭제할까요?' })).toBeVisible();
+    await expectNoSeriousAxe(page, '출하 삭제 확인', '[role="alertdialog"]');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('alertdialog')).toHaveCount(0);
+    await expect(remove).toBeFocused();
+
+    await expectNoSeriousAxe(page, '내 출하');
+    await expectFitsMobile(page, '내 출하');
+  });
+
+  await test.step('새 화주 홈 시즌 카드는 아직 0원이다', async () => {
+    await menu(page, /^홈/).click();
+    await page.waitForURL(/\/test\/app\/shipper$/);
+    expect(await seasonNumbers(page)).toEqual({ savings: '0원', fee: '0원', gain: '0원' });
+    await expectNoRawLotId(page);
+  });
+});
+
+test('데모 화주 홈 시즌 카드 숫자가 정산 화면 합계와 같고 화주 화면에 원시 로트 id가 없다', async ({
+  page,
+}) => {
+  await page.goto(LOGIN_PATH);
+  await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+  await page
+    .getByRole('button', { name: /들어가기/ })
+    .nth(1)
+    .click();
+  await page.waitForURL(/\/test\/app\/shipper/);
+
+  const home = await seasonNumbers(page);
+  expect(home.savings).not.toBe('0원');
+  await expect(page.getByText(/내 파렛트 \d+ \/ 컨테이너 전체 \d+/)).toBeVisible();
+  await expectNoRawLotId(page);
+  await expectNoSeriousAxe(page, '화주 홈');
+  await expectFitsMobile(page, '화주 홈');
+
+  await menu(page, /^정산/).click();
+  await page.waitForURL(/\/test\/app\/shipper\/settlements/);
+  const main = page.getByRole('main').first();
+  const stat = (label: string) =>
+    main
+      .locator('.m2-card')
+      .filter({ has: page.locator('.m2-lbl', { hasText: label }) })
+      .locator('.m2-num')
+      .first();
+  const flat = (text: string) => text.replace(/\s+/g, '');
+  expect(flat(await stat('내 절감 합계').innerText())).toBe(home.savings);
+  expect(flat(await stat('수수료').innerText())).toBe(home.fee);
+  expect(flat(await stat('내 몫').innerText())).toBe(home.gain);
+  await expect(
+    main.getByRole('columnheader', { name: /비교 기준\s*혼자 항공으로 보냈다면 드는 예상 비용/ })
+  ).toBeVisible();
+  await expect(main.getByText(/실제 운영비|공개 운임/)).toHaveCount(0);
+  await expect(main.getByRole('list', { name: '적용 규칙 설명' })).toBeVisible();
+  await expectNoRawLotId(page);
+  await expectNoSeriousAxe(page, '정산');
+  await page.setViewportSize({ width: MOBILE_WIDTH, height: 844 });
+  await expect(
+    main.locator('.m2-lines').getByText('같이 실을 때 드는 예상 비용').first()
+  ).toBeVisible();
+  await expectNoSeriousAxe(page, '정산(390px)');
+  await expectFitsMobile(page, '정산');
+
+  await menu(page, /내 출하/).click();
+  await page.waitForURL(/\/test\/app\/shipper\/lots/);
+  await expect(page.getByRole('main').first().getByRole('row').nth(1)).toBeVisible();
+  await expectNoRawLotId(page);
+  await expectNoSeriousAxe(page, '내 출하(데모)');
+});

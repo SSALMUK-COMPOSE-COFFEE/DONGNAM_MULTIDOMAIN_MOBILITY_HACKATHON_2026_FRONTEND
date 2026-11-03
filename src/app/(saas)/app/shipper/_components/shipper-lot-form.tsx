@@ -49,8 +49,13 @@ const shipperLabel = (catalog: ShipperCatalogT, shipperId: string) => {
   return [packhouse.name, packhouse.region].filter(Boolean).join(' · ');
 };
 
-const initialFormOf = (catalog: ShipperCatalogT): LotFormT => ({
-  product: catalog.products[0]?.id ?? '',
+const initialProductOf = (catalog: ShipperCatalogT, preferred: readonly string[]) =>
+  preferred.find(productId => catalog.products.some(({ id }) => id === productId)) ??
+  catalog.products[0]?.id ??
+  '';
+
+const initialFormOf = (catalog: ShipperCatalogT, preferred: readonly string[]): LotFormT => ({
+  product: initialProductOf(catalog, preferred),
   pallets: 1,
   ready_date: todayIso(),
   destination: destinationsOf(catalog)[0]?.id ?? '',
@@ -79,17 +84,25 @@ const isComplete = (form: LotFormT) =>
   Number.isInteger(form.pallets) &&
   form.pallets >= 1;
 
+const describedBy = (...ids: (string | false | null)[]) => {
+  const value = ids.filter((item): item is string => !!item).join(' ');
+
+  return value ? { 'aria-describedby': value } : {};
+};
+
 function FormStep({
   index,
   label,
   htmlFor,
   error,
+  errorId,
   children,
 }: {
   index: number;
   label: ReactNode;
   htmlFor?: string;
   error?: string;
+  errorId: string;
   children: ReactNode;
 }) {
   return (
@@ -109,7 +122,11 @@ function FormStep({
           <span className="mb-1.5 block text-[12.5px] font-semibold">{label}</span>
         )}
         {children}
-        {error && <p className="mt-1 text-[12px] text-m2-crit">{error}</p>}
+        {error && (
+          <p id={errorId} className="mt-1 text-[12px] text-m2-crit">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -121,13 +138,24 @@ const TOGGLE_CLASS =
 type ShipperLotFormPropsT = {
   catalog: ShipperCatalogT;
   onCreated?: (preview: ShipperLotPreviewT) => void;
+  preferredProductIds?: readonly string[];
   className?: string;
   id?: string;
 };
 
-export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLotFormPropsT) {
+const NO_PREFERRED: readonly string[] = [];
+
+export function ShipperLotForm({
+  catalog,
+  onCreated,
+  preferredProductIds = NO_PREFERRED,
+  className,
+  id,
+}: ShipperLotFormPropsT) {
   const fieldId = useId();
-  const [form, setForm] = useState<LotFormT>(() => initialFormOf(catalog));
+  const errorIdOf = (field: string) => `${fieldId}-${field}-error`;
+  const warningsId = `${fieldId}-warnings`;
+  const [form, setForm] = useState<LotFormT>(() => initialFormOf(catalog, preferredProductIds));
   const update = (patch: Partial<LotFormT>) => setForm(prev => ({ ...prev, ...patch }));
   const createLot = useCreateShipperLot();
 
@@ -144,6 +172,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
   const previewErrors = requestJson ? toFieldErrors(preview.error) : [];
   const fieldErrors = submitErrors.length > 0 ? submitErrors : previewErrors;
   const errorOf = (field: string) => fieldErrors.find(error => error.field === field)?.message;
+  const errorRef = (field: string) => !!errorOf(field) && errorIdOf(field);
   const otherErrors = fieldErrors
     .filter(
       ({ field }) =>
@@ -193,6 +222,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
   };
 
   const onlyShipper = catalog.shippers.length <= 1;
+  const hasWarnings = (previewData?.hints.warnings.length ?? 0) > 0;
 
   return (
     <section id={id} className={cn('m2-card scroll-mt-24', className)} aria-label="새 출하 등록">
@@ -203,6 +233,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
         className="flex flex-col gap-3.5"
         onSubmit={event => {
           event.preventDefault();
+          if (createLot.isPending || !isComplete(form)) return;
           createLot.mutate(toRequest(catalog, form), {
             onSuccess: created => {
               toast.success(
@@ -220,8 +251,13 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           });
         }}
       >
-        <FormStep index={1} label="품목" error={errorOf('product')}>
-          <div className="grid grid-cols-2 gap-2" role="group" aria-label="품목">
+        <FormStep index={1} label="품목" error={errorOf('product')} errorId={errorIdOf('product')}>
+          <div
+            className="grid grid-cols-2 gap-2"
+            role="group"
+            aria-label="품목"
+            {...describedBy(errorRef('product'))}
+          >
             {catalog.products.map(item => (
               <button
                 key={item.id}
@@ -249,6 +285,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           }
           htmlFor={`${fieldId}-pallets`}
           error={errorOf('pallets')}
+          errorId={errorIdOf('pallets')}
         >
           <div
             className={cn(
@@ -273,6 +310,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
               max={palletLimit}
               value={form.pallets}
               aria-invalid={!!errorOf('pallets')}
+              {...describedBy(errorRef('pallets'))}
               onChange={event => setPallets(Number(event.target.value))}
               className="m2-num h-full min-w-0 flex-1 [appearance:textfield] border-0 bg-transparent text-center text-[15px] font-bold outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
@@ -293,12 +331,14 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           label="목적지"
           htmlFor={`${fieldId}-destination`}
           error={errorOf('destination')}
+          errorId={errorIdOf('destination')}
         >
           <select
             id={`${fieldId}-destination`}
             className="m2-inp w-full"
             value={form.destination}
             aria-invalid={!!errorOf('destination')}
+            {...describedBy(errorRef('destination'))}
             onChange={event => update({ destination: event.target.value })}
           >
             {destinations.map(port => (
@@ -314,6 +354,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           label="출하 가능일"
           htmlFor={`${fieldId}-ready`}
           error={errorOf('ready_date')}
+          errorId={errorIdOf('ready_date')}
         >
           <input
             id={`${fieldId}-ready`}
@@ -321,6 +362,7 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
             className="m2-inp m2-num w-full"
             value={form.ready_date}
             aria-invalid={!!errorOf('ready_date')}
+            {...describedBy(errorRef('ready_date'), hasWarnings && warningsId)}
             onChange={event => update({ ready_date: event.target.value })}
           />
         </FormStep>
@@ -328,19 +370,25 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
         <FormStep
           index={5}
           label="선과장"
-          htmlFor={onlyShipper ? '' : `${fieldId}-shipper`}
+          htmlFor={`${fieldId}-shipper`}
           error={errorOf('shipper')}
+          errorId={errorIdOf('shipper')}
         >
           {onlyShipper ? (
-            <div className="m2-inp flex w-full items-center text-m2-ink-2" aria-readonly>
-              {shipperLabel(catalog, form.shipper)}
-            </div>
+            <input
+              id={`${fieldId}-shipper`}
+              readOnly
+              className="m2-inp w-full text-m2-ink-2"
+              value={shipperLabel(catalog, form.shipper)}
+              {...describedBy(errorRef('shipper'))}
+            />
           ) : (
             <select
               id={`${fieldId}-shipper`}
               className="m2-inp w-full"
               value={form.shipper}
               aria-invalid={!!errorOf('shipper')}
+              {...describedBy(errorRef('shipper'))}
               onChange={event => update({ shipper: event.target.value })}
             >
               {catalog.shippers.map(shipper => (
@@ -370,7 +418,9 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
             ))}
           </div>
           {errorOf('sell_window') && (
-            <p className="mt-1 text-[12px] text-m2-crit">{errorOf('sell_window')}</p>
+            <p id={errorIdOf('sell_window')} className="mt-1 text-[12px] text-m2-crit">
+              {errorOf('sell_window')}
+            </p>
           )}
         </details>
 
@@ -395,12 +445,18 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
           )}
         </div>
 
-        {(previewData?.hints.warnings.length ?? 0) > 0 && (
-          <div className="m2-note m2-note-warn mt-0">
-            <TriangleAlertIcon size={14} />
-            <div>{plainWords(previewData?.hints.warnings.join(' · ') ?? '')}</div>
-          </div>
-        )}
+        <div
+          id={warningsId}
+          role="status"
+          className={hasWarnings ? 'm2-note m2-note-warn mt-0' : 'sr-only'}
+        >
+          {hasWarnings && (
+            <>
+              <TriangleAlertIcon size={14} aria-hidden />
+              <div>{plainWords(previewData?.hints.warnings.join(' · ') ?? '')}</div>
+            </>
+          )}
+        </div>
         {otherErrors.length > 0 && (
           <p role="alert" className="text-[12px] text-m2-crit">
             {otherErrors.join(' · ')}
@@ -410,7 +466,8 @@ export function ShipperLotForm({ catalog, onCreated, className, id }: ShipperLot
         <button
           type="submit"
           className="m2-btn m2-btn-pri m2-btn-lg w-full"
-          disabled={createLot.isPending || !isComplete(form)}
+          disabled={!isComplete(form)}
+          aria-disabled={createLot.isPending}
         >
           {createLot.isPending ? '등록 중' : '출하 등록'}
         </button>

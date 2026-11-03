@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
-import { useState } from 'react';
+import { type MouseEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useDeleteShipperLot, useShipperLots, useUpdateShipperLot } from '@/apis/saas/shipper';
@@ -26,6 +26,7 @@ import {
   errorDetail,
 } from '@/app/(saas)/app/shipper/_components/query-state';
 import { fmtDay, fmtMonthDay } from '@/app/(saas)/app/shipper/_components/shipper-format';
+import { SHIPPER_ONBOARDING_PATH } from '@/app/(saas)/app/shipper/onboarding/_components/onboarding-path';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,6 +58,24 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
   const lots = useShipperLots();
   const updateLot = useUpdateShipperLot();
   const deleteLot = useDeleteShipperLot();
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const openerRef = useRef<HTMLButtonElement | null>(null);
+
+  const rememberOpener = (event: MouseEvent<HTMLButtonElement>) => {
+    openerRef.current = event.currentTarget;
+  };
+
+  const restoreFocus = (event: Event) => {
+    event.preventDefault();
+    const opener = openerRef.current;
+    openerRef.current = null;
+    if (opener?.isConnected && !opener.disabled) {
+      opener.focus();
+
+      return;
+    }
+    headingRef.current?.focus();
+  };
 
   const visible = (lots.data ?? [])
     .filter(({ status }) => filter === 'all' || status === filter)
@@ -66,12 +85,23 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
   const packhouseName = (packhouseId: string | null | undefined) =>
     catalog?.packhouses.find(({ id }) => id === packhouseId)?.name ?? '';
 
+  const needsPackhouse = !!catalog && catalog.shippers.length === 0;
+  const emptyDescription = () => {
+    if (filter !== 'all') return '';
+
+    return needsPackhouse
+      ? '선과장을 먼저 등록하면 출하를 올릴 수 있어요.'
+      : '위 양식으로 첫 출하를 등록하세요.';
+  };
+
   const setStatus = (lot: ShipperLotT, status: 'registered' | 'cancelled') =>
     updateLot.mutate(
       { lotId: lot.id, patch: { status } },
       {
         onSuccess: () =>
-          toast.success(status === 'cancelled' ? '출하를 취소했습니다.' : '출하를 되살렸습니다.'),
+          toast.success(
+            `${lotLabel(lot, catalog)} 출하를 ${status === 'cancelled' ? '취소했습니다' : '되살렸습니다'}.`
+          ),
         onError: error => toast.error(errorDetail(error, '출하 상태를 바꾸지 못했습니다.')),
       }
     );
@@ -79,7 +109,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
   return (
     <section className="m2-card" aria-label="내 출하 목록">
       <div className="m2-card-h flex-wrap">
-        <h2 className="m2-h2">
+        <h2 ref={headingRef} tabIndex={-1} className="m2-h2 outline-none">
           내 출하
           {lots.data && (
             <span className="m2-sub mt-0 ml-2 inline font-medium">
@@ -117,11 +147,10 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
       {lots.data && visible.length === 0 && (
         <EmptyState
           title={filter === 'all' ? '등록한 출하가 없습니다' : '이 상태의 출하가 없습니다'}
-          description={
-            filter === 'all' && !!catalog?.shippers.length
-              ? '위 양식으로 첫 출하를 등록하세요.'
-              : ''
-          }
+          description={emptyDescription()}
+          {...(filter === 'all' && needsPackhouse
+            ? { action: { href: SHIPPER_ONBOARDING_PATH, label: '선과장 등록하기' } }
+            : {})}
         />
       )}
       {visible.length > 0 && (
@@ -142,6 +171,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
             <tbody>
               {visible.map(lot => {
                 const isLocked = LOCKED_LOT_STATUSES.includes(lot.status);
+                const label = lotLabel(lot, catalog);
                 const isBusy =
                   (updateLot.isPending && updateLot.variables?.lotId === lot.id) ||
                   (deleteLot.isPending && deleteLot.variables === lot.id);
@@ -154,7 +184,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                   >
                     <td className={CARD_MAIN}>
                       <div className="m2-who">
-                        {lotLabel(lot, catalog)}
+                        {label}
                         <small>
                           {packhouseName(lot.packhouse)}
                           <span className={MOBILE_ONLY}>
@@ -184,7 +214,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                                 type="button"
                                 className="m2-btn m2-btn-sec m2-btn-sm"
                                 disabled={isBusy || !catalog}
-                                onClick={() => setEditing(lot)}
+                                aria-label={`${label} 수정`}
+                                onClick={event => {
+                                  rememberOpener(event);
+                                  setEditing(lot);
+                                }}
                               >
                                 수정
                               </button>
@@ -192,6 +226,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                                 type="button"
                                 className="m2-btn m2-btn-sec m2-btn-sm"
                                 disabled={isBusy}
+                                aria-label={`${label} 취소`}
                                 onClick={() => setStatus(lot, 'cancelled')}
                               >
                                 취소
@@ -203,6 +238,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                               type="button"
                               className="m2-btn m2-btn-sec m2-btn-sm"
                               disabled={isBusy}
+                              aria-label={`${label} 되살리기`}
                               onClick={() => setStatus(lot, 'registered')}
                             >
                               되살리기
@@ -212,7 +248,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                             type="button"
                             className="m2-btn m2-btn-sm bg-m2-berry-soft text-m2-berry-ink"
                             disabled={isBusy}
-                            onClick={() => setDeleting(lot)}
+                            aria-label={`${label} 삭제`}
+                            onClick={event => {
+                              rememberOpener(event);
+                              setDeleting(lot);
+                            }}
                           >
                             삭제
                           </button>
@@ -228,11 +268,16 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
       )}
 
       {editing && catalog && (
-        <LotEditDialog lot={editing} catalog={catalog} onClose={() => setEditing(null)} />
+        <LotEditDialog
+          lot={editing}
+          catalog={catalog}
+          onClose={() => setEditing(null)}
+          onCloseAutoFocus={restoreFocus}
+        />
       )}
 
       <AlertDialog open={!!deleting} onOpenChange={open => !open && setDeleting(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent onCloseAutoFocus={restoreFocus}>
           <AlertDialogHeader>
             <AlertDialogTitle>출하를 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -243,11 +288,13 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           <AlertDialogFooter>
             <AlertDialogCancel>닫기</AlertDialogCancel>
             <AlertDialogAction
-              variant="destructive"
+              className="bg-m2-berry-ink! text-white! hover:bg-m2-berry-ink/90!"
               onClick={() => {
                 if (!deleting) return;
+                openerRef.current = null;
+                const deletedLabel = lotLabel(deleting, catalog);
                 deleteLot.mutate(deleting.id, {
-                  onSuccess: () => toast.success('출하를 삭제했습니다.'),
+                  onSuccess: () => toast.success(`${deletedLabel} 출하를 삭제했습니다.`),
                   onError: error => toast.error(errorDetail(error, '출하를 삭제하지 못했습니다.')),
                 });
                 setDeleting(null);

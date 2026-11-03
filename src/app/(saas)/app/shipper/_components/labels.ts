@@ -1,4 +1,9 @@
-import type { ShipperLotStatusT, ShipperPlanItemT, ShipperRequestT } from '@/types/saas-shipper';
+import type {
+  ShipperLotPreviewT,
+  ShipperLotStatusT,
+  ShipperPlanItemT,
+  ShipperRequestT,
+} from '@/types/saas-shipper';
 
 export const LOT_STATUS_LABEL: Record<ShipperLotStatusT, string> = {
   registered: '등록됨',
@@ -35,3 +40,18 @@ export const SELL_WINDOW_LABEL = {
   normal: '일반',
   short: '짧음',
 } as const;
+
+const SEASON_WARNING_PATTERN = /수출 시기/;
+
+const stringsOf = (value: unknown) =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+
+export const lotWarningsOf = (lot: object | null) =>
+  lot && 'warnings' in lot ? stringsOf(lot.warnings) : [];
+
+export const seasonWarningsOf = (preview: ShipperLotPreviewT) => {
+  const fromHints = preview.hints.warnings.filter(text => SEASON_WARNING_PATTERN.test(text));
+  const fromLot = lotWarningsOf(preview.registered ?? null);
+
+  return [...new Set([...fromHints, ...fromLot])];
+};
