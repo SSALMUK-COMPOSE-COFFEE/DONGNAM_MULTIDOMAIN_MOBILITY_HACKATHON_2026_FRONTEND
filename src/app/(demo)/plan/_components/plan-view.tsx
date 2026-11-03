@@ -1,17 +1,12 @@
 'use client';
 
-import { ContainerCard } from '@/app/(demo)/plan/_components/container-card';
-import { PickupMap } from '@/app/(demo)/plan/_components/pickup-map';
-import { PlanSummary } from '@/app/(demo)/plan/_components/plan-summary';
-import { SettlementTable } from '@/app/(demo)/plan/_components/settlement-table';
-import { TariffCard } from '@/app/(demo)/plan/_components/tariff-card';
+import { PlanDetail } from '@/components/plan-detail';
 import { PlanLoadError } from '@/components/plan-load-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCreatePlan } from '@/hooks/useCreatePlan';
 import { useCurrentPlan } from '@/hooks/useCurrentPlan';
-import type { PlanSessionT } from '@/types/api';
 
 export function PlanView() {
   const {
@@ -54,32 +49,5 @@ function CreatePlanCard() {
         {isError && <p className="text-sm text-destructive">계획을 만들지 못했습니다.</p>}
       </CardContent>
     </Card>
-  );
-}
-
-function PlanDetail({ session }: { session: PlanSessionT }) {
-  const { plan, scenario } = session;
-
-  return (
-    <div className="flex flex-col gap-6">
-      <PlanSummary plan={plan} />
-
-      <div className="grid grid-cols-[1fr_560px] gap-6">
-        <div className="flex flex-col gap-6">
-          <ContainerCard plan={plan} scenario={scenario} />
-          <SettlementTable
-            containerSettlements={plan.container_settlements ?? []}
-            scenario={scenario}
-          />
-        </div>
-
-        <div className="flex flex-col gap-6">
-          {plan.settlement_tariffs?.map(tariff => (
-            <TariffCard key={tariff.product_id} tariff={tariff} scenario={scenario} />
-          ))}
-          <PickupMap scenario={scenario} voyagePickups={session.routes} />
-        </div>
-      </div>
-    </div>
   );
 }
