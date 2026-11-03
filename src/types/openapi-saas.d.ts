@@ -3937,6 +3937,22 @@ export interface components {
             /** Log */
             log: components["schemas"]["OrderLogEntry"][];
         };
+        /** ExpectedLoss */
+        ExpectedLoss: {
+            /** Rate */
+            rate: number;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "sea" | "air";
+            /** Basis */
+            basis: string;
+            /** N Observations */
+            n_observations: number;
+            /** Source */
+            source?: string | null;
+        };
         /** Explanation */
         Explanation: {
             /** Operator Summary */
@@ -4618,6 +4634,7 @@ export interface components {
             next_step: string;
             registered?: components["schemas"]["RegisteredLot"] | null;
             savings_estimate?: components["schemas"]["SavingsEstimate"] | null;
+            expected_loss?: components["schemas"]["ExpectedLoss"] | null;
         };
         /** IntakeRequest */
         IntakeRequest: {
@@ -7991,6 +8008,59 @@ export interface components {
             predicted_loss_krw: number;
             /** Delta Krw */
             delta_krw: number;
+        };
+        /** ShipperLot */
+        ShipperLot: {
+            /** Id */
+            id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Shipper Id */
+            shipper_id: string;
+            /** Product Id */
+            product_id: string;
+            /** Pallets */
+            pallets: number;
+            /**
+             * Ready Date
+             * Format: date
+             */
+            ready_date: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Sell By Date
+             * Format: date
+             */
+            sell_by_date: string;
+            /**
+             * Sell Window
+             * @default normal
+             * @enum {string}
+             */
+            sell_window: "normal" | "short";
+            /** Packhouse */
+            packhouse?: string | null;
+            /** Source */
+            source: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "registered" | "planned" | "shipped" | "cancelled";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Warnings */
+            warnings?: string[];
+            expected_loss: components["schemas"]["ExpectedLoss"];
         };
         /** ShipperLotCreate */
         ShipperLotCreate: {
@@ -11587,7 +11657,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisteredLot"][];
+                    "application/json": components["schemas"]["ShipperLot"][];
                 };
             };
             /** @description Validation Error */

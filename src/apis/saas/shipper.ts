@@ -21,6 +21,7 @@ import {
 import { saasRetry } from '@/apis/saas/retry';
 import type { SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
 import type {
+  ExpectedLossT,
   ShipperCatalogT,
   ShipperLotCreateT,
   ShipperLotListParamsT,
@@ -31,6 +32,7 @@ import type {
   ShipperOrderT,
   ShipperPlanItemT,
   ShipperPlanSessionT,
+  ShipperRegisteredLotT,
   ShipperRequestAnswerT,
   ShipperSettlementT,
 } from '@/types/saas-shipper';
@@ -87,7 +89,7 @@ export const postShipperLot = async (request: ShipperLotCreateT) => {
 };
 
 export const patchShipperLot = async (lotId: string, patch: ShipperLotPatchT) => {
-  const { data } = await saasApi.patch<ShipperLotT>(SHIPPER_ENDPOINTS.LOT(lotId), patch);
+  const { data } = await saasApi.patch<ShipperRegisteredLotT>(SHIPPER_ENDPOINTS.LOT(lotId), patch);
 
   return data;
 };
@@ -328,3 +330,7 @@ export const shipperIntakePreviewQueryOptions = (
 
 export const useShipperIntakePreview = (request: ShipperIntakePreviewRequestT | null) =>
   useQuery(shipperIntakePreviewQueryOptions(useShipperOrgId(), request));
+
+export const previewExpectedLossOf = (
+  preview: ShipperLotPreviewT | null | undefined
+): ExpectedLossT | null => preview?.expected_loss ?? null;

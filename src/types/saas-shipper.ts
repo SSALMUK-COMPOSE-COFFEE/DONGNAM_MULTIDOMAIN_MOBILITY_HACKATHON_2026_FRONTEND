@@ -3,8 +3,13 @@ import type { SaasQueryT, SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
 
 export type ShipperCatalogT = ScenarioT;
 
-export type ShipperLotT = SaasSchemaT<'RegisteredLot'>;
+export type ShipperLotT = SaasSchemaT<'ShipperLot'>;
 export type ShipperLotStatusT = ShipperLotT['status'];
+export type ShipperRegisteredLotT = SaasSchemaT<'RegisteredLot'>;
+export type ShipperLotWarningsT = NonNullable<ShipperRegisteredLotT['warnings']>;
+
+export type ExpectedLossT = SaasSchemaT<'ExpectedLoss'>;
+export type ExpectedLossModeT = ExpectedLossT['mode'];
 
 export type ShipperLotListParamsT = SaasQueryT<'/test/api/saas/shipper/lots'>;
 

@@ -30,6 +30,7 @@ import {
   demoReset,
 } from '@/mocks/saas/demo-bridge';
 import { executionNumberHandlers, withDocumentActions } from '@/mocks/saas/execution-numbers';
+import { mockExpectedLoss, withExpectedLoss } from '@/mocks/saas/expected-loss';
 import airSeaFixture from '@/mocks/saas/fixtures/air-sea.json';
 import arrivalFixture from '@/mocks/saas/fixtures/arrival.json';
 import benchmarkFixture from '@/mocks/saas/fixtures/benchmark.json';
@@ -66,7 +67,6 @@ import {
 import type {
   AlertT,
   ExecutionOrderT,
-  IntakePreviewT,
   IntakeRequestT,
   PlanSessionT,
   TwinStateT,
@@ -97,6 +97,7 @@ import type {
 import type { PlanPreviewT } from '@/types/saas-platform';
 import type { ShowcaseT } from '@/types/saas-public';
 import type { SandboxResetT } from '@/types/saas-sandbox';
+import type { ShipperLotPreviewT } from '@/types/saas-shipper';
 
 const MONEY_TOTALS = [
   'total_baseline_cost',
@@ -375,8 +376,8 @@ const defaultsAppliedOf = (lot: MockLotT, productName: string) => [
   `lot_id 자동 생성: ${lot.id}`,
 ];
 
-const intakePreview = (lot: MockLotT, session: PlanSessionT, org: MockOrgT): IntakePreviewT => {
-  const preview = intakeStrawberryFixture as unknown as IntakePreviewT;
+const intakePreview = (lot: MockLotT, session: PlanSessionT, org: MockOrgT): ShipperLotPreviewT => {
+  const preview = intakeStrawberryFixture as unknown as ShipperLotPreviewT;
   const catalog = catalogFor(session, org);
   const product = session.scenario.products.find(item => item.id === lot.product_id);
   const shipper = catalog.shippers.find(item => item.id === lot.shipper_id);
@@ -417,7 +418,8 @@ const intakePreview = (lot: MockLotT, session: PlanSessionT, org: MockOrgT): Int
       destination_port_id: lot.destination,
       destination_name: port?.name ?? lot.destination,
     },
-  } as IntakePreviewT;
+    expected_loss: mockExpectedLoss(lot.product_id, lot.destination),
+  } as ShipperLotPreviewT;
 };
 
 const platformSettlement = (session: PlanSessionT) => {
@@ -640,7 +642,7 @@ const shipperHandlers = [
 
     const own = mockDb.lots.filter(lot => principal.org.shipper_ids.includes(lot.shipper_id));
 
-    return HttpResponse.json(filterLots(own, new URL(request.url)));
+    return HttpResponse.json(filterLots(own, new URL(request.url)).map(withExpectedLoss));
   }),
 
   http.post(api('/saas/shipper/lots'), async ({ request }) => {

@@ -1,11 +1,11 @@
-import type { PlanSessionT, TwinStateT } from '@/types/api';
-import type { SaasQueryT, SaasSchemaT } from '@/types/api-saas';
+import type { TwinStateT } from '@/types/api';
+import type { SaasPlanSessionT, SaasQueryT, SaasSchemaT } from '@/types/api-saas';
 
 export type ForwarderRefT = SaasSchemaT<'ForwarderRef'>;
 
 export type ForwarderPlanItemT = SaasSchemaT<'PlanListItem'>;
 
-export type ForwarderPlanSessionT = PlanSessionT;
+export type ForwarderPlanSessionT = SaasPlanSessionT;
 
 export type ForwarderOrderT = SaasSchemaT<'ForwarderOrder'>;
 
