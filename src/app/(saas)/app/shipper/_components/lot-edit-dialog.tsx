@@ -33,7 +33,17 @@ type LotEditDialogPropsT = {
   onClose: () => void;
 };
 
-type EditFieldT = 'product' | 'destination' | 'pallets' | 'ready_date' | 'sell_window';
+const EDIT_FIELDS = ['product', 'destination', 'pallets', 'ready_date', 'sell_window'] as const;
+
+type EditFieldT = (typeof EDIT_FIELDS)[number];
+
+const isEditField = (field: string): field is EditFieldT =>
+  (EDIT_FIELDS as readonly string[]).includes(field);
+
+const otherFieldMessages = (error: unknown) =>
+  toFieldErrors(error)
+    .filter(({ field }) => !isEditField(field))
+    .map(({ message }) => message);
 
 type EditFormT = { [K in EditFieldT]-?: NonNullable<ShipperLotPatchT[K]> };
 
@@ -61,7 +71,8 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
   });
   const update = (patch: Partial<EditFormT>) => setForm(prev => ({ ...prev, ...patch }));
   const fieldErrors = toFieldErrors(updateLot.error);
-  const errorOf = (field: string) => fieldErrors.find(error => error.field === field)?.message;
+  const errorOf = (field: EditFieldT) => fieldErrors.find(error => error.field === field)?.message;
+  const otherErrors = otherFieldMessages(updateLot.error);
 
   return (
     <Dialog open onOpenChange={open => !open && onClose()}>
@@ -91,8 +102,12 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
                   onClose();
                 },
                 onError: error => {
+                  const others = otherFieldMessages(error);
+
                   if (toFieldErrors(error).length === 0) {
                     toast.error(errorDetail(error, '출하를 수정하지 못했습니다.'));
+                  } else if (others.length > 0) {
+                    toast.error('출하를 수정하지 못했습니다.', { description: others.join(' · ') });
                   }
                 },
               }
@@ -163,6 +178,11 @@ export function LotEditDialog({ lot, catalog, onClose }: LotEditDialogPropsT) {
               </SelectContent>
             </Select>
           </EditField>
+          {otherErrors.length > 0 && (
+            <p role="alert" className="text-sm text-berry">
+              {otherErrors.join(' · ')}
+            </p>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               닫기
