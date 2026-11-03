@@ -1,135 +1,135 @@
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import type { ForwarderPlanSessionT } from '@/types/saas-forwarder';
-import { formatKstMonthDayTime } from '@/utils/kst';
-import { getShipperName } from '@/utils/scenario';
+'use client';
 
-const CARGO_GROUP_LABEL: Record<string, string> = {
-  grape_so2: 'SO₂ 포도',
-};
+import { cn } from 'cn';
+
+import { monthDayTime } from '@/app/(saas)/app/forwarder/_components/format';
+import { sortedRuns } from '@/app/(saas)/app/forwarder/_components/route-cards';
+import { type MapSceneT, type SceneStopT, hasPosition } from '@/components/map-hero/scene';
+import { useMapLinkTarget } from '@/components/map-link';
+import type { ForwarderPlanSessionT } from '@/types/saas-forwarder';
+import { getShipperName } from '@/utils/scenario';
 
 const formatCoordinate = (value: number) => value.toFixed(5);
 
-export function PickupSchedule({ session }: { session: ForwarderPlanSessionT }) {
-  const { scenario, routes } = session;
-  const port = scenario.ports[0];
-  const packhouseOf = (packhouseId: string) =>
-    scenario.packhouses.find(({ id }) => id === packhouseId);
-  const shippersOf = (lotIds: string[]) => [
-    ...new Set(
-      lotIds.flatMap(lotId => {
-        const lot = scenario.lots.find(({ id }) => id === lotId);
+type PickupSchedulePropsT = {
+  session: ForwarderPlanSessionT;
+  scene: MapSceneT;
+};
 
+export function PickupSchedule({ session, scene }: PickupSchedulePropsT) {
+  const runs = sortedRuns(scene);
+  const voyageName = (voyageId: string) =>
+    session.scenario.voyages.find(({ id }) => id === voyageId)?.vessel_name ?? null;
+
+  return (
+    <section className="m2-card">
+      <div className="m2-card-h">
+        <div>
+          <h2 className="m2-h2">집하 순서 · 선과장 위치</h2>
+          <div className="m2-sub">
+            정차지별 화주·좌표·준비 시각{scene.port ? ` · 도착 ${scene.port.name}` : ''}
+          </div>
+        </div>
+      </div>
+      {runs.length === 0 ? (
+        <p className="m2-sub">이 계획에는 트럭 집하 경로가 없습니다.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="m2-table">
+            <thead>
+              <tr>
+                <th>운행</th>
+                <th className="r">순서</th>
+                <th>선과장 · 지역 · 좌표</th>
+                <th>화주</th>
+                <th className="r">파렛트</th>
+                <th>준비</th>
+                <th>도착 예정</th>
+              </tr>
+            </thead>
+            <tbody>
+              {runs.flatMap(run =>
+                run.stops.map((stop, index) => (
+                  <StopRow
+                    key={`${run.voyageId}|${run.key}|${stop.key}`}
+                    session={session}
+                    runKey={run.key}
+                    runLabel={
+                      index === 0
+                        ? [
+                            run.label,
+                            voyageName(run.voyageId),
+                            `${run.loadPallets}/${run.capacity}P`,
+                            `출발 ${monthDayTime(run.departAt)}~${monthDayTime(run.latestDepartAt).slice(-5)}`,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')
+                        : ''
+                    }
+                    isFirst={index === 0}
+                    stop={stop}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+type StopRowPropsT = {
+  session: ForwarderPlanSessionT;
+  runKey: string;
+  runLabel: string;
+  isFirst: boolean;
+  stop: SceneStopT;
+};
+
+function StopRow({ session, runKey, runLabel, isFirst, stop }: StopRowPropsT) {
+  const { className: linkClass, ...link } = useMapLinkTarget([stop.packhouseId, runKey]);
+  const { scenario } = session;
+  const packhouse = scenario.packhouses.find(({ id }) => id === stop.packhouseId) ?? null;
+  const shippers = [
+    ...new Set(
+      stop.lotIds.flatMap(lotId => {
+        const lot = scenario.lots.find(({ id }) => id === lotId);
         return lot ? [getShipperName(scenario, lot.shipper_id)] : [];
       })
     ),
   ];
-  const cargoGroupLabel = (cargoGroup: string) =>
-    cargoGroup
-      .split('+')
-      .map(
-        productId =>
-          CARGO_GROUP_LABEL[productId] ??
-          scenario.products.find(({ id }) => id === productId)?.name ??
-          productId
-      )
-      .join(' · ');
-  const voyageOf = (voyageId: string) => scenario.voyages.find(({ id }) => id === voyageId);
-  const truckRoutes = routes.flatMap(({ voyage_id, pickup }) =>
-    pickup.routes.map(route => ({ voyageId: voyage_id, route }))
-  );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          집하 순서 · 선과장 위치
-          {port && (
-            <span className="ml-2 text-base font-medium text-muted-foreground">
-              도착 {port.name}
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-8">
-        {truckRoutes.length === 0 && (
-          <p className="text-muted-foreground">이 계획에는 트럭 집하 경로가 없습니다.</p>
+    <tr {...link} className={cn(linkClass)}>
+      <td
+        className={cn(
+          'max-w-[170px] min-w-[120px] text-[12px] whitespace-normal text-m2-muted',
+          !isFirst && 'border-t-transparent'
         )}
-        {truckRoutes.map(({ voyageId, route }) => {
-          const voyage = voyageOf(voyageId);
-
-          return (
-            <section
-              key={`${voyageId}-${route.truck_id}-${route.trip}`}
-              className="flex flex-col gap-3"
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-lg font-bold text-navy">
-                  {route.truck_id} · {route.trip}회차
-                </h3>
-                {route.cargo_group && (
-                  <Badge variant="secondary">{cargoGroupLabel(route.cargo_group)}</Badge>
-                )}
-                <span className="text-sm num text-muted-foreground">
-                  {voyage ? `${voyage.vessel_name} · ` : ''}
-                  {route.load_pallets}/{route.capacity_pallets}파렛트 · {route.km.toFixed(1)}km ·
-                  출발 {formatKstMonthDayTime(route.earliest_departure)}~
-                  {formatKstMonthDayTime(route.latest_departure).slice(-5)} · 항구 도착{' '}
-                  {formatKstMonthDayTime(route.port_eta)}
-                </span>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">순서</TableHead>
-                    <TableHead>선과장</TableHead>
-                    <TableHead>지역</TableHead>
-                    <TableHead>좌표 (위도, 경도)</TableHead>
-                    <TableHead>화주</TableHead>
-                    <TableHead className="text-right">파렛트</TableHead>
-                    <TableHead>준비</TableHead>
-                    <TableHead>도착 예정</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {route.stops.map(stop => {
-                    const packhouse = packhouseOf(stop.packhouse_id);
-
-                    return (
-                      <TableRow key={stop.stop_id}>
-                        <TableCell className="num">{stop.sequence}</TableCell>
-                        <TableCell className="font-bold">
-                          {packhouse?.name ?? stop.packhouse_id}
-                        </TableCell>
-                        <TableCell>{packhouse?.region ?? '–'}</TableCell>
-                        <TableCell className="num text-muted-foreground">
-                          {packhouse
-                            ? `${formatCoordinate(packhouse.lat)}, ${formatCoordinate(packhouse.lon)}`
-                            : '–'}
-                        </TableCell>
-                        <TableCell>{shippersOf(stop.lot_ids).join(', ') || '–'}</TableCell>
-                        <TableCell className="text-right num">{stop.pallets}</TableCell>
-                        <TableCell className="num">
-                          {formatKstMonthDayTime(stop.ready_at)}
-                        </TableCell>
-                        <TableCell className="num">{formatKstMonthDayTime(stop.eta)}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </section>
-          );
-        })}
-      </CardContent>
-    </Card>
+      >
+        {runLabel}
+      </td>
+      <td className="r m2-num">{stop.sequence}</td>
+      <td className="min-w-[140px] whitespace-normal">
+        <p className="font-semibold">{packhouse?.name ?? stop.packhouseId}</p>
+        <p className="text-[12px] text-m2-muted">
+          {[
+            packhouse?.region,
+            packhouse && hasPosition(packhouse)
+              ? `${formatCoordinate(packhouse.lat)}, ${formatCoordinate(packhouse.lon)}`
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' · ') || '–'}
+        </p>
+      </td>
+      <td className="whitespace-normal">{shippers.join(', ') || '–'}</td>
+      <td className="r m2-num">
+        <b>{stop.pallets}</b>
+      </td>
+      <td className="m2-num whitespace-nowrap">{monthDayTime(stop.readyAt)}</td>
+      <td className="m2-num whitespace-nowrap">{monthDayTime(stop.eta)}</td>
+    </tr>
   );
 }

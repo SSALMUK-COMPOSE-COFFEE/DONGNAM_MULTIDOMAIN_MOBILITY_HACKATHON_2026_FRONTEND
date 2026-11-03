@@ -33,3 +33,39 @@ export const latestOrder = (orders: readonly ForwarderOrderT[] | undefined) =>
 
 export const isAwaitingForwarder = (order: ForwarderOrderT | null) =>
   order?.status === 'shipper_confirmed';
+
+export const CLOSED_ORDER_STATUSES: readonly ForwarderOrderT['status'][] = [
+  'forwarder_confirmed',
+  'executed',
+];
+
+export const REQUEST_KIND_LABEL: Record<ForwarderOrderT['requests'][number]['kind'], string> = {
+  booking_amendment: '부킹 변경',
+  booking_cancel: '부킹 취소',
+  booking_new: '신규 부킹',
+  reefer_plug: '리퍼 플러그',
+  cy_entry: 'CY 반입',
+  air_booking: '항공 예약',
+  air_cancel: '항공 취소',
+};
+
+export const REQUEST_STATUS_LABEL: Record<
+  NonNullable<ForwarderOrderT['requests'][number]['status']>,
+  string
+> = {
+  pending: '회신 대기',
+  accepted: '수락',
+  declined: '거절',
+};
+
+export const SHIPPER_CONFIRM_LABEL: Record<
+  ForwarderOrderT['shipper_confirmations'][number]['status'],
+  string
+> = {
+  pending: '확인 대기',
+  accepted: '수락함',
+  rejected: '거절함',
+};
+
+export const planStatusLabel = (status: string) =>
+  (PLAN_STATUS_LABEL as Record<string, string | undefined>)[status] ?? status;
