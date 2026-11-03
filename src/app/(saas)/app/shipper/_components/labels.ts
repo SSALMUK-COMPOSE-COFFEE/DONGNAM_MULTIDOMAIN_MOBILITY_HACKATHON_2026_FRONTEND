@@ -11,8 +11,8 @@ export const LOCKED_LOT_STATUSES: readonly ShipperLotStatusT[] = ['planned', 'sh
 
 export const PLAN_STATUS_LABEL: Record<ShipperPlanItemT['status'], string> = {
   committed: '확정',
-  pending_confirmation: '확인 대기',
-  pending_shipper_confirmation: '화주 수락 대기',
+  pending_confirmation: '변경 확정 대기',
+  pending_shipper_confirmation: '화주 확인 대기',
 };
 
 export const REQUEST_KIND_LABEL: Record<ShipperRequestT['kind'], string> = {

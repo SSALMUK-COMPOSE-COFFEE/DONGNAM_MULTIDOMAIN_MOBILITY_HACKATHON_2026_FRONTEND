@@ -1,3 +1,4 @@
+import { lotNameMap, withLotNames } from '@/components/replan-alternatives/lot-words';
 import type { ReplanResponseT, ScenarioT } from '@/types/api';
 import { getShipperShortName } from '@/utils/scenario';
 
@@ -12,6 +13,7 @@ export function ReplanExplanation({ replan, scenario }: ReplanExplanationPropsT)
   const excludedCount = alternatives.filter(({ feasible }) => !feasible).length;
   const isLlm = explanation?.generated_by === 'llm';
   const messages = explanation?.shipper_messages ?? [];
+  const lotNames = lotNameMap(scenario);
 
   return (
     <section className="m2-card flex flex-col gap-3">
@@ -43,7 +45,9 @@ export function ReplanExplanation({ replan, scenario }: ReplanExplanationPropsT)
               <span className="m2-chip">템플릿 문장</span>
             )}
           </div>
-          <p className="text-[14px] leading-relaxed text-m2-ink">{explanation.operator_summary}</p>
+          <p className="text-[14px] leading-relaxed text-m2-ink">
+            {withLotNames(explanation.operator_summary, lotNames)}
+          </p>
           {isLlm && (
             <p className="text-[11.5px] text-m2-faint">
               AI가 계산 결과를 문장으로 옮긴 것입니다. 금액·파렛트 수는 아래 카드 값이 기준입니다.
@@ -63,7 +67,7 @@ export function ReplanExplanation({ replan, scenario }: ReplanExplanationPropsT)
             {messages.map(({ shipper_id, message }) => (
               <li key={shipper_id} className="text-m2-ink-2">
                 <span className="font-semibold">{getShipperShortName(scenario, shipper_id)}</span>{' '}
-                {message}
+                {withLotNames(message, lotNames)}
               </li>
             ))}
           </ul>

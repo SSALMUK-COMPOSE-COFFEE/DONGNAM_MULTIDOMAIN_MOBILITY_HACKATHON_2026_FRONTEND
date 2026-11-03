@@ -16,6 +16,7 @@ import {
 } from '@/app/(saas)/app/platform/_components/m2-format';
 import { SegTabs } from '@/app/(saas)/app/platform/_components/seg-tabs';
 import { hoursText } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
+import { lotNameMap, withLotNames } from '@/components/replan-alternatives/lot-words';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PlanSessionT, ReplanResponseT } from '@/types/api';
 import type { DelayForecastRequestT, DelayForecastResponseT } from '@/types/saas-analysis';
@@ -50,7 +51,20 @@ const FEED_LABEL: Record<string, string> = {
   snapshot: '스냅샷',
   unavailable: '조회 실패',
 };
-const PROXY_LABEL = '대리 지표(가정)';
+const PROXY_LABEL = '울산항 혼잡을 부산 항차의 대리 지표로 씀(가정)';
+const PROXY_SHORT_LABEL = '울산항 대리 지표(가정)';
+const WEATHER_UNAVAILABLE_LABEL = '확인 못 함';
+
+const weatherText = (weather: DelayForecastResponseT['weather']) => {
+  if (weather.source !== 'unavailable') {
+    const source = weather.source ? FEED_LABEL[weather.source] : MODE_LABEL[weather.mode];
+
+    return `${WEATHER_LABEL[weather.level]} · ${source}`;
+  }
+  if (weather.level === 'normal') return `${WEATHER_UNAVAILABLE_LABEL}(평시로 계산)`;
+
+  return `${WEATHER_UNAVAILABLE_LABEL}(${WEATHER_LABEL[weather.level]} 가정으로 계산)`;
+};
 
 type DelayForecastCardPropsT = {
   session: PlanSessionT;
@@ -125,7 +139,8 @@ function ForecastResult({ data, session, isTyphoon, isReplanning, onLoad }: Fore
     ? `${congestion.indicator.port} ${FEED_LABEL[congestion.indicator.source]}`
     : MODE_LABEL[congestion.mode];
   const weather = data.weather;
-  const weatherSource = weather.source ? FEED_LABEL[weather.source] : MODE_LABEL[weather.mode];
+  const weatherReason = weather.fallback_reason ?? weather.note;
+  const proxyTitle = congestion.proxy_label ?? PROXY_LABEL;
   const lotLabel = (shipperId: string, productId: string, pallets: number) =>
     `${getShipperShortName(scenario, shipperId)} ${productShortName(productOf(scenario, productId), productId)} ${pallets}파렛트`;
   const headVoyage = data.voyages[0] ?? null;
@@ -138,7 +153,7 @@ function ForecastResult({ data, session, isTyphoon, isReplanning, onLoad }: Fore
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
-      <p className="m2-sub mt-0">{data.summary}</p>
+      <p className="m2-sub mt-0">{withLotNames(data.summary, lotNameMap(scenario))}</p>
 
       {data.voyages.map(voyage => (
         <div key={voyage.voyage_id} className="m2-block mt-0 flex flex-col gap-2">
@@ -173,22 +188,27 @@ function ForecastResult({ data, session, isTyphoon, isReplanning, onLoad }: Fore
 
       <div className="m2-lines mt-0">
         <div>
-          <span className="flex flex-wrap items-center gap-1.5">
-            항만 혼잡
-            {isProxy && (
-              <em className="m2-chip m2-chip-warn not-italic">
-                {congestion.proxy_label ?? PROXY_LABEL}
-              </em>
-            )}
-          </span>
-          <b>
+          <span className="shrink-0">항만 혼잡</span>
+          <b className="min-w-0">
             {CONGESTION_LABEL[congestion.level]} · {congestionSource}
           </b>
         </div>
+        {isProxy && (
+          <div>
+            <em
+              className="m2-chip m2-chip-warn max-w-full whitespace-normal not-italic"
+              title={proxyTitle}
+            >
+              {PROXY_SHORT_LABEL}
+              <span className="sr-only"> · {proxyTitle}</span>
+            </em>
+          </div>
+        )}
         <div>
-          <span>기상</span>
-          <b>
-            {WEATHER_LABEL[weather.level]} · {weatherSource}
+          <span className="shrink-0">기상</span>
+          <b className="min-w-0" title={weatherReason}>
+            {weatherText(weather)}
+            {weatherReason ? <span className="sr-only"> · {weatherReason}</span> : null}
           </b>
         </div>
         <div>

@@ -49,6 +49,99 @@ const kindLabel = (kind: string) => KIND_LABEL[kind] ?? kind;
 const pathLabel = (path: string) =>
   path.startsWith(COST_PREFIX) ? path.slice(COST_PREFIX.length) : path.replace(/^scenario\./, '');
 
+const FIELD_LABEL: Record<string, string> = {
+  sea_freight_per_container_krw: '해상 운임(컨테이너당)',
+  sea_ancillary_per_container_krw: '해상 부대비(컨테이너당)',
+  air_freight_per_kg_krw: '항공 운임(kg당)',
+  air_fuel_surcharge_per_kg_krw: '항공 유류할증료(kg당)',
+  reefer_truck_cost_per_km_krw: '냉장트럭 운행비(km당)',
+  reefer_truck_fixed_per_route_krw: '냉장트럭 고정비(경로당)',
+  truck_capacity_pallets: '트럭 적재 용량',
+  road_distance_factor: '도로 거리 보정 계수',
+  air_trucking_km: '공항까지 육송 거리',
+  storage_per_pallet_day_krw: '보관비(파렛트·일)',
+  terminal_reefer_plug_per_container_day: '터미널 리퍼 전원비(컨테이너·일)',
+  air_storage_days: '항공 보관 일수',
+  air_transit_days: '항공 운송 일수',
+  unassigned_penalty_per_pallet_krw: '미배정 벌점(파렛트당)',
+  platform_fee_rate: '플랫폼 수수료율',
+  usage_fee_per_pallet_krw: '파렛트 이용료',
+  air_loss_rate: '항공 손실률',
+  early_harvest_loss_rate_per_day: '조기 수확 손실률(일당)',
+  loss_rate_per_wait_day: '대기 손실률(일당)',
+  max_sea_loss_rate: '해상 최대 손실률',
+  sea_base_loss_rate: '해상 기본 손실률',
+  value_per_kg_krw: '품목 가치(kg당)',
+  air_freight: '항공 운임',
+  air_inland: '항공 내륙 운송',
+  air_loss_risk: '항공 손실 위험',
+  air_rate_basis_per_kg: '항공 운임 기준(kg당)',
+  sea_freight: '해상 운임',
+  sea_inland: '해상 내륙 운송',
+  sea_loss_risk: '해상 손실 위험',
+  sea_loss_risk_short_window: '해상 손실 위험(짧은 판매기간)',
+  gate_peak_windows: '게이트 혼잡 시간대',
+};
+
+const COLLECTION_LABEL: Record<string, string> = {
+  containers: '컨테이너',
+  lots: '출하',
+  packhouses: '선과장',
+  ports: '항구',
+  products: '품목',
+  shippers: '화주',
+  trucks: '냉장트럭',
+  voyages: '항차',
+};
+
+const PRODUCT_LABEL: Record<string, string> = {
+  strawberry: '딸기',
+  grape_so2: 'SO₂ 포도',
+};
+
+const GROUP_LABEL: Record<string, (id: string) => string> = {
+  product_costs: id => PRODUCT_LABEL[id] ?? id,
+  pallet_tariffs: id => `${PRODUCT_LABEL[id] ?? id} 파렛트당`,
+};
+
+const GROUP_FIXED_LABEL: Record<string, string> = {
+  default_product_cost: '기본 품목',
+  billing: '',
+};
+
+const costLabel = (key: string) => {
+  const parts = key.split('.');
+  const field = parts.at(-1) ?? key;
+  const fieldLabel = FIELD_LABEL[field];
+  if (!fieldLabel) return null;
+  const [group, id] = parts;
+  const groupLabel = GROUP_LABEL[group];
+  if (parts.length === 3 && groupLabel && id) return `${groupLabel(id)} ${fieldLabel}`;
+  if (parts.length === 2 && group in GROUP_FIXED_LABEL) {
+    return [GROUP_FIXED_LABEL[group], fieldLabel].filter(Boolean).join(' ');
+  }
+
+  return parts.length === 1 ? fieldLabel : null;
+};
+
+const scenarioLabel = (key: string) => {
+  const match = /^([a-z_]+)\[[^\]]*\](?:\.([a-z_]+)\[[^\]]*\])?$/.exec(key);
+  if (!match) return null;
+  const collection = COLLECTION_LABEL[match[1]];
+  if (!collection) return null;
+  if (!match[2]) return collection;
+  const child = FIELD_LABEL[match[2]];
+
+  return child ? `${collection} ${child}` : null;
+};
+
+const entryLabel = (path: string) => {
+  const key = pathLabel(path);
+  const label = path.startsWith(COST_PREFIX) ? costLabel(key) : scenarioLabel(key);
+
+  return { key, label };
+};
+
 const valueText = ({ values }: ProvenanceEntryT) => {
   const { value, unit, name } = values;
   if (typeof value === 'number') {
@@ -288,13 +381,19 @@ function EntryList({ catalog }: { catalog: ProvenanceCatalogT }) {
             <tbody>
               {rows.map(entry => {
                 const dates = recordedDatesOf(entry);
+                const { key, label } = entryLabel(entry.path);
                 return (
                   <tr key={entry.path}>
                     <td className="whitespace-normal">
                       <div className="m2-who">
-                        <span className="m2-mono text-[12px] break-all">
-                          {pathLabel(entry.path)}
-                        </span>
+                        {label ? (
+                          <>
+                            <span className="block text-[12.5px] whitespace-normal">{label}</span>
+                            <small className="m2-mono break-all whitespace-normal">{key}</small>
+                          </>
+                        ) : (
+                          <span className="m2-mono text-[12px] break-all">{key}</span>
+                        )}
                         <small className="m2-num">{valueText(entry)}</small>
                       </div>
                     </td>

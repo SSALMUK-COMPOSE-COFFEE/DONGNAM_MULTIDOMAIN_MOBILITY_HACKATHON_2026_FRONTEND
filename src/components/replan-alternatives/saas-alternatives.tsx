@@ -5,6 +5,11 @@ import { useState } from 'react';
 import { ContainerLoadBar } from '@/components/container-load-bar';
 import { DomainChain, type VoyagePickupT } from '@/components/domain-chain';
 import {
+  type LotNameMapT,
+  lotNameMap,
+  withLotNames,
+} from '@/components/replan-alternatives/lot-words';
+import {
   TONE_CLASS,
   burdenWords,
   costDeltaWords,
@@ -38,8 +43,8 @@ type SaasReplanAlternativesPropsT = {
   current: ReplanCurrentT | null;
 };
 
-const summarizeReasons = (reasons: string[]) => [
-  ...new Set(reasons.map(reason => reason.replace(/^lot-[^:]+:\s*/, ''))),
+const summarizeReasons = (reasons: string[], lotNames: LotNameMapT) => [
+  ...new Set(reasons.map(reason => withLotNames(reason.replace(/^lot-[^:]+:\s*/, ''), lotNames))),
 ];
 
 const hasShareChange = ({
@@ -76,6 +81,7 @@ export function SaasReplanAlternatives({
     null
   );
   const cheapestId = feasible.length > 1 ? (cheapest?.id ?? null) : null;
+  const lotNames = lotNameMap(scenario, replan.event.type === 'add_lot' ? [replan.event.lot] : []);
 
   return (
     <div className="@container flex flex-col gap-4">
@@ -87,6 +93,7 @@ export function SaasReplanAlternatives({
             key={alternative.id}
             alternative={alternative}
             scenario={scenario}
+            lotNames={lotNames}
             focusContainerId={focusContainerId}
             current={before}
             isRecommended={alternative.feasible && alternative.id === replan.recommended_id}
@@ -107,6 +114,7 @@ export function SaasReplanAlternatives({
 type SaasAlternativeCardPropsT = {
   alternative: AlternativeT;
   scenario: ScenarioT;
+  lotNames: LotNameMapT;
   focusContainerId: string | null;
   current: ReplanCurrentT | null;
   isRecommended: boolean;
@@ -122,6 +130,7 @@ type SaasAlternativeCardPropsT = {
 function SaasAlternativeCard({
   alternative,
   scenario,
+  lotNames,
   focusContainerId,
   current,
   isRecommended,
@@ -162,7 +171,7 @@ function SaasAlternativeCard({
       {!feasible && (
         <div className="m2-note m2-note-warn mt-0 flex-col gap-1">
           <p className="font-semibold">실행할 수 없는 이유</p>
-          {summarizeReasons(reasons).map(reason => (
+          {summarizeReasons(reasons, lotNames).map(reason => (
             <p key={reason}>{reason}</p>
           ))}
           {reasons.length === 0 && <p>제약 조건을 맞추지 못했습니다.</p>}
@@ -177,7 +186,7 @@ function SaasAlternativeCard({
           ) : (
             <p className="text-[26px] font-bold text-m2-muted">비교 제외</p>
           )}
-          {summary && <p className="m2-sub">{summary}</p>}
+          {summary && <p className="m2-sub">{withLotNames(summary, lotNames)}</p>}
         </div>
 
         {container && <ContainerLoadBar container={container} plan={plan} scenario={scenario} />}

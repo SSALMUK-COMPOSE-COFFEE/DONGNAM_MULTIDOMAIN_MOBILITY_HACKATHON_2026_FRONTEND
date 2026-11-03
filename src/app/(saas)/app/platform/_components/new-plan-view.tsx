@@ -663,9 +663,13 @@ function PoolNotes({ source, lots }: { source: PlanSourceT; lots: PlatformLotT[]
     ...plan.unassigned.map(item => {
       const lot = lotById.get(item.lot_id);
       const name = lot?.shipper_org_name ?? getShipperName(scenario, item.shipper_id);
+      const product = lot
+        ? productShortName(productOf(scenario, lot.product_id), lot.product_id)
+        : '';
       return (
         <span key={`out:${item.lot_id}`}>
-          {name} {item.pallets}파렛트({item.lot_id})는 제외됐습니다 · {item.reason}
+          {[name, product, `${item.pallets}파렛트`].filter(Boolean).join(' ')}는 제외됐습니다 ·{' '}
+          {item.reason}
         </span>
       );
     }),

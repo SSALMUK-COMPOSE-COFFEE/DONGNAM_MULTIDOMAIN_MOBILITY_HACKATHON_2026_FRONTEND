@@ -23,6 +23,16 @@ const TILE_COUNT = 6;
 const GRID =
   'grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 min-[768px]:grid-cols-3 min-[1300px]:grid-cols-6';
 
+const RAW_KEY = /\s*\((?:committed|[a-z]+(?:_[a-z]+)+)\)/g;
+const STATUS_PHRASES: readonly (readonly [string, string])[] = [
+  ['화주 확인 대기(pending_confirmation)', '변경 확정 대기'],
+];
+const definitionTextOf = (definition: string) =>
+  STATUS_PHRASES.reduce((text, [from, to]) => text.replaceAll(from, to), definition).replace(
+    RAW_KEY,
+    ''
+  );
+
 type KpiTilePropsT = {
   label: string;
   value: ReactNode;
@@ -44,8 +54,10 @@ function KpiTile({
   assumed = false,
   children,
 }: KpiTilePropsT) {
+  const definitionText = definitionTextOf(definition);
+
   return (
-    <div className="m2-card flex min-w-0 flex-col gap-1 p-4" title={definition}>
+    <div className="m2-card flex min-w-0 flex-col gap-1 p-4" title={definitionText}>
       <dt className="m2-lbl flex items-center gap-1.5">
         {label}
         {assumed ? <AssumptionBadge /> : null}
@@ -63,7 +75,7 @@ function KpiTile({
       </dd>
       {children ? <dd>{children}</dd> : null}
       <dd className="m2-num text-[11.5px] leading-[1.45] text-m2-muted">{basis}</dd>
-      <dd className="sr-only">{definition}</dd>
+      <dd className="sr-only">{definitionText}</dd>
     </div>
   );
 }
