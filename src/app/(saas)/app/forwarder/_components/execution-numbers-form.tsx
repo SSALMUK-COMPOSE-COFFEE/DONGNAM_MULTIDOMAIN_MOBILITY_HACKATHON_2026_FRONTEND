@@ -1,10 +1,8 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { type FormEvent, useId, useState } from 'react';
 
-import { useForwarderOrgId } from '@/apis/saas/forwarder';
-import { forwarderExecutionKeys, useSaveExecutionNumbers } from '@/apis/saas/forwarder-execution';
+import { useSaveExecutionNumbers } from '@/apis/saas/forwarder-execution';
 import { monthDayTime } from '@/app/(saas)/app/forwarder/_components/format';
 import type {
   ForwarderContainerExecutionT,
@@ -43,8 +41,6 @@ type ExecutionNumbersFormPropsT = {
 
 export function ExecutionNumbersForm({ planId, container }: ExecutionNumbersFormPropsT) {
   const formId = useId();
-  const orgId = useForwarderOrgId();
-  const queryClient = useQueryClient();
   const save = useSaveExecutionNumbers(planId);
   const [values, setValues] = useState(() => savedValues(container));
   const [signature, setSignature] = useState(() => savedSignature(container));
@@ -67,16 +63,7 @@ export function ExecutionNumbersForm({ planId, container }: ExecutionNumbersForm
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!hasChanges || save.isPending) return;
-    save.mutate(
-      { containerId: container.container_id, ...changes },
-      {
-        onSuccess: () =>
-          queryClient.invalidateQueries({
-            queryKey: forwarderExecutionKeys.card(orgId, planId),
-            exact: true,
-          }),
-      }
-    );
+    save.mutate({ containerId: container.container_id, ...changes });
   };
 
   return (
