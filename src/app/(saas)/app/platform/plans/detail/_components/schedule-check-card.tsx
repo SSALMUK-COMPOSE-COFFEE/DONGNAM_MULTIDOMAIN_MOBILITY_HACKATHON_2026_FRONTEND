@@ -7,10 +7,11 @@ import { usePlatformScheduleCheck } from '@/apis/saas/platform-analysis';
 import { kstDayTime } from '@/app/(saas)/app/platform/_components/m2-format';
 import { hoursText } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanEventT, PlanSessionT } from '@/types/api';
+import type { PlanEventT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 
 type ScheduleCheckCardPropsT = {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   isReplanning: boolean;
   onRun: (event: PlanEventT, label: string, focusContainerId: string | null) => void;
 };

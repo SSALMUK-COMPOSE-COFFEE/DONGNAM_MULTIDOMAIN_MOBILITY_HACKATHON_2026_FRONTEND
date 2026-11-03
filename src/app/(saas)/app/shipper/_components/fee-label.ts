@@ -6,7 +6,7 @@ import {
 import { feeRateOf, percentLabel } from '@/app/(saas)/app/platform/_components/m2-format';
 import type { PlanSessionT } from '@/types/api';
 
-export const settlementFeeLabel = ({ plan, scenario }: PlanSessionT) => {
+export const settlementFeeLabel = ({ plan, scenario }: Pick<PlanSessionT, 'plan' | 'scenario'>) => {
   const feeRate = feeRateOf(scenario);
   const rows = (plan.container_settlements ?? []).flatMap(({ shippers }) => shippers);
   const rules = distinctRules([...rows, ...plan.settlements]);

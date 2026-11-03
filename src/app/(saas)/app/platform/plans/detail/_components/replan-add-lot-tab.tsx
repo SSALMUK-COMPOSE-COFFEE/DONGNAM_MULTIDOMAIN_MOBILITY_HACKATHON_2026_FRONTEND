@@ -20,11 +20,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanSessionT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import type { PlatformLotT } from '@/types/saas-platform';
 
 type ReplanAddLotTabPropsT = {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   isReplanning: boolean;
   onAddLot: (lotId: string, label: string) => void;
   addLotBlock: (shipperId: string) => AddLotBlockT;

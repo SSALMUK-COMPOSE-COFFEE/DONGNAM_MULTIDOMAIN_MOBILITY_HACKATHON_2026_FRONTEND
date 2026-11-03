@@ -10,7 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { PlanEventT, PlanSessionT } from '@/types/api';
+import type { PlanEventT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 
 const HOUR_MS = 3_600_000;
 const INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
@@ -41,7 +42,7 @@ export const hoursText = (hours: number) => {
 };
 
 type ReplanDelayTabPropsT = {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   isReplanning: boolean;
   onRun: (event: PlanEventT, label: string, focusContainerId: string | null) => void;
 };

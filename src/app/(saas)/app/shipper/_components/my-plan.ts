@@ -4,8 +4,13 @@ import {
   type SceneStopT,
   buildPlanScene,
 } from '@/components/map-hero/scene';
-import type { ContainerLoadT, PlanSessionT, SchemaT, TariffSheetT } from '@/types/api';
-import type { ShipperCatalogT, ShipperOrderT, ShipperSettlementT } from '@/types/saas-shipper';
+import type { ContainerLoadT, SchemaT, TariffSheetT } from '@/types/api';
+import type {
+  ShipperCatalogT,
+  ShipperOrderT,
+  ShipperPlanSessionT,
+  ShipperSettlementT,
+} from '@/types/saas-shipper';
 
 export type OwnScopeT = {
   shipperIds: string[];
@@ -56,7 +61,7 @@ export type OtherVoyageT = {
 };
 
 export type MyPlanT = {
-  session: PlanSessionT;
+  session: ShipperPlanSessionT;
   scene: MapSceneT;
   voyage: SchemaT<'Voyage'> | null;
   destinationName: string;
@@ -80,7 +85,7 @@ export type MyPlanT = {
 
 const uniq = <T>(items: T[]) => [...new Set(items)];
 
-export function buildMyPlan(session: PlanSessionT, own: OwnScopeT): MyPlanT {
+export function buildMyPlan(session: ShipperPlanSessionT, own: OwnScopeT): MyPlanT {
   const ownShippers = new Set(own.shipperIds);
   const ownPackhouses = new Set(own.packhouseIds);
   const { scenario, plan } = session;
@@ -282,12 +287,12 @@ export type OwnPlanConfirmT = 'pending' | 'rejected' | 'replanning' | 'none';
 
 const AWAITING_SHIPPERS_STATUS = 'pending_shipper_confirmation';
 
-export const isAwaitingShippers = (session: PlanSessionT) =>
-  String(session.status) === AWAITING_SHIPPERS_STATUS;
+export const isAwaitingShippers = (session: ShipperPlanSessionT) =>
+  session.status === AWAITING_SHIPPERS_STATUS;
 
 const OPEN_CONFIRM_STATUSES: readonly ShipperOrderT['status'][] = ['proposed', 'shipper_confirmed'];
 
-export const activeOrderOf = (session: PlanSessionT, orders: ShipperOrderT[]) => {
+export const activeOrderOf = (session: ShipperPlanSessionT, orders: ShipperOrderT[]) => {
   const byId = session.active_order_id
     ? orders.find(({ order_id }) => order_id === session.active_order_id)
     : null;
@@ -302,7 +307,7 @@ export const activeOrderOf = (session: PlanSessionT, orders: ShipperOrderT[]) =>
 };
 
 export const confirmWaitOf = (
-  session: PlanSessionT,
+  session: ShipperPlanSessionT,
   orders: ShipperOrderT[],
   pendingCount: number,
   ownPlan: OwnPlanConfirmT = 'none'
@@ -336,7 +341,7 @@ export const CONFIRM_WAIT_LABEL: Record<Exclude<ConfirmWaitT, null>, string> = {
 
 export const withSettlementRows = (
   settlement: MySettlementT | null,
-  session: PlanSessionT,
+  session: ShipperPlanSessionT,
   rows?: ShipperSettlementT[] | null
 ): MySettlementT | null => {
   const forPlan = (rows ?? []).filter(({ plan_id }) => plan_id === session.plan_id);

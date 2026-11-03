@@ -35,7 +35,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { AlternativeIdT, PlanEventT, PlanSessionT, ReplanResponseT } from '@/types/api';
+import type { AlternativeIdT, PlanEventT, ReplanResponseT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import type { PlatformChangeRequestT } from '@/types/saas-platform';
 import { getProductName, getShipperShortName } from '@/utils/scenario';
 
@@ -66,7 +67,7 @@ const kindOptions = (openCount: number): { value: ChangeKindT; label: string }[]
   { value: 'requests', label: openCount > 0 ? `화주 요청 ${openCount}` : '화주 요청' },
 ];
 
-export function ReplanSection({ session }: { session: PlanSessionT }) {
+export function ReplanSection({ session }: { session: SaasPlanSessionT }) {
   const { plan_id: planId, plan, scenario } = session;
   const seaLots = plan.assignments.filter(
     ({ mode, container_id }) => mode === 'sea' && container_id

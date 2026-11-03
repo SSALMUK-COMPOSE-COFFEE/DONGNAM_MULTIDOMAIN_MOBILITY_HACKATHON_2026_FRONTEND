@@ -18,7 +18,8 @@ import { SegTabs } from '@/app/(saas)/app/platform/_components/seg-tabs';
 import { hoursText } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
 import { lotNameMap, withLotNames } from '@/components/replan-alternatives/lot-words';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanSessionT, ReplanResponseT } from '@/types/api';
+import type { ReplanResponseT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import type { DelayForecastRequestT, DelayForecastResponseT } from '@/types/saas-analysis';
 import { getShipperShortName } from '@/utils/scenario';
 
@@ -67,7 +68,7 @@ const weatherText = (weather: DelayForecastResponseT['weather']) => {
 };
 
 type DelayForecastCardPropsT = {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   isReplanning: boolean;
   onLoad: (replan: ReplanResponseT, label: string, focusContainerId: string | null) => void;
 };
@@ -119,7 +120,7 @@ export function DelayForecastCard({ session, isReplanning, onLoad }: DelayForeca
 
 type ForecastResultPropsT = {
   data: DelayForecastResponseT;
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   isTyphoon: boolean;
   isReplanning: boolean;
   onLoad: DelayForecastCardPropsT['onLoad'];
@@ -320,5 +321,5 @@ function ForecastResult({ data, session, isTyphoon, isReplanning, onLoad }: Fore
   );
 }
 
-const productIdOf = (session: PlanSessionT, lotId: string) =>
+const productIdOf = (session: SaasPlanSessionT, lotId: string) =>
   session.scenario.lots.find(({ id }) => id === lotId)?.product_id ?? '';

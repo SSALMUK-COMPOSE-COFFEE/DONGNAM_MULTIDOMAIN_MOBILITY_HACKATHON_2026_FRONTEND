@@ -23,7 +23,12 @@ export const planOptionLabel = ({ vessel, departure, created_at, plan_id, versio
     .filter(Boolean)
     .join(' · ');
 
-export const planSessionLabel = ({ plan, scenario, created_at, plan_id }: PlanSessionT) => {
+export const planSessionLabel = ({
+  plan,
+  scenario,
+  created_at,
+  plan_id,
+}: Pick<PlanSessionT, 'plan' | 'scenario' | 'created_at' | 'plan_id'>) => {
   const usedVoyageIds = new Set(
     plan.containers.filter(({ used }) => used).map(({ voyage_id }) => voyage_id)
   );

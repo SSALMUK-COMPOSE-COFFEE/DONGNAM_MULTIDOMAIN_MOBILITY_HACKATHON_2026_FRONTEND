@@ -15,7 +15,7 @@ import {
 } from '@/app/(saas)/app/platform/_components/m2-format';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanSessionT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import type { PlatformChangeRequestT } from '@/types/saas-platform';
 
 const TYPE_LABEL: Record<PlatformChangeRequestT['type'], string> = {
@@ -27,7 +27,7 @@ const TYPE_LABEL: Record<PlatformChangeRequestT['type'], string> = {
 export const openRequestParams = (planId: string) => ({ plan_id: planId, status: 'open' as const });
 
 type ChangeRequestInboxPropsT = {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   pendingRequestId: string | null;
   activeRequestId: string | null;
   isBusy: boolean;

@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanSessionT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import { formatKstMonthDayTime } from '@/utils/kst';
 import { getShipperName } from '@/utils/scenario';
 
@@ -36,7 +36,7 @@ const STATUS_CHIP: Record<PlanConfirmationStatusT, { label: string; className: s
   rejected: { label: '거절', className: 'm2-chip-berry' },
 };
 
-export function PlanConfirmationCard({ session }: { session: PlanSessionT }) {
+export function PlanConfirmationCard({ session }: { session: SaasPlanSessionT }) {
   const planId = session.plan_id;
   const query = usePlatformConfirmation(planId);
   const isSandbox = useIsSandbox();

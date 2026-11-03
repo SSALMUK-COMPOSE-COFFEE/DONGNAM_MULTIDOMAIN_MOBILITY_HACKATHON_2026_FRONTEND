@@ -25,13 +25,13 @@ import type {
   BindingRequestT,
   ExecutionOrderT,
   PlanEventT,
-  PlanSessionT,
   ReplanResponseT,
   ScenarioT,
   SimulationRequestT,
   SimulationRunT,
   TwinStateT,
 } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import type {
   BindingT,
   DeviceRequestT,
@@ -138,7 +138,7 @@ export const getPlatformLots = async (status: LotStatusT | null) => {
 };
 
 export const postPlatformPlan = async (request: PlatformPlanRequestT) => {
-  const { data } = await saasApi.post<PlanSessionT>(PLATFORM_ENDPOINTS.PLANS, request);
+  const { data } = await saasApi.post<SaasPlanSessionT>(PLATFORM_ENDPOINTS.PLANS, request);
 
   return data;
 };
@@ -160,7 +160,7 @@ export const getPlatformPlans = async () => {
 };
 
 export const getPlatformPlan = async (planId: string) => {
-  const { data } = await saasApi.get<PlanSessionT>(PLATFORM_ENDPOINTS.PLAN(planId));
+  const { data } = await saasApi.get<SaasPlanSessionT>(PLATFORM_ENDPOINTS.PLAN(planId));
 
   return data;
 };
@@ -195,7 +195,7 @@ export const postPlatformPlanApply = async (
   planId: string,
   { alternativeId, replanId }: { alternativeId: AlternativeIdT; replanId: string }
 ) => {
-  const { data } = await saasApi.post<PlanSessionT>(PLATFORM_ENDPOINTS.PLAN_APPLY(planId), {
+  const { data } = await saasApi.post<SaasPlanSessionT>(PLATFORM_ENDPOINTS.PLAN_APPLY(planId), {
     alternative_id: alternativeId,
     replan_id: replanId,
   });

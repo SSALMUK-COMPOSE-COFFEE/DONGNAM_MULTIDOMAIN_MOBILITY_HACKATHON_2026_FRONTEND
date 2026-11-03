@@ -14,13 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { PlanSessionT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import type { ArrivalSettlementResultT } from '@/types/saas-analysis';
 import { formatKstMonthDayTime } from '@/utils/kst';
 import { getProductName, getShipperName, getShipperShortName } from '@/utils/scenario';
 
-type AssignmentT = PlanSessionT['plan']['assignments'][number];
-type InspectionT = NonNullable<PlanSessionT['arrival_inspections']>[number];
+type AssignmentT = SaasPlanSessionT['plan']['assignments'][number];
+type InspectionT = NonNullable<SaasPlanSessionT['arrival_inspections']>[number];
 
 const MODE_LABEL: Record<AssignmentT['mode'], string> = { sea: '해상', air: '항공' };
 
@@ -41,7 +41,7 @@ const parsePct = (text: string) => {
   return Number.isFinite(value) && value >= 0 && value <= 100 ? value : null;
 };
 
-export function ArrivalInspectionCard({ session }: { session: PlanSessionT }) {
+export function ArrivalInspectionCard({ session }: { session: SaasPlanSessionT }) {
   const { plan_id: planId, plan, scenario } = session;
   const lots = plan.assignments;
   const inspections = session.arrival_inspections ?? [];
@@ -265,7 +265,7 @@ function ArrivalResult({ result, shipper }: { result: ArrivalSettlementResultT; 
   );
 }
 
-function InspectionList({ session, items }: { session: PlanSessionT; items: InspectionT[] }) {
+function InspectionList({ session, items }: { session: SaasPlanSessionT; items: InspectionT[] }) {
   const { scenario } = session;
 
   return (

@@ -7,7 +7,7 @@ import {
 } from '@/app/(saas)/app/platform/_components/billing';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { feeRateOf, won } from '@/app/(saas)/app/platform/_components/m2-format';
-import type { PlanSessionT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import { getShipperName } from '@/utils/scenario';
 
 const BASIS_LABEL: Record<string, string> = {
@@ -41,7 +41,7 @@ type SavingsGroupT = {
   total: { savings: number; fee: number; gain: number } | null;
 };
 
-const groupsOf = (session: PlanSessionT): SavingsGroupT[] => {
+const groupsOf = (session: SaasPlanSessionT): SavingsGroupT[] => {
   const { plan } = session;
   const containerSettlements = plan.container_settlements ?? [];
   const seaGroups = containerSettlements.map(container => {
@@ -109,7 +109,7 @@ const groupsOf = (session: PlanSessionT): SavingsGroupT[] => {
     : seaGroups;
 };
 
-export function ShipperSavingsCard({ session }: { session: PlanSessionT }) {
+export function ShipperSavingsCard({ session }: { session: SaasPlanSessionT }) {
   const { scenario, plan } = session;
   const groups = groupsOf(session);
   const feeRate = feeRateOf(scenario);

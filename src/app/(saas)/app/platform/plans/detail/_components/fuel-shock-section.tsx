@@ -10,7 +10,7 @@ import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { SegTabs } from '@/app/(saas)/app/platform/_components/seg-tabs';
 import { CompareBars } from '@/components/map-hero';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanSessionT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import type { PlatformFuelShockRequestT, PlatformFuelShockResultT } from '@/types/saas-analysis';
 import { getShipperName } from '@/utils/scenario';
 
@@ -53,7 +53,7 @@ const thresholdText = (threshold: ThresholdT) => {
   return `${perKg(threshold.surcharge_per_kg)} ${side} 배정이 바뀝니다 (로트 ${threshold.switches.length}건).`;
 };
 
-export function FuelShockSection({ session }: { session: PlanSessionT }) {
+export function FuelShockSection({ session }: { session: SaasPlanSessionT }) {
   const { data, isPending, isError, error, refetch, isFetching } = usePlatformFuelShock(
     session.plan_id,
     FUEL_SHOCK_REQUEST
@@ -99,7 +99,7 @@ function FuelShockBody({
   session,
   result,
 }: {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   result: PlatformFuelShockResultT;
 }) {
   const baseline = result.cases.find(({ is_baseline }) => is_baseline) ?? result.cases[0];
@@ -218,7 +218,7 @@ function CaseDetail({
   baseline,
   shockCase,
 }: {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   baseline: ShockCaseT;
   shockCase: ShockCaseT;
 }) {
@@ -291,7 +291,7 @@ function SwitchList({
   scenario,
   shockCase,
 }: {
-  scenario: PlanSessionT['scenario'];
+  scenario: SaasPlanSessionT['scenario'];
   shockCase: ShockCaseT;
 }) {
   if (shockCase.switches.length === 0) {

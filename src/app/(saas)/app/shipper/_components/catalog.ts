@@ -26,7 +26,7 @@ export const viewerShipperIdOf = (catalog: ShipperCatalogT | null | undefined) =
 const hasCoordinates = ({ lat, lon }: { lat: number | null; lon: number | null }) =>
   typeof lat === 'number' && typeof lon === 'number';
 
-export const withLocatedPackhouses = (session: PlanSessionT): PlanSessionT => ({
+export const withLocatedPackhouses = <T extends Pick<PlanSessionT, 'scenario'>>(session: T): T => ({
   ...session,
   scenario: {
     ...session.scenario,

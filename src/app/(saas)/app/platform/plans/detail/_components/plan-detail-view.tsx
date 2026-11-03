@@ -52,7 +52,7 @@ import { type StepItemT, Steps } from '@/components/map-hero';
 import { MapLinkProvider, useMapLinkTarget } from '@/components/map-link';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PlanSessionT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import { formatKstMonthDayTime } from '@/utils/kst';
 import { getShipperName } from '@/utils/scenario';
 
@@ -107,7 +107,7 @@ export function PlanDetailView() {
   );
 }
 
-function PlanDetailScreen({ planId, session }: { planId: string; session: PlanSessionT }) {
+function PlanDetailScreen({ planId, session }: { planId: string; session: SaasPlanSessionT }) {
   const plansQuery = usePlatformPlans();
   const planItem = plansQuery.data?.find(item => item.plan_id === planId) ?? null;
   const confirmation = usePlatformConfirmation(planId).data ?? null;
@@ -263,7 +263,7 @@ function PlanLotsCard({
   session,
   runs,
 }: {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   runs: { key: string; lotIds: string[] }[];
 }) {
   const { plan, scenario } = session;
@@ -347,7 +347,7 @@ function PlanLotRow({
   keys,
 }: {
   row: PlanLotRowT;
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   verdict: VerdictT | null;
   keys: string[];
 }) {

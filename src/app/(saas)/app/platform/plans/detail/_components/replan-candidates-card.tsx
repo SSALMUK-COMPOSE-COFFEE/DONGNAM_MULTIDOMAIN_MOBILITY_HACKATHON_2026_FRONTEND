@@ -12,12 +12,13 @@ import {
 } from '@/app/(saas)/app/platform/_components/m2-format';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { REPLAN_CANDIDATES_ID } from '@/app/(saas)/app/platform/plans/detail/_components/replan-gate';
-import type { PlanEventT, PlanSessionT } from '@/types/api';
+import type { PlanEventT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 import { formatKstMonthDayTime } from '@/utils/kst';
 import { getShipperShortName } from '@/utils/scenario';
 
 type ReplanCandidatesCardPropsT = {
-  session: PlanSessionT;
+  session: SaasPlanSessionT;
   isReplanning: boolean;
   onRun: (event: PlanEventT, label: string, focusContainerId: string | null) => void;
 };
@@ -34,7 +35,7 @@ const REQUEST_KIND_LABEL: Record<NonNullable<ReplanCandidateT['request_kind']>, 
 
 type LotLikeT = { shipper_id: string; product_id: string; pallets: number };
 
-const lotSummary = (session: PlanSessionT, lot: LotLikeT) => {
+const lotSummary = (session: SaasPlanSessionT, lot: LotLikeT) => {
   const { scenario } = session;
 
   return `${getShipperShortName(scenario, lot.shipper_id)} ${productShortName(
@@ -43,16 +44,16 @@ const lotSummary = (session: PlanSessionT, lot: LotLikeT) => {
   )} ${lot.pallets}파렛트`;
 };
 
-const lotText = (session: PlanSessionT, lotId: string) => {
+const lotText = (session: SaasPlanSessionT, lotId: string) => {
   const lot = session.scenario.lots.find(({ id }) => id === lotId);
 
   return lot ? lotSummary(session, lot) : '출하';
 };
 
-const vesselText = (session: PlanSessionT, voyageId: string) =>
+const vesselText = (session: SaasPlanSessionT, voyageId: string) =>
   session.scenario.voyages.find(({ id }) => id === voyageId)?.vessel_name ?? '배정 항차';
 
-const eventLabel = (session: PlanSessionT, event: ReplanCandidateEventT) => {
+const eventLabel = (session: SaasPlanSessionT, event: ReplanCandidateEventT) => {
   if (event.type === 'cancel') return `${lotText(session, event.lot_id)} 취소`;
   if (event.type === 'reduce') {
     return `${lotText(session, event.lot_id)} → ${event.new_pallets}파렛트로 감축`;
@@ -65,7 +66,7 @@ const eventLabel = (session: PlanSessionT, event: ReplanCandidateEventT) => {
   return `${lotSummary(session, event.lot)} 추가`;
 };
 
-const focusOf = (session: PlanSessionT, candidate: ReplanCandidateT) => {
+const focusOf = (session: SaasPlanSessionT, candidate: ReplanCandidateT) => {
   if (candidate.container_id) return candidate.container_id;
   const lotIds = new Set(candidate.lot_ids ?? []);
 
@@ -75,7 +76,7 @@ const focusOf = (session: PlanSessionT, candidate: ReplanCandidateT) => {
   );
 };
 
-const candidateTitle = (session: PlanSessionT, candidate: ReplanCandidateT) => {
+const candidateTitle = (session: SaasPlanSessionT, candidate: ReplanCandidateT) => {
   if (candidate.source === 'shipper_rejected') {
     const name = candidate.shipper_id
       ? getShipperShortName(session.scenario, candidate.shipper_id)

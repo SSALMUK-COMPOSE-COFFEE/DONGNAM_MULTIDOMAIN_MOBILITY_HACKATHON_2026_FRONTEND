@@ -1,5 +1,5 @@
-import type { ExecutionOrderT, PlanSessionT, ScenarioT, SchemaT } from '@/types/api';
-import type { SaasQueryT, SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
+import type { ExecutionOrderT, ScenarioT, SchemaT } from '@/types/api';
+import type { SaasPlanSessionT, SaasQueryT, SaasSchemaT, WithDefaultsT } from '@/types/api-saas';
 
 export type ShipperCatalogT = ScenarioT;
 
@@ -23,7 +23,7 @@ export type ShipperLotPatchT = SaasSchemaT<'LotPatch'>;
 
 export type ShipperPlanItemT = SaasSchemaT<'ShipperPlanItem'>;
 
-export type ShipperPlanSessionT = PlanSessionT;
+export type ShipperPlanSessionT = SaasPlanSessionT;
 
 export type ShipperOrderT = ExecutionOrderT;
 export type ShipperRequestT = SchemaT<'ExternalRequest'>;

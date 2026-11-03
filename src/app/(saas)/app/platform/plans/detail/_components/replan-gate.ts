@@ -7,7 +7,8 @@ import {
   type PlanConfirmationStateT,
   usePlatformConfirmation,
 } from '@/apis/saas/platform-confirm';
-import type { PlanSessionT, ReplanResponseT } from '@/types/api';
+import type { ReplanResponseT } from '@/types/api';
+import type { SaasPlanSessionT } from '@/types/api-saas';
 
 export const AWAITING_APPLY_REASON = '화주 확인이 끝난 뒤 바꿀 수 있습니다';
 export const ADD_LOT_APPLY_REASON =
@@ -37,7 +38,7 @@ export const scrollToReplanCandidates = () => {
   target.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
 };
 
-export const useReplanGate = (session: PlanSessionT) => {
+export const useReplanGate = (session: SaasPlanSessionT) => {
   const isSandbox = useIsSandbox();
   const confirmation = usePlatformConfirmation(session.plan_id);
   const plansQuery = usePlatformPlans();
