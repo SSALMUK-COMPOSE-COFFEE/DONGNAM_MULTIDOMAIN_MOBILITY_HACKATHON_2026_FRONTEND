@@ -20,6 +20,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { RegisteredDeviceT } from '@/types/saas-platform';
 
+const VALUE_ERROR_PREFIX = 'Value error, ';
+
+const validationReason = (data: unknown) => {
+  const detail = (data as { detail?: unknown } | undefined)?.detail;
+  if (!Array.isArray(detail)) return null;
+  const message = detail
+    .map(item => (item as { msg?: unknown } | null)?.msg)
+    .find((msg): msg is string => typeof msg === 'string' && msg.startsWith(VALUE_ERROR_PREFIX));
+
+  return message ? message.slice(VALUE_ERROR_PREFIX.length) : null;
+};
+
 const registerErrorMessage = (error: unknown) => {
   if (isAxiosError(error) && error.response?.status === 409) {
     const detail = (error.response.data as { detail?: unknown } | undefined)?.detail;
@@ -28,7 +40,8 @@ const registerErrorMessage = (error: unknown) => {
       ? detail
       : '이미 등록됐거나 다른 조직에 연결된 기기 ID 입니다.';
   }
-  if (isAxiosError(error) && error.response?.status === 422) return '기기 ID를 확인하세요.';
+  if (isAxiosError(error) && error.response?.status === 422)
+    return validationReason(error.response.data) ?? '기기 ID를 확인하세요.';
 
   return '기기를 등록하지 못했습니다.';
 };
