@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "next typegen && tsc --noEmit",
-    "gen:api": "openapi-typescript https://freshswitch.ssalhub.xyz/api/openapi.json -o src/types/openapi.d.ts"
+    "gen:api": "openapi-typescript https://freshswitch.ssalhub.xyz/api/openapi.json -o src/types/openapi.d.ts",
+    "gen:api:saas": "openapi-typescript ${SAAS_OPENAPI:-https://freshswitch.ssalhub.xyz/test/api/openapi.json} -o src/types/openapi-saas.d.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

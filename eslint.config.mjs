@@ -91,5 +91,6 @@ export default defineConfig([
     'src/components/ui/**',
     'public/mockServiceWorker.js',
     'src/types/openapi.d.ts',
+    'src/types/openapi-saas.d.ts',
   ]),
 ]);
