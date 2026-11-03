@@ -31,21 +31,24 @@ import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 const sumBy = (rows: PlatformSettlementT[], pick: (row: PlatformSettlementT) => number) =>
   rows.reduce((total, row) => total + pick(row), 0);
 
-function SettlementShell({ children }: { children: ReactNode }) {
+function SettlementShell({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
     <>
       <PlatformHeader
         eyebrow="정산"
         title="품목마다 정한 규칙으로만 받습니다"
         sub="항공을 대신하는 품목은 절감액의 성과보수, 이미 배로 가던 품목은 파렛트 이용료를 받습니다."
-      />
+      >
+        {actions}
+      </PlatformHeader>
       {children}
     </>
   );
 }
 
 export function SettlementView() {
-  const { data, isPending, isError, error, refetch, isFetching } = usePlatformSettlements();
+  const { data, isPending, isError, error, refetch, isFetching, isCapped, limit } =
+    usePlatformSettlements();
   const catalog = usePlatformCatalog().data ?? null;
   const feeRate = feeRateOf(catalog);
   const usagePerPallet = usageFeePerPalletOf(catalog);
@@ -105,8 +108,12 @@ export function SettlementView() {
     .filter(Boolean)
     .join(' · ');
 
+  const capChip = isCapped ? (
+    <span className="m2-chip m2-chip-warn">최근 {limit.toLocaleString('ko-KR')}건 기준 합계</span>
+  ) : null;
+
   return (
-    <SettlementShell>
+    <SettlementShell actions={capChip}>
       <div className="mb-4 grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
         <StatTile label="화주 총비용 절감" value={wonNumber(totalSaving)} unit="원" />
         <StatTile label="플랫폼 수익" value={wonNumber(totalFee)} unit="원" note={feeNote} />
@@ -128,7 +135,14 @@ export function SettlementView() {
       <section className="m2-card">
         <div className="m2-card-h">
           <h2 className="m2-h2">계획별 정산</h2>
-          <span className="m2-chip">원 단위</span>
+          <div className="flex flex-wrap gap-1.5">
+            {isCapped ? (
+              <span className="m2-chip m2-chip-warn">
+                최근 {limit.toLocaleString('ko-KR')}건만 표시
+              </span>
+            ) : null}
+            <span className="m2-chip">원 단위</span>
+          </div>
         </div>
         <div className="-mx-2.5 overflow-x-auto px-2.5">
           <table className="m2-table">

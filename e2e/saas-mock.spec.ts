@@ -28,7 +28,7 @@ const logout = async (page: Page) => {
 const menu = (page: Page, name: RegExp) =>
   page.getByRole('complementary', { name: '주 메뉴' }).getByRole('link', { name });
 
-const expectPlatformPlanStatus = async (page: Page, status: '확정' | '확정 대기') => {
+const expectPlatformPlanStatus = async (page: Page, status: '확정' | '변경 확정 대기') => {
   await menu(page, /공동적재 계획/).click();
   const row = page
     .getByRole('main')
@@ -84,7 +84,7 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
     await main.getByRole('button', { name: '이 안으로 적용' }).first().click();
     await expect(main.getByRole('button', { name: '적용됨' })).toBeVisible();
     await expect(main).toContainText(/실행 지시[\s\S]{0,80}화주 확인 대기/);
-    await expectPlatformPlanStatus(page, '확정 대기');
+    await expectPlatformPlanStatus(page, '변경 확정 대기');
     await logout(page);
   });
 
@@ -119,12 +119,7 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
     await expect(main).not.toContainText(/\d원/);
 
     await main.getByRole('button', { name: '실행 지시 확정' }).click();
-    await expect(main.getByText(/내 확정 대기 0건 · 끝난 지시 1건/)).toBeVisible();
-    const done = main.getByRole('row').filter({ hasText: 'MV FRESH HARMONY' });
-    await expect(done).toContainText('확정 완료');
-
-    await done.getByRole('link', { name: '항차 상세' }).click();
-    await page.waitForURL(/\/forwarder\/plans\/detail\?plan_id=/);
+    await expect(main.getByText(/내 확정 대기 0건 · 회신 대기 1건 · 끝난 지시 0건/)).toBeVisible();
     await expect(main.getByRole('button', { name: '확정됨 · v2' })).toBeVisible();
 
     const accept = main.getByRole('button', { name: '수락', exact: true });
@@ -134,6 +129,17 @@ test('목업 모드에서 화주 등록부터 포워더 확정까지 이어진�
       await accept.first().click();
       await expect(accept).toHaveCount(remaining - 1);
     }
+
+    await expect(
+      main.getByText(/진행 중 0건 · 내 확정 대기 0건 · 회신 대기 0건 · 끝난 지시 1건/)
+    ).toBeVisible();
+    const done = main.getByRole('row').filter({ hasText: 'MV FRESH HARMONY' });
+    await expect(done).toContainText('확정 완료');
+
+    await done.getByRole('link', { name: '항차 상세' }).click();
+    await page.waitForURL(/\/forwarder\/plans\/detail\?plan_id=/);
+    await expect(main.getByRole('button', { name: '확정됨 · v2' })).toBeVisible();
+    await expect(main.getByRole('button', { name: '수락', exact: true })).toHaveCount(0);
     await expect(main.getByRole('checkbox', { name: / 미완료$/ })).toHaveCount(0);
     await logout(page);
   });

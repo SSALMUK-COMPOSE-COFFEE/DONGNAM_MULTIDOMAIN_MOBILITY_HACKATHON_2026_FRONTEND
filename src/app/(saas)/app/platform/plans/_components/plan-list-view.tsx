@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 
-import { usePlatformPlans } from '@/apis/saas/platform';
+import { PLATFORM_PLANS_LIMIT, usePlatformPlans } from '@/apis/saas/platform';
 import { AWAITING_SHIPPERS_STATUS, usePlatformAttention } from '@/apis/saas/platform-confirm';
+import { capOf } from '@/apis/saas/polling';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlanStatusBadge } from '@/app/(saas)/app/platform/_components/plan-status-badge';
@@ -15,6 +16,7 @@ import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 export function PlanListView() {
   const { data: plans, isPending, isError, error, refetch, isFetching } = usePlatformPlans();
+  const cap = capOf(plans ?? null, PLATFORM_PLANS_LIMIT);
   const unassigned = plans?.filter(({ forwarder }) => !forwarder).length ?? 0;
   const attention = usePlatformAttention();
   const attentionById = new Map((attention.data ?? []).map(state => [state.plan_id, state]));
@@ -47,6 +49,11 @@ export function PlanListView() {
       <section className="m2-card">
         <div className="m2-card-h">
           <h2 className="m2-h2">공동적재 계획</h2>
+          {cap.isCapped ? (
+            <span className="m2-chip m2-chip-warn">
+              최근 {cap.limit.toLocaleString('ko-KR')}건만 표시
+            </span>
+          ) : null}
         </div>
         {isError && (
           <QueryError

@@ -93,6 +93,11 @@ export function PlansView() {
             : `${plans.data.length}항차`
         }
       >
+        {plans.isCapped ? (
+          <span className="m2-chip m2-chip-warn">
+            최근 {plans.limit.toLocaleString('ko-KR')}건 기준
+          </span>
+        ) : null}
         {awaiting > 0 ? (
           <Link href={FORWARDER_PATHS.ORDERS} className="m2-btn m2-btn-pri">
             확정할 실행 지시 {awaiting}건
@@ -126,6 +131,11 @@ export function PlansView() {
             <h2 className="m2-h2">항차 목록</h2>
             <div className="m2-sub">행을 누르면 집하 경로와 실행 지시가 열립니다</div>
           </div>
+          {plans.isCapped ? (
+            <span className="m2-chip m2-chip-warn">
+              최근 {plans.limit.toLocaleString('ko-KR')}건만 표시
+            </span>
+          ) : null}
         </div>
         <div className="overflow-x-auto">
           <table className="m2-table">

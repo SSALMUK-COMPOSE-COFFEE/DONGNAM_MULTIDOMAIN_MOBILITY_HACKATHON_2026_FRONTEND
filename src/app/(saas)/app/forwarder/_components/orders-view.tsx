@@ -32,8 +32,15 @@ export function OrdersView() {
   const planList = plans.data ?? [];
   const orderQueries = useForwarderOrdersByPlans(planList.map(({ plan_id }) => plan_id));
   const eyebrow = orgName ? `실행 지시 · ${orgName}` : '실행 지시';
+  const capChip = plans.isCapped ? (
+    <span className="m2-chip m2-chip-warn">
+      최근 항차 {plans.limit.toLocaleString('ko-KR')}건만 표시
+    </span>
+  ) : null;
   const header = (sub?: string) => (
-    <ForwarderPageHeader eyebrow={eyebrow} title="화주가 수락한 변경을 확정합니다" sub={sub} />
+    <ForwarderPageHeader eyebrow={eyebrow} title="화주가 수락한 변경을 확정합니다" sub={sub}>
+      {capChip}
+    </ForwarderPageHeader>
   );
 
   if (plans.isPending || orderQueries.some(({ isPending }) => isPending)) {
@@ -110,6 +117,7 @@ export function OrdersView() {
           <section className="m2-card mt-2">
             <div className="m2-card-h">
               <h2 className="m2-h2">끝난 실행 지시</h2>
+              {capChip}
             </div>
             <div className="overflow-x-auto">
               <table className="m2-table">
