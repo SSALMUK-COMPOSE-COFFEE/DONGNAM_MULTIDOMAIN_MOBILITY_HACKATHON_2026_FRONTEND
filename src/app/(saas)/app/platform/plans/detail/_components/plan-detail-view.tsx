@@ -63,7 +63,7 @@ export function PlanDetailView() {
       <ForwarderAssignCard planId={planId} />
 
       <SectionErrorBoundary message="계획 상세를 그리지 못했습니다." className="h-96">
-        <PlanDetail session={session} isResponsive />
+        <PlanDetail session={session} isResponsive showAirLots />
       </SectionErrorBoundary>
 
       <SectionErrorBoundary message="재최적화 영역을 그리지 못했습니다." className="h-64">

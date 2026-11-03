@@ -11,14 +11,20 @@ type PlanDetailPropsT = {
   session: PlanSessionT;
   viewerShipperId?: string;
   isResponsive?: boolean;
+  showAirLots?: boolean;
 };
 
-export function PlanDetail({ session, viewerShipperId, isResponsive = false }: PlanDetailPropsT) {
+export function PlanDetail({
+  session,
+  viewerShipperId,
+  isResponsive = false,
+  showAirLots = false,
+}: PlanDetailPropsT) {
   const { plan, scenario } = session;
 
   return (
     <div className={cn('flex flex-col gap-6', isResponsive && '@container')}>
-      <PlanSummary plan={plan} />
+      <PlanSummary plan={plan} showAirLots={showAirLots} />
 
       <div
         className={cn(
@@ -29,11 +35,17 @@ export function PlanDetail({ session, viewerShipperId, isResponsive = false }: P
         )}
       >
         <div className="flex flex-col gap-6">
-          <ContainerCard plan={plan} scenario={scenario} viewerShipperId={viewerShipperId} />
+          <ContainerCard
+            plan={plan}
+            scenario={scenario}
+            viewerShipperId={viewerShipperId}
+            showAirLots={showAirLots}
+          />
           <SettlementTable
             containerSettlements={plan.container_settlements ?? []}
             scenario={scenario}
             viewerShipperId={viewerShipperId}
+            airSettlements={showAirLots ? plan.settlements : []}
           />
         </div>
 

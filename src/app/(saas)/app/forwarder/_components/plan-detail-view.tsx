@@ -132,7 +132,7 @@ export function PlanDetailView() {
       <CurrentOrder planId={session.plan_id} />
 
       <div className="grid grid-cols-[1fr_560px] gap-6">
-        <ContainerCard plan={session.plan} scenario={session.scenario} />
+        <ContainerCard plan={session.plan} scenario={session.scenario} showAirLots />
         <PickupMap scenario={session.scenario} voyagePickups={session.routes} />
       </div>
 
