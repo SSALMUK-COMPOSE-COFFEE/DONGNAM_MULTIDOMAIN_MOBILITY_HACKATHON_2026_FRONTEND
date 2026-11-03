@@ -38,8 +38,10 @@ export const SAAS_ROUTES = {
     label: '화주',
     home: '/app/shipper',
     menu: [
-      { href: '/app/shipper', label: '내 출하' },
+      { href: '/app/shipper', label: '홈' },
+      { href: '/app/shipper/lots', label: '출하 등록 · 목록' },
       { href: '/app/shipper/plans', label: '운송계획 확인' },
+      { href: '/app/shipper/requests', label: '요청 응답' },
       { href: '/app/shipper/settlements', label: '절감액 · 정산' },
     ],
   },
