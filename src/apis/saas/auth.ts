@@ -64,6 +64,8 @@ export const useMe = () => {
   return useQuery(meQueryOptions());
 };
 
+export const useIsSandbox = () => useMe().data?.active_org.sandbox ?? false;
+
 const useStartSession = () => {
   const queryClient = useQueryClient();
 
