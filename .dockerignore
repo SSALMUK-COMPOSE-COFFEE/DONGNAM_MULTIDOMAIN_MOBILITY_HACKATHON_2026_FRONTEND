@@ -1,5 +1,6 @@
 .env
 .env.*
+!.env.saas
 !.env.example
 node_modules/
 .next/

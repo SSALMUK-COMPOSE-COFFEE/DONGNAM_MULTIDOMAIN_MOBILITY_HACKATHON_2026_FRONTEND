@@ -40,6 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 !.env.example
+!.env.saas.example
 
 # 기획서·신청서·프로토타입 등 내부 자료 (개인정보 포함, 공개 레포에 올리지 않음)
 /private/

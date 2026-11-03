@@ -5,10 +5,8 @@ services:
     build:
       context: .
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://freshswitch.ssalhub.xyz}
-        NEXT_PUBLIC_API_MOCKING: ${NEXT_PUBLIC_API_MOCKING:-disabled}
-        NEXT_PUBLIC_KAKAO_MAP_KEY: ${NEXT_PUBLIC_KAKAO_MAP_KEY:-}
-        NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH:-/test}
+        NEXT_PUBLIC_API_MOCKING: disabled
+        NEXT_PUBLIC_BASE_PATH: /test
     restart: unless-stopped
     ports:
-      - '127.0.0.1:${SAAS_HOST_PORT:-18105}:3000'
+      - '127.0.0.1:18105:3000'
