@@ -29,17 +29,24 @@ export function DemoLoginPanel() {
       {session ? (
         <p className="m2-sub mt-0">{session.active_org.org_name} 계정으로 들어갔습니다.</p>
       ) : null}
-      <button
-        type="button"
-        className="m2-btn m2-btn-pri self-start disabled:cursor-wait"
-        disabled={demoLogin.isPending}
-        aria-busy={demoLogin.isPending}
-        onClick={enter}
-      >
-        {demoLogin.isPending ? '들어가는 중' : '데모로 둘러보기'}
-        <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
-      </button>
-      {session ? (
+      {session && !session.world ? (
+        <Link href={roleHome(session.active_org.org_type)} className="m2-btn m2-btn-pri self-start">
+          내 화면으로
+          <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+        </Link>
+      ) : (
+        <button
+          type="button"
+          className="m2-btn m2-btn-pri self-start disabled:cursor-wait"
+          disabled={demoLogin.isPending}
+          aria-busy={demoLogin.isPending}
+          onClick={enter}
+        >
+          {demoLogin.isPending ? '들어가는 중' : '데모로 둘러보기'}
+          <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+        </button>
+      )}
+      {session?.world ? (
         <Link href={roleHome(session.active_org.org_type)} className="m2-btn m2-btn-sec self-start">
           내 화면으로
           <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />

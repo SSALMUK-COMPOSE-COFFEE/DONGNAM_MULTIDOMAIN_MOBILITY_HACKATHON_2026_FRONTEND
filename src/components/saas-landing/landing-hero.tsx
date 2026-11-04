@@ -187,19 +187,28 @@ export function LandingHero() {
           </div>
           <div className="flex flex-col gap-2.5">
             <div className="flex flex-wrap gap-2.5">
-              <button
-                type="button"
-                className="m2-btn m2-btn-pri m2-btn-lg disabled:cursor-wait"
-                disabled={demoLogin.isPending}
-                aria-busy={demoLogin.isPending}
-                onClick={enterDemo}
-              >
-                {demoLogin.isPending ? '들어가는 중' : '데모로 둘러보기'}
-              </button>
+              {session && !session.world ? (
+                <Link
+                  href={roleHome(session.active_org.org_type)}
+                  className="m2-btn m2-btn-pri m2-btn-lg"
+                >
+                  내 화면으로
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="m2-btn m2-btn-pri m2-btn-lg disabled:cursor-wait"
+                  disabled={demoLogin.isPending}
+                  aria-busy={demoLogin.isPending}
+                  onClick={enterDemo}
+                >
+                  {demoLogin.isPending ? '들어가는 중' : '데모로 둘러보기'}
+                </button>
+              )}
               <Link href={SAAS_PAGES.LOGIN} className="m2-btn m2-btn-sec m2-btn-lg">
                 로그인
               </Link>
-              {session ? (
+              {session?.world ? (
                 <Link
                   href={roleHome(session.active_org.org_type)}
                   className="m2-btn m2-btn-sec m2-btn-lg"
