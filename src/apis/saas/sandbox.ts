@@ -1,12 +1,11 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
-import { orgKeys } from '@/apis/saas/keys';
 import type { SandboxResetT } from '@/types/saas-sandbox';
 
 export const SANDBOX_ENDPOINTS = {
@@ -29,20 +28,11 @@ export const useCanResetSandbox = () => {
   return !!activeOrg && activeOrg.sandbox && activeOrg.org_type === 'platform';
 };
 
-export const useSandboxReset = () => {
-  const queryClient = useQueryClient();
-  const orgId = useMe().data?.active_org.org_id ?? '';
-
-  return useMutation({
+export const useSandboxReset = () =>
+  useMutation({
     mutationFn: postSandboxReset,
-    onSuccess: ({ orgs }) => {
-      queryClient.resetQueries({ queryKey: orgKeys.scoped(orgId) });
-      queryClient.invalidateQueries({
-        queryKey: orgKeys.all,
-        predicate: ({ queryKey }) => queryKey[1] !== orgId,
-      });
-      toast.success(`데모 세계 ${orgs}개 조직을 처음 상태로 되돌렸습니다.`);
+    onSuccess: () => {
+      toast.success('이 둘러보기를 처음 상태로 되돌렸습니다.');
     },
-    onError: toastSaasError('데모 세계를 초기화하지 못했습니다.'),
+    onError: toastSaasError('이 둘러보기를 초기화하지 못했습니다.'),
   });
-};

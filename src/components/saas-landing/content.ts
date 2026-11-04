@@ -57,20 +57,17 @@ export const LANDING_ROLES = [
   'forwarder',
 ] as const satisfies readonly OrgType[];
 
-export const ROLE_COPY: Record<OrgType, { title: string; text: string; action: string }> = {
+export const ROLE_COPY: Record<OrgType, { title: string; text: string }> = {
   shipper: {
     title: '화주',
     text: '출하를 등록하고, 공동적재 계획을 확정하고, 내 절감액을 확인합니다.',
-    action: '화주로 둘러보기',
   },
   platform: {
     title: '플랫폼',
     text: '출하 풀에서 공동적재 계획을 만들고 포워더를 배정하고 정산합니다.',
-    action: '플랫폼으로 둘러보기',
   },
   forwarder: {
     title: '포워더',
     text: '배정된 항차의 실행 지시와 집하 경로, 콜드체인 온도를 챙깁니다.',
-    action: '포워더로 둘러보기',
   },
 };

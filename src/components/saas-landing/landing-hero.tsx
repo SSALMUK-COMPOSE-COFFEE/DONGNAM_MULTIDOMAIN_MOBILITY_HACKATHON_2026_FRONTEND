@@ -1,15 +1,16 @@
 'use client';
 
-import { ArrowDown } from 'lucide-react';
 import Link from 'next/link';
-import type { MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
+import { useDemoLogin, useMe } from '@/apis/saas/auth';
+import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { useShowcaseScene } from '@/app/(auth)/_components/use-showcase-scene';
 import { MapHero, MapLegend, type MapLegendItemT } from '@/components/map-hero';
 import { M2_COLORS, type MapSceneT } from '@/components/map-hero/scene';
 import { LANDING_IDS } from '@/components/saas-landing/content';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SAAS_PAGES } from '@/consts/route-saas';
+import { SAAS_PAGES, roleHome } from '@/consts/route-saas';
 import type { ShowcaseT } from '@/types/saas-public';
 
 const MAP_HEIGHT = 400;
@@ -38,17 +39,6 @@ const legendItems = (scene: MapSceneT): MapLegendItemT[] => {
 
 const mapDescription = (showcase: ShowcaseT) =>
   `공동적재 예시 지도. 선과장 ${showcase.packhouse_count}곳에서 ${showcase.total_pallets}파렛트를 모아 컨테이너 ${showcase.containers.length}개로 보내는 집하 경로와 항구를 표시합니다.`;
-
-const scrollToRoles = (event: MouseEvent<HTMLAnchorElement>) => {
-  const target = document.getElementById(LANDING_IDS.roles);
-  if (!target) return;
-
-  event.preventDefault();
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  target.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
-  document.getElementById(LANDING_IDS.rolesTitle)?.focus({ preventScroll: true });
-  window.history.replaceState(null, '', `#${LANDING_IDS.roles}`);
-};
 
 type StatT = { key: string; label: string; value: string; unit: string };
 
@@ -166,6 +156,16 @@ function ShowcaseFigure() {
 }
 
 export function LandingHero() {
+  const router = useRouter();
+  const demoLogin = useDemoLogin();
+  const session = useMe().data ?? null;
+  const enterDemo = () => {
+    demoLogin.mutate(
+      { new_world: true },
+      { onSuccess: () => router.replace(roleHome('platform')) }
+    );
+  };
+
   return (
     <section aria-labelledby={LANDING_IDS.title} className="m2-window m2-solo">
       <div className="m2-content grid items-center gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
@@ -185,18 +185,43 @@ export function LandingHero() {
               배정과 집하 경로를 다시 짭니다. 화주가 아낀 만큼만 수수료를 받습니다.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2.5">
-            <a
-              href={`#${LANDING_IDS.roles}`}
-              onClick={scrollToRoles}
-              className="m2-btn m2-btn-pri m2-btn-lg"
-            >
-              데모로 둘러보기
-              <ArrowDown aria-hidden className="size-4" strokeWidth={2} />
-            </a>
-            <Link href={SAAS_PAGES.LOGIN} className="m2-btn m2-btn-sec m2-btn-lg">
-              로그인
-            </Link>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex flex-wrap gap-2.5">
+              {session && !session.world ? (
+                <Link
+                  href={roleHome(session.active_org.org_type)}
+                  className="m2-btn m2-btn-pri m2-btn-lg"
+                >
+                  내 화면으로
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="m2-btn m2-btn-pri m2-btn-lg disabled:cursor-wait"
+                  disabled={demoLogin.isPending}
+                  aria-busy={demoLogin.isPending}
+                  onClick={enterDemo}
+                >
+                  {demoLogin.isPending ? '들어가는 중' : '데모로 둘러보기'}
+                </button>
+              )}
+              <Link href={SAAS_PAGES.LOGIN} className="m2-btn m2-btn-sec m2-btn-lg">
+                로그인
+              </Link>
+              {session?.world ? (
+                <Link
+                  href={roleHome(session.active_org.org_type)}
+                  className="m2-btn m2-btn-sec m2-btn-lg"
+                >
+                  내 화면으로
+                </Link>
+              ) : null}
+            </div>
+            {demoLogin.isError ? (
+              <p role="alert" className="m-0 text-[12.5px] font-medium text-m2-crit">
+                {authErrorMessage(demoLogin.error, '데모 계정으로 들어가지 못했습니다.')}
+              </p>
+            ) : null}
           </div>
         </div>
         <ShowcaseFigure />

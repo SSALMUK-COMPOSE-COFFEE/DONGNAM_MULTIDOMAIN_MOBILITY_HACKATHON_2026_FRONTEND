@@ -3,7 +3,7 @@ import { cn } from 'cn';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import type { IntakeFieldErrorT } from '@/components/intake-form';
+import type { IntakeFieldErrorT } from '@/components/intake-form/types';
 
 type QueryErrorPropsT = {
   message: string;

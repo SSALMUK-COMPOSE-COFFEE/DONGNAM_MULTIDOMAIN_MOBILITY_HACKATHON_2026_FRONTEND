@@ -44,7 +44,15 @@ import settlementPreviewFixture from '@/mocks/saas/fixtures/settlement-preview.j
 import ulsanCongestionFixture from '@/mocks/saas/fixtures/ulsan-congestion.json';
 import { metricsHandlers } from '@/mocks/saas/metrics';
 import { orgMemberHandlers, redeemInvitation } from '@/mocks/saas/org-members';
-import { MOCK_ORGS, type MockOrgT, findOrg, firstOrgOfType, orgOfShipper } from '@/mocks/saas/orgs';
+import {
+  MOCK_ORGS,
+  MOCK_WORLD_ID,
+  type MockOrgT,
+  PLATFORM_ORG_ID,
+  findOrg,
+  firstOrgOfType,
+  orgOfShipper,
+} from '@/mocks/saas/orgs';
 import { seasonCheckOf, seasonWarningOf } from '@/mocks/saas/season';
 import { registeredTenantOf, shipperProfileHandlers } from '@/mocks/saas/shipper-profile';
 import {
@@ -57,6 +65,7 @@ import {
   clearSession,
   findAccount,
   mockDb,
+  moveSessionOrg,
   nowIso,
   readSession,
   resetMockDb,
@@ -127,6 +136,26 @@ const startSession = (org: MockOrgT, email: string, name: string, role?: string)
   writeSession(session);
 
   return HttpResponse.json(sessionMe(session));
+};
+
+const startDemoSession = (org: MockOrgT) => {
+  const session = {
+    org,
+    email: `${MOCK_WORLD_ID}@${DEMO_EMAIL_DOMAIN}`,
+    name: '데모',
+    world_id: MOCK_WORLD_ID,
+  };
+  writeSession(session);
+
+  return HttpResponse.json(sessionMe(session));
+};
+
+const activateSessionOrg = (org: MockOrgT) => {
+  moveSessionOrg(org);
+  const next = readSession();
+  if (!next) return fail(401, '로그인이 필요합니다');
+
+  return HttpResponse.json(sessionMe(next));
 };
 
 const firstVoyage = (session: PlanSessionT) => {
@@ -547,17 +576,36 @@ const authHandlers = [
     const csrf = csrfFailure(request);
     if (csrf) return csrf;
 
-    const { org_type, org_id } = (await request.json()) as DemoLoginRequest;
-    const org = org_id
-      ? (MOCK_ORGS.find(
-          item => item.sandbox && item.org_id === org_id && item.org_type === org_type
-        ) ?? null)
-      : firstOrgOfType(org_type);
-    if (!org) return fail(404, '데모 계정이 없습니다');
+    const body = (await request.json()) as DemoLoginRequest;
+    const session = readSession();
+    const demoSession = session?.world_id ? session : null;
 
-    await delay(200);
+    if (body.new_world || !demoSession) {
+      const org = body.org_type ? firstOrgOfType(body.org_type) : findOrg(PLATFORM_ORG_ID);
+      if (!org?.sandbox) return fail(404, '데모 계정이 준비되어 있지 않습니다');
+      await delay(200);
 
-    return startSession(org, `${org.org_id}@${DEMO_EMAIL_DOMAIN}`, org.org_name);
+      return startDemoSession(org);
+    }
+
+    if (body.org_id) {
+      const org = findOrg(body.org_id);
+      if (!org?.sandbox) return fail(403, '소속되지 않은 조직입니다');
+      if (body.org_type && org.org_type !== body.org_type) {
+        return fail(403, '소속되지 않은 조직입니다');
+      }
+
+      return activateSessionOrg(org);
+    }
+
+    if (body.org_type) {
+      const org = firstOrgOfType(body.org_type);
+      if (!org?.sandbox) return fail(404, '데모 계정이 준비되어 있지 않습니다');
+
+      return activateSessionOrg(org);
+    }
+
+    return HttpResponse.json(sessionMe(demoSession));
   }),
 
   http.post(api(SAAS_ENDPOINTS.AUTH_SIGNUP), async ({ request }) => {
@@ -600,7 +648,10 @@ const authHandlers = [
     const membership = principal.me.memberships.find(item => item.org_id === org_id);
     if (!membership) return fail(403, '소속되지 않은 조직입니다');
 
-    return HttpResponse.json({ ...principal.me, active_org: membership });
+    const org = findOrg(org_id);
+    if (!org) return fail(403, '소속되지 않은 조직입니다');
+
+    return activateSessionOrg(org);
   }),
 
   http.post(api(SAAS_ENDPOINTS.AUTH_LOGOUT), ({ request }) => {
@@ -1384,14 +1435,13 @@ const analysisHandlers = [
     if (principal instanceof Response) return principal;
 
     const body = (await request.json()) as { plan_id?: string | null };
-    if (body.plan_id && !canReadPlan(body.plan_id, principal.org)) {
+    if (!body.plan_id) return fail(422, '계획이 필요합니다');
+    if (!canReadPlan(body.plan_id, principal.org)) {
       return fail(404, '계획을 찾을 수 없습니다');
     }
     await delay(400);
 
-    return HttpResponse.json(
-      forPlan<PlatformFuelShockResultT>(fuelShockPlanFixture, body.plan_id ?? FIXTURE_PLAN_ID)
-    );
+    return HttpResponse.json(forPlan<PlatformFuelShockResultT>(fuelShockPlanFixture, body.plan_id));
   }),
 
   http.post(api('/analysis/benchmark'), async ({ request }) => {
@@ -1715,6 +1765,7 @@ const sandboxHandlers = [
       scope: 'sandbox',
       orgs: MOCK_ORGS.filter(org => org.sandbox).length,
       reset_at: nowIso(),
+      world_id: principal.me.world?.world_id ?? MOCK_WORLD_ID,
     };
 
     return HttpResponse.json(body);

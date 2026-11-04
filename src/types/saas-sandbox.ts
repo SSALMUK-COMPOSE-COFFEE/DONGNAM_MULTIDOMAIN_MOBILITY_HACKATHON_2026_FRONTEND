@@ -1,6 +1,8 @@
 import type { SaasSchemaT } from '@/types/api-saas';
 
-export type SandboxResetT = SaasSchemaT<'SandboxResetResponse'>;
+export type SandboxResetT = SaasSchemaT<'SandboxResetResponse'> & {
+  world_id: string;
+};
 
 export type SaasContaminationT = SaasSchemaT<'Contamination'>;
 export type SaasOrgDriftT = SaasSchemaT<'OrgDrift'>;

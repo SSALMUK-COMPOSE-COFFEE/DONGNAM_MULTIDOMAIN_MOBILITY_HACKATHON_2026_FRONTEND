@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { DEMO_DEVICE_PREFIX } from '@/consts/sandbox-saas';
 import type { RegisteredDeviceT } from '@/types/saas-platform';
 
 const registerErrorMessage = (error: unknown) => {
@@ -35,14 +34,10 @@ export function RegisterDeviceCard() {
   const register = useRegisterDevice();
   const isSandbox = useIsSandbox();
   const trimmedId = deviceId.trim();
-  const prefixBlocked =
-    isSandbox &&
-    !!trimmedId &&
-    !trimmedId.toLowerCase().startsWith(DEMO_DEVICE_PREFIX.toLowerCase());
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!trimmedId || prefixBlocked) return;
+    if (!trimmedId) return;
 
     register.mutate(
       { device_id: trimmedId, name: name.trim() || null },
@@ -78,11 +73,7 @@ export function RegisterDeviceCard() {
           헤더에 이 토큰을 넣습니다.
           {isSandbox && (
             <span className="mt-1 block">
-              데모 환경에서는{' '}
-              <code className="m2-mono rounded-[6px] bg-[rgba(15,27,51,0.05)] px-1.5 py-0.5">
-                {DEMO_DEVICE_PREFIX}
-              </code>
-              로 시작하는 기기 ID만 등록할 수 있습니다.
+              기기 id는 서버가 이 둘러보기 전용으로 붙입니다. demo- 는 있어도 되고 없어도 됩니다.
             </span>
           )}
         </div>
@@ -96,7 +87,7 @@ export function RegisterDeviceCard() {
               className="m2-inp"
               value={deviceId}
               onChange={event => setDeviceId(event.target.value)}
-              placeholder={isSandbox ? `${DEMO_DEVICE_PREFIX}arduino-02` : 'arduino-02'}
+              placeholder={isSandbox ? 'sensor-1' : 'arduino-02'}
               maxLength={100}
               required
             />
@@ -115,17 +106,12 @@ export function RegisterDeviceCard() {
           <button
             type="submit"
             className="m2-btn m2-btn-pri"
-            disabled={!trimmedId || prefixBlocked || register.isPending}
+            disabled={!trimmedId || register.isPending}
           >
             {register.isPending ? '등록 중' : '등록'}
           </button>
         </form>
-        {prefixBlocked && (
-          <p className="mt-3 text-[12.5px] text-m2-crit">
-            데모 환경의 기기 ID는 {DEMO_DEVICE_PREFIX} 로 시작해야 합니다.
-          </p>
-        )}
-        {register.isError && !prefixBlocked && (
+        {register.isError && (
           <p className="mt-3 text-[12.5px] text-m2-crit" role="alert">
             {registerErrorMessage(register.error)}
           </p>

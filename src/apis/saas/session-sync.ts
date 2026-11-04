@@ -1,8 +1,12 @@
-export type SessionSignalKindT = 'login' | 'logout' | 'switch';
+export type SessionSignalKindT = 'login' | 'logout' | 'switch' | 'reset';
 
-const SESSION_SIGNAL_KINDS: ReadonlySet<string> = new Set(['login', 'logout', 'switch']);
+const SESSION_SIGNAL_KINDS = ['login', 'logout', 'switch', 'reset'] as const;
 
-type SessionSignalT = { kind: SessionSignalKindT; at: number };
+type SessionSignalT = {
+  kind: SessionSignalKindT;
+  at: number;
+  world_id: string | null;
+};
 
 export const SESSION_CHANNEL_NAME = 'fs.saas.session';
 export const SESSION_SIGNAL_STORAGE_KEY = 'fs.saas.session.signal';
@@ -10,6 +14,9 @@ export const SESSION_SIGNAL_STORAGE_KEY = 'fs.saas.session.signal';
 let channel: BroadcastChannel | null = null;
 
 const isBrowser = () => typeof window !== 'undefined';
+
+const isKind = (value: string): value is SessionSignalKindT =>
+  (SESSION_SIGNAL_KINDS as readonly string[]).includes(value);
 
 const sessionChannel = () => {
   if (!isBrowser() || typeof BroadcastChannel !== 'function') return null;
@@ -20,17 +27,22 @@ const sessionChannel = () => {
 };
 
 const parseSignal = (value: unknown): SessionSignalT | null => {
-  const signal = value as Partial<SessionSignalT> | null;
+  if (!value || typeof value !== 'object') return null;
 
-  return signal && typeof signal.kind === 'string' && SESSION_SIGNAL_KINDS.has(signal.kind)
-    ? { kind: signal.kind, at: Number(signal.at) || 0 }
-    : null;
+  const signal = value as { kind?: unknown; at?: unknown; world_id?: unknown };
+  if (typeof signal.kind !== 'string' || !isKind(signal.kind)) return null;
+
+  return {
+    kind: signal.kind,
+    at: Number(signal.at) || 0,
+    world_id: typeof signal.world_id === 'string' ? signal.world_id : null,
+  };
 };
 
-export const broadcastSessionChange = (kind: SessionSignalKindT) => {
+export const broadcastSessionChange = (kind: SessionSignalKindT, worldId: string | null = null) => {
   if (!isBrowser()) return;
 
-  const signal: SessionSignalT = { kind, at: Date.now() };
+  const signal: SessionSignalT = { kind, at: Date.now(), world_id: worldId };
   const target = sessionChannel();
 
   if (target) {
@@ -45,7 +57,7 @@ export const broadcastSessionChange = (kind: SessionSignalKindT) => {
   }
 };
 
-export const subscribeSessionChange = (onChange: (kind: SessionSignalKindT) => void) => {
+export const subscribeSessionChange = (onChange: (signal: SessionSignalT) => void) => {
   if (!isBrowser()) return () => {};
 
   const source = sessionChannel();
@@ -53,7 +65,7 @@ export const subscribeSessionChange = (onChange: (kind: SessionSignalKindT) => v
   if (source) {
     const onMessage = (event: MessageEvent<unknown>) => {
       const signal = parseSignal(event.data);
-      if (signal) onChange(signal.kind);
+      if (signal) onChange(signal);
     };
 
     source.addEventListener('message', onMessage);
@@ -66,7 +78,7 @@ export const subscribeSessionChange = (onChange: (kind: SessionSignalKindT) => v
 
     try {
       const signal = parseSignal(JSON.parse(event.newValue));
-      if (signal) onChange(signal.kind);
+      if (signal) onChange(signal);
     } catch {
       return;
     }

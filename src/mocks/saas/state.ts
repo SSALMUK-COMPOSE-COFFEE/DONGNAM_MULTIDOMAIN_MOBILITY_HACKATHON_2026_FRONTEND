@@ -55,6 +55,7 @@ export type MockSessionT = {
   email: string;
   name: string;
   role?: string;
+  world_id?: string | null;
 };
 
 type MockRequestAnswerT = {

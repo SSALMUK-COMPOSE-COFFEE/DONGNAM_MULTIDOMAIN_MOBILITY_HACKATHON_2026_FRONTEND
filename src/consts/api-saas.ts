@@ -5,7 +5,7 @@ export const SAAS_API_BASE = `${BASE_PATH}/api`;
 export const SAAS_LOGIN_PATH = '/login';
 export const SAAS_SIGNUP_PATH = '/signup';
 
-export const SAAS_PUBLIC_PATHS: readonly string[] = [SAAS_LOGIN_PATH, SAAS_SIGNUP_PATH];
+export const SAAS_PUBLIC_PATHS: readonly string[] = ['/', SAAS_LOGIN_PATH, SAAS_SIGNUP_PATH];
 
 export const SAAS_HEADERS = {
   REQUESTED_WITH: 'X-Requested-With',

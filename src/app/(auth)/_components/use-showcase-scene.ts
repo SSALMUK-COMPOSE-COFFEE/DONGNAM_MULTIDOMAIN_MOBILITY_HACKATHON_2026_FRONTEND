@@ -3,11 +3,8 @@
 import { useMemo } from 'react';
 
 import { useShowcase } from '@/apis/saas/public';
-import { type MapSceneT, type PlanSceneSourceT, buildPlanScene } from '@/components/map-hero/scene';
-import { LINK_ALL } from '@/components/map-link';
-import { demoShipperPackhouseId } from '@/consts/sandbox-saas';
+import { type PlanSceneSourceT, buildPlanScene } from '@/components/map-hero/scene';
 import type { SchemaT } from '@/types/api';
-import type { OrgType } from '@/types/saas';
 import type { ShowcaseRouteT, ShowcaseT } from '@/types/saas-public';
 
 const AIR_LOT_PREFIX = 'showcase-air:';
@@ -104,19 +101,6 @@ export const showcaseSceneSource = (showcase: ShowcaseT): PlanSceneSourceT => {
     },
     routes: toVoyagePickups(showcase),
   };
-};
-
-export const roleLinkKeys = (
-  scene: MapSceneT | null,
-  orgType: OrgType,
-  shipperOrgId: string
-): string[] => {
-  if (!scene) return [];
-  if (orgType === 'platform') return [LINK_ALL];
-  if (orgType === 'shipper')
-    return [demoShipperPackhouseId(shipperOrgId), ...(scene.seaLane ? [scene.seaLane.key] : [])];
-
-  return [...scene.runs.map(({ key }) => key), ...(scene.port ? [scene.port.key] : [])];
 };
 
 export const useShowcaseScene = () => {
