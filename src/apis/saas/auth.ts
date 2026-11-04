@@ -216,7 +216,13 @@ export const useSessionSync = () => {
             me.memberships.find(item => item.org_type === 'platform')?.org_id ?? null;
 
           if (platformId && me.active_org.org_id !== platformId) {
-            applyActiveOrg(queryClient, await putActiveOrg(platformId));
+            try {
+              applyActiveOrg(queryClient, await putActiveOrg(platformId));
+            } catch {
+              await queryClient
+                .invalidateQueries({ queryKey: orgKeys.me, exact: true })
+                .catch(() => null);
+            }
           }
 
           queryClient.removeQueries({
