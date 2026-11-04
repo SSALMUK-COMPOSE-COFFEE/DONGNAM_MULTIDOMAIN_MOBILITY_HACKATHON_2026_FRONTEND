@@ -54,9 +54,23 @@ const currentAppPath = () => {
   return `${stripBasePath(pathname)}${search}`;
 };
 
+const forgetPublicSession = () => {
+  const queryClient = getSaasQueryClient();
+  if (!queryClient) return;
+
+  queryClient.setQueryData(orgKeys.me, null);
+  queryClient.removeQueries({
+    queryKey: orgKeys.all,
+    predicate: query => query.queryKey[1] !== 'me',
+  });
+};
+
 const redirectToLogin = () => {
   if (typeof window === 'undefined') return;
-  if (SAAS_PUBLIC_PATHS.includes(stripBasePath(window.location.pathname))) return;
+  if (SAAS_PUBLIC_PATHS.includes(stripBasePath(window.location.pathname))) {
+    forgetPublicSession();
+    return;
+  }
 
   getSaasQueryClient()?.removeQueries({ queryKey: orgKeys.all });
   window.location.assign(loginHref(currentAppPath()));
