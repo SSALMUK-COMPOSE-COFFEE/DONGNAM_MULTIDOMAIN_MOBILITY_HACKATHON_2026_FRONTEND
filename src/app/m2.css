@@ -1603,7 +1603,8 @@
 
   [data-ui='m2'] .m2-sbx {
     flex: 1 1 auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
     max-width: 100%;
     padding: 5px 6px;
   }
@@ -1619,6 +1620,7 @@
   }
   [data-ui='m2'] .m2-sbx-steps {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
     gap: 2px;
     min-width: 0;
@@ -1672,27 +1674,75 @@
   }
   [data-ui='m2'] .m2-sbx-acts {
     display: flex;
-    flex: 1 1 auto;
-    flex-wrap: wrap;
+    flex: none;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
     padding-left: 10px;
     border-left: 1px solid var(--m2-line-2);
   }
-  [data-ui='m2'] .m2-sbx-l {
-    font-size: 12px;
-    font-weight: 550;
-    color: var(--m2-muted);
-    white-space: nowrap;
-  }
   [data-ui='m2'] .m2-sbx-roles {
     display: inline-flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 2px;
     max-width: 100%;
     padding: 2px;
     border-radius: 10px;
     background: rgba(15, 27, 51, 0.05);
+  }
+  [data-ui='m2'] .m2-sbx-pick {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    border-radius: 8px;
+  }
+  [data-ui='m2'] .m2-sbx-pick.is-on {
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 27, 51, 0.08);
+  }
+  [data-ui='m2'] .m2-sbx-pick:hover {
+    background: rgba(255, 255, 255, 0.75);
+  }
+  [data-ui='m2'] .m2-sbx-pick.is-on:hover {
+    background: #fff;
+  }
+  [data-ui='m2'] .m2-sbx-pick:focus-within {
+    outline: 2px solid var(--m2-brand);
+    outline-offset: 1px;
+  }
+  [data-ui='m2'] .m2-sbx-pick:has(select:disabled):not(.is-on) {
+    opacity: 0.5;
+  }
+  [data-ui='m2'] .m2-sbx-pick:has(select:disabled) {
+    cursor: wait;
+  }
+  [data-ui='m2'] .m2-sbx-pick-face {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 6px 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--m2-ink-2);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  [data-ui='m2'] .m2-sbx-pick.is-on .m2-sbx-pick-face {
+    color: var(--m2-ink);
+  }
+  [data-ui='m2'] .m2-sbx-select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    font: inherit;
+  }
+  [data-ui='m2'] .m2-sbx-select:disabled {
+    cursor: wait;
   }
   [data-ui='m2'] .m2-sbx-role {
     height: 26px;
@@ -1733,9 +1783,12 @@
     }
     [data-ui='m2'] .m2-sbx {
       flex: 1 1 100%;
+      flex-wrap: wrap;
     }
     [data-ui='m2'] .m2-sbx-acts {
       margin-left: auto;
+      padding-left: 0;
+      border-left: 0;
     }
   }
 

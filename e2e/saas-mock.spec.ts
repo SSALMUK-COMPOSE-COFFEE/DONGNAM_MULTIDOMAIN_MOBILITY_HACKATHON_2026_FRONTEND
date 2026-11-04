@@ -13,15 +13,22 @@ const enterAs = async (
     await page.waitForURL(/\/test\/app\/platform/);
   }
 
-  let name = '진주 딸기 수출농가 A';
-  if (role === 'platform') name = '프레시스위치';
-  if (role === 'forwarder') name = '동남 콜드체인 포워딩';
-  if (role === 'shipper' && shipperOrgId === 'shipper-miryang') name = '밀양 딸기 수출농가 C';
+  const home = page.getByRole('region', { name: '데모 환경' });
 
-  const button = page
-    .getByRole('region', { name: '데모 환경' })
-    .getByRole('button', { name, exact: true });
-  if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
+  if (role === 'platform') {
+    const button = home.getByRole('button', { name: '플랫폼', exact: true });
+    if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
+  } else if (role === 'shipper') {
+    const select = home.getByRole('combobox', { name: /^화주/ });
+    const orgId = shipperOrgId ?? 'shipper-jinju';
+    if ((await select.inputValue()) !== orgId) await select.selectOption(orgId);
+  } else {
+    const select = home.getByRole('combobox', { name: /^포워더/ });
+    if ((await select.inputValue()) !== 'forwarder-dongnam') {
+      await select.selectOption('forwarder-dongnam');
+    }
+  }
+
   await page.waitForURL(new RegExp(`/test/app/${role}`));
 };
 

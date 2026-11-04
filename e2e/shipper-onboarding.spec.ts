@@ -17,8 +17,8 @@ const enterDemoShipper = async (page: Page) => {
   await page.waitForURL(/\/test\/app\/platform/);
   await page
     .getByRole('region', { name: '데모 환경' })
-    .getByRole('button', { name: '진주 딸기 수출농가 A', exact: true })
-    .click();
+    .getByRole('combobox', { name: /^화주/ })
+    .selectOption('shipper-jinju');
   await page.waitForURL(/\/test\/app\/shipper/);
 };
 

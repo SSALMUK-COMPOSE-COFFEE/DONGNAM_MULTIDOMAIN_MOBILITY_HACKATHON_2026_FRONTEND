@@ -1,10 +1,10 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Fragment, Suspense, useEffect, useId, useState } from 'react';
+import { Fragment, Suspense, useEffect, useState } from 'react';
 
 import {
   applyActiveOrg,
@@ -81,6 +81,57 @@ const pendingShipperOrgId = (
   );
 };
 
+const placeOf = (orgName: string) => orgName.split(/\s+/)[0] || orgName;
+
+type RolePickPropsT = {
+  label: string;
+  memberships: readonly Membership[];
+  activeOrgId: string;
+  pendingOrgId: string | null;
+  onSwitch: (orgId: string, href: string) => void;
+};
+
+function RolePick({ label, memberships, activeOrgId, pendingOrgId, onSwitch }: RolePickPropsT) {
+  if (memberships.length === 0) return null;
+
+  const active = memberships.find(item => item.org_id === activeOrgId) ?? null;
+  const switching = memberships.some(item => item.org_id === pendingOrgId);
+  let face = label;
+  if (switching) face = '바꾸는 중';
+  else if (active) face = `${label} · ${placeOf(active.org_name)}`;
+
+  return (
+    <label className={active ? 'm2-sbx-pick is-on' : 'm2-sbx-pick'}>
+      <span className="m2-sbx-pick-face" aria-hidden>
+        {face}
+        <ChevronDown size={12} strokeWidth={2} />
+      </span>
+      <select
+        aria-label={active ? `${label} · ${active.org_name}` : label}
+        title={active?.org_name ?? label}
+        className="m2-sbx-select"
+        value={active?.org_id ?? ''}
+        disabled={pendingOrgId !== null}
+        onChange={event => {
+          const orgId = event.target.value;
+          const membership = memberships.find(item => item.org_id === orgId);
+          if (!membership || orgId === activeOrgId) return;
+          onSwitch(membership.org_id, roleHome(membership.org_type));
+        }}
+      >
+        <option value="" disabled>
+          {label}
+        </option>
+        {memberships.map(item => (
+          <option key={item.org_id} value={item.org_id}>
+            {item.org_name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 type ScenarioStepPropsT = {
   step: SandboxStepT;
   activeOrgId: string;
@@ -142,7 +193,6 @@ function SandboxBannerBody() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const roleLabelId = useId();
   const [pendingOrgId, setPendingOrgId] = useState<string | null>(null);
   const [switchError, setSwitchError] = useState<unknown>(null);
   const orgId = me?.active_org.org_id ?? '';
@@ -179,6 +229,7 @@ function SandboxBannerBody() {
   if (!me?.active_org.sandbox || !memberships) return null;
 
   const active = me.active_org;
+  const platform = memberships.find(item => item.org_type === 'platform') ?? null;
   const shippers = memberships.filter(item => item.org_type === 'shipper');
   const forwarders = memberships.filter(item => item.org_type === 'forwarder');
 
@@ -201,19 +252,11 @@ function SandboxBannerBody() {
       if (assigned) return assigned.org_id;
     }
 
-    const remembered = readLastOrg(worldId, 'forwarder', forwarders);
-    if (remembered) return remembered;
-
-    const dongnam = forwarders.find(item => item.org_id.endsWith('forwarder-dongnam'));
-    if (dongnam) return dongnam.org_id;
-
-    return forwarders[0]?.org_id ?? null;
+    return readLastOrg(worldId, 'forwarder', forwarders) ?? forwarders[0]?.org_id ?? null;
   };
 
   const targetOrgId = (orgType: OrgType) => {
-    if (orgType === 'platform') {
-      return memberships.find(item => item.org_type === 'platform')?.org_id ?? null;
-    }
+    if (orgType === 'platform') return platform?.org_id ?? null;
     if (orgType === 'shipper') return resolveShipperOrgId();
 
     return resolveForwarderOrgId();
@@ -276,23 +319,33 @@ function SandboxBannerBody() {
       </ol>
 
       <div className="m2-sbx-acts">
-        <span id={roleLabelId} className="m2-sbx-l">
-          역할 바꿔 보기
-        </span>
-        <div role="group" aria-labelledby={roleLabelId} className="m2-sbx-roles">
-          {memberships.map(membership => (
+        <div role="group" aria-label="역할 바꿔 보기" className="m2-sbx-roles">
+          {platform ? (
             <button
-              key={membership.org_id}
               type="button"
               className="m2-sbx-role"
-              aria-pressed={membership.org_id === active.org_id}
+              aria-pressed={platform.org_id === active.org_id}
               disabled={pendingOrgId !== null}
-              title={membership.org_name}
-              onClick={() => activate(membership.org_id, roleHome(membership.org_type))}
+              title={platform.org_name}
+              onClick={() => activate(platform.org_id, roleHome('platform'))}
             >
-              {pendingOrgId === membership.org_id ? '바꾸는 중' : membership.org_name}
+              {pendingOrgId === platform.org_id ? '바꾸는 중' : '플랫폼'}
             </button>
-          ))}
+          ) : null}
+          <RolePick
+            label="화주"
+            memberships={shippers}
+            activeOrgId={active.org_id}
+            pendingOrgId={pendingOrgId}
+            onSwitch={activate}
+          />
+          <RolePick
+            label="포워더"
+            memberships={forwarders}
+            activeOrgId={active.org_id}
+            pendingOrgId={pendingOrgId}
+            onSwitch={activate}
+          />
         </div>
         <SandboxResetButton />
       </div>
