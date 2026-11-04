@@ -17,7 +17,7 @@ type ForwarderOrderPanelPropsT = {
 
 export function useForwarderOrderActions(planId: string, orderId: string) {
   const confirmOptions = useForwarderConfirmOptions(planId, orderId);
-  const confirm = useConfirmOrder(planId, orderId, confirmOptions);
+  const confirm = useConfirmOrder(confirmOptions);
   const answer = useAnswerForwarderRequest(planId, orderId);
 
   return {

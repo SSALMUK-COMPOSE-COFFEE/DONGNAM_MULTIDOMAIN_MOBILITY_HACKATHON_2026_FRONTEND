@@ -21,11 +21,7 @@ export type UseConfirmOrderOptionsT = {
   onError?: (error: unknown) => void;
 };
 
-export const useConfirmOrder = (
-  _planId: string,
-  _orderId: string,
-  { confirmFn, onSuccess, onError }: UseConfirmOrderOptionsT
-) =>
+export const useConfirmOrder = ({ confirmFn, onSuccess, onError }: UseConfirmOrderOptionsT) =>
   useMutation({
     mutationFn: (request: ConfirmOrderRequestT) => confirmFn(request),
     onSuccess,
