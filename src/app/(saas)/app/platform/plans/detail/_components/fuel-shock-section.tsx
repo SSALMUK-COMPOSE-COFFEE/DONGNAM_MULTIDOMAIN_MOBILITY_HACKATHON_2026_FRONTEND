@@ -233,6 +233,8 @@ function ShockLoads({
       pallets,
     }));
   const airLots = shockCase.lots.filter(({ mode }) => mode === 'air');
+  const usedContainers = shockCase.containers.filter(container => container.used);
+  const unusedCount = shockCase.containers.length - usedContainers.length;
   const isSo2 = (productId: string) =>
     !!scenario.products.find(({ id }) => id === productId)?.so2_treated;
 
@@ -242,7 +244,7 @@ function ShockLoads({
         <div className="m2-lbl">컨테이너 배정 · 할증 {perKg(shockCase.surcharge_per_kg)}</div>
         {shockCase.plan_changed ? <span className="m2-chip m2-chip-warn">배정 바뀜</span> : null}
       </div>
-      {shockCase.containers.map(container => (
+      {usedContainers.map(container => (
         <ContainerLoadBar
           key={container.container_id}
           container={container}
@@ -250,15 +252,16 @@ function ShockLoads({
           scenario={scenario}
         />
       ))}
-      <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-panel px-5 py-4">
-        <PlaneIcon className="size-5 text-air" />
-        <p className="font-bold">
-          항공 <span className="num text-air">{shockCase.air_pallets}</span>파렛트
+      {unusedCount > 0 ? <p className="m2-sub mt-0">빈 컨테이너 {unusedCount}대</p> : null}
+      <div className="m2-block flex flex-wrap items-center gap-x-4 gap-y-2">
+        <PlaneIcon className="size-4 text-m2-warn" aria-hidden />
+        <p className="m2-h3">
+          항공 <span className="m2-num text-m2-warn-ink">{shockCase.air_pallets}</span>파렛트
         </p>
         {airLots.length === 0 && shockCase.unassigned_pallets === 0 ? (
-          <p className="text-muted-foreground">모두 해상 공동적재</p>
+          <p className="text-[12.5px] text-m2-muted">모두 해상 공동적재</p>
         ) : null}
-        <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex flex-wrap gap-4 text-[12.5px]">
           {airLots.map(({ lot_id, shipper_id, product_id, pallets }) => (
             <span key={lot_id} className="flex items-center gap-1.5">
               <span
@@ -267,7 +270,7 @@ function ShockLoads({
                   getShipperColor(scenario, shipper_id, isSo2(product_id))
                 )}
               />
-              {getShipperShortName(scenario, shipper_id)} <span className="num">{pallets}</span>
+              {getShipperShortName(scenario, shipper_id)} <span className="m2-num">{pallets}</span>
             </span>
           ))}
         </div>
