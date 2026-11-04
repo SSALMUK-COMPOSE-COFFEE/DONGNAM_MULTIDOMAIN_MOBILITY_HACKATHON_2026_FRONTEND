@@ -3694,13 +3694,15 @@ export interface components {
         };
         /** DemoLoginRequest */
         DemoLoginRequest: {
-            /**
-             * Org Type
-             * @enum {string}
-             */
-            org_type: "platform" | "shipper" | "forwarder";
+            /** Org Type */
+            org_type?: ("platform" | "shipper" | "forwarder") | null;
             /** Org Id */
             org_id?: string | null;
+            /**
+             * New World
+             * @default false
+             */
+            new_world: boolean;
         };
         /** DemoStatus */
         DemoStatus: {
@@ -5153,6 +5155,7 @@ export interface components {
             /** Memberships */
             memberships: components["schemas"]["OrgMembership"][];
             active_org: components["schemas"]["OrgMembership"];
+            world?: components["schemas"]["WorldView"] | null;
         };
         /** MeUser */
         MeUser: {
@@ -5636,6 +5639,8 @@ export interface components {
              * @default false
              */
             sandbox: boolean;
+            /** World Id */
+            world_id?: string | null;
         };
         /** OrgSummary */
         OrgSummary: {
@@ -6741,6 +6746,8 @@ export interface components {
         QualityDrift: {
             /** Scope */
             scope: string;
+            /** World Id */
+            world_id?: string | null;
             /** Seed Rows */
             seed_rows: number;
             /** Added Rows */
@@ -7292,6 +7299,8 @@ export interface components {
              * Format: date-time
              */
             reset_at: string;
+            /** World Id */
+            world_id?: string | null;
         };
         /** SavingsEstimate */
         SavingsEstimate: {
@@ -9325,6 +9334,16 @@ export interface components {
             /** Note */
             note: string;
         };
+        /** WorldView */
+        WorldView: {
+            /** World Id */
+            world_id: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
         /** YearLine */
         YearLine: {
             /** Forwarder Share */
@@ -10090,6 +10109,8 @@ export interface operations {
             query?: {
                 include_lots?: boolean;
                 scope?: "demo" | "sandbox";
+                world_id?: string | null;
+                all?: boolean;
             };
             header?: never;
             path?: never;
@@ -11317,6 +11338,7 @@ export interface operations {
         parameters: {
             query?: {
                 scope?: ("demo" | "sandbox" | "live") | null;
+                world_id?: string | null;
             };
             header?: never;
             path: {
@@ -11349,6 +11371,7 @@ export interface operations {
             query?: {
                 seed?: boolean;
                 scope?: ("demo" | "sandbox" | "live") | null;
+                world_id?: string | null;
             };
             header?: never;
             path?: never;

@@ -1,35 +1,26 @@
 import type { SaasSchemaT } from '@/types/api-saas';
 
-export type OrgType = SaasSchemaT<'DemoLoginRequest'>['org_type'];
+export type OrgType = NonNullable<SaasSchemaT<'DemoLoginRequest'>['org_type']>;
 export type SignupOrgType = NonNullable<SaasSchemaT<'SignupRequest'>['org_type']>;
 
 export type MeUser = SaasSchemaT<'MeUser'>;
 
 export type Membership = Omit<SaasSchemaT<'OrgMembership'>, 'org_type'> & {
   org_type: OrgType;
-  world_id: string | null;
 };
 
-export type SandboxWorld = {
-  world_id: string;
-  expires_at: string;
-};
+export type SandboxWorld = SaasSchemaT<'WorldView'>;
 
 export type Me = Omit<SaasSchemaT<'Me'>, 'memberships' | 'active_org'> & {
   memberships: Membership[];
   active_org: Membership;
-  world: SandboxWorld | null;
 };
 
 export type LoginRequest = SaasSchemaT<'LoginRequest'>;
 
 export type SignupRequest = SaasSchemaT<'SignupRequest'>;
 
-export type DemoLoginRequest = {
-  new_world?: boolean;
-  org_type?: OrgType | null;
-  org_id?: string | null;
-};
+export type DemoLoginRequest = SaasSchemaT<'DemoLoginRequest'>;
 
 export type ActiveOrgRequest = SaasSchemaT<'ActiveOrgRequest'>;
 
