@@ -44,6 +44,10 @@ export type ChangeRequestApplyT = SaasSchemaT<'ChangeRequestApply'>;
 export type ChangeRequestAppliedT = SaasSchemaT<'ChangeRequestApplied'>;
 export type ChangeRequestRejectT = SaasSchemaT<'ChangeRequestReject'>;
 
+export type SaasReplanResponseT = SaasSchemaT<'ReplanResponse'>;
+export type SaasAlternativeT = SaasSchemaT<'Alternative'>;
+export type SaasAlternativeWarningsT = NonNullable<SaasAlternativeT['warnings']>;
+
 export type ColdchainActionHandlerT = SaasSchemaT<'ActionHandler'>;
 export type ColdchainActionUpdateT = SaasSchemaT<'ActionUpdateBody'>;
 export type ColdchainResidualRiskT = SaasSchemaT<'ResidualRisk'>;

@@ -13,6 +13,7 @@ import type {
   ChangeRequestRejectT,
   ChangeRequestReplanT,
   PlatformChangeRequestT,
+  SaasReplanResponseT,
 } from '@/types/saas-platform';
 import type {
   CancellationEstimateT,
@@ -23,7 +24,7 @@ import type {
   ShipperNotificationT,
 } from '@/types/saas-shipper';
 
-type ReplanT = SaasSchemaT<'ReplanResponse'>;
+type ReplanT = SaasReplanResponseT;
 type PlanSessionT = SaasSchemaT<'PlanSession'>;
 type AlternativeIdT = NonNullable<PlatformChangeRequestT['alternative_id']>;
 

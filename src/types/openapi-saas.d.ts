@@ -2190,6 +2190,8 @@ export interface components {
             diff: components["schemas"]["PlanDiff"];
             /** Solve Ms */
             solve_ms: number;
+            /** Warnings */
+            warnings?: string[];
         };
         /** AlternativeSummary */
         AlternativeSummary: {
@@ -5554,14 +5556,50 @@ export interface components {
             seeded: boolean;
             /** Counts */
             counts: {
+                lots: number;
+                missing_seed_lots: number;
+                plans: number;
+                orders: number;
+                forwarder_assignments: number;
+                coldchain_containers: number;
+                devices: number;
+                bindings: number;
+                members: number;
+                packhouses: number;
+                shipper_profiles: number;
+            } & {
                 [key: string]: number;
             };
             /** Baseline */
             baseline: {
+                lots: number;
+                missing_seed_lots: number;
+                plans: number;
+                orders: number;
+                forwarder_assignments: number;
+                coldchain_containers: number;
+                devices: number;
+                bindings: number;
+                members: number;
+                packhouses: number;
+                shipper_profiles: number;
+            } & {
                 [key: string]: number;
             };
             /** Drift */
             drift: {
+                lots?: number;
+                missing_seed_lots?: number;
+                plans?: number;
+                orders?: number;
+                forwarder_assignments?: number;
+                coldchain_containers?: number;
+                devices?: number;
+                bindings?: number;
+                members?: number;
+                packhouses?: number;
+                shipper_profiles?: number;
+            } & {
                 [key: string]: number;
             };
             /** Non Demo Members */
