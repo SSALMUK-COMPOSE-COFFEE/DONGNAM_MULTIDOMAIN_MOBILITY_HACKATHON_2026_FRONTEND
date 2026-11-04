@@ -52,7 +52,9 @@ export default function LoginPage() {
               <h2 id="demo-login-title" className="m2-h2">
                 데모 계정으로 둘러보기
               </h2>
-              <p className="m2-sub">비밀번호 없이 역할별로 바로 들어갑니다 · 예시 조직 데이터</p>
+              <p className="m2-sub">
+                비밀번호 없이 예시 데이터로 들어갑니다. 들어간 뒤 역할을 바꿀 수 있습니다.
+              </p>
             </div>
           </div>
           <Suspense fallback={<RoleSkeleton />}>

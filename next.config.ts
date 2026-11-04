@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  headers: async () => [
+    {
+      source: '/mockServiceWorker.js',
+      headers: [{ key: 'Service-Worker-Allowed', value: '/' }],
+    },
+  ],
   ...(isDev && {
     rewrites: async () => [
       {

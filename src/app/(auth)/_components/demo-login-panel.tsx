@@ -1,229 +1,58 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { cn } from 'cn';
+import { isAxiosError } from 'axios';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
 
-import { meQueryOptions, useDemoLogin } from '@/apis/saas/auth';
+import { useDemoLogin, useMe } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
-import { roleLinkKeys, useShowcaseScene } from '@/app/(auth)/_components/use-showcase-scene';
-import { type DemoOrgRoleT, isDemoOrgRole } from '@/app/(saas)/app/_components/demo-org-store';
-import { useMapLinkTarget } from '@/components/map-link';
-import { ORG_TYPES, SAAS_ROUTES, roleHome } from '@/consts/route-saas';
-import {
-  DEMO_FORWARDER_ORGS,
-  DEMO_PLATFORM_ORG,
-  DEMO_SHIPPER_ORGS,
-  type DemoOrgOptionT,
-} from '@/consts/sandbox-saas';
-import type { OrgType } from '@/types/saas';
-
-const DEMO_DESCRIPTIONS: Record<OrgType, string> = {
-  platform: '출하 풀 → 공동적재 계획 생성 · 포워더 배정 · 정산',
-  shipper: '출하 등록 · 계획 확정 · 내 절감액',
-  forwarder: '실행 지시 · 집하 경로 · 콜드체인',
-};
-
-const AVATAR_TONE: Record<OrgType, string> = {
-  platform: 'bg-m2-navy',
-  shipper: 'bg-m2-berry',
-  forwarder: 'bg-m2-ink-2',
-};
-
-const avatarText = (orgType: OrgType, orgName: string) =>
-  orgType === 'platform' ? 'FS' : (orgName.split(' ')[0] ?? orgName).slice(0, 2);
-
-type RoleButtonPropsT = {
-  orgType: OrgType;
-  title: string;
-  avatar: string;
-  linkKeys: string[];
-  disabled: boolean;
-  isEntering: boolean;
-  onEnter: () => void;
-};
-
-function RoleButton({
-  orgType,
-  title,
-  avatar,
-  linkKeys,
-  disabled,
-  isEntering,
-  onEnter,
-}: RoleButtonPropsT) {
-  const { className: linkClassName, ...link } = useMapLinkTarget(linkKeys, { pickable: false });
-
-  return (
-    <button
-      type="button"
-      {...link}
-      disabled={disabled}
-      onClick={onEnter}
-      className={cn('m2-role disabled:cursor-wait disabled:opacity-60', linkClassName)}
-    >
-      <span
-        aria-hidden
-        className={cn(
-          'grid size-10 place-items-center rounded-xl text-[13px] font-bold text-white',
-          AVATAR_TONE[orgType]
-        )}
-      >
-        {avatar}
-      </span>
-      <span className="flex min-w-0 flex-col">
-        <b className="truncate text-sm font-semibold">{title}</b>
-        <small className="text-[12.5px] text-m2-muted">{DEMO_DESCRIPTIONS[orgType]}</small>
-      </span>
-      <span className="inline-flex items-center gap-1 text-[12.5px] font-semibold whitespace-nowrap text-m2-brand-ink">
-        {isEntering ? '들어가는 중' : '들어가기'}
-        <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
-      </span>
-    </button>
-  );
-}
-
-type OrgPickerT = {
-  label: string;
-  action: string;
-  options: readonly DemoOrgOptionT[];
-  value: string;
-  onChange: (orgId: string) => void;
-};
-
-type OrgPickerPropsT = {
-  picker: OrgPickerT;
-  isOpen: boolean;
-  disabled: boolean;
-  onOpen: () => void;
-};
-
-function OrgPicker({ picker, isOpen, disabled, onOpen }: OrgPickerPropsT) {
-  if (!isOpen) {
-    return (
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onOpen}
-        className="self-end px-1 text-[12.5px] font-semibold text-m2-brand-ink disabled:opacity-50"
-      >
-        {picker.action}
-      </button>
-    );
-  }
-
-  return (
-    <select
-      aria-label={picker.label}
-      className="m2-inp w-full"
-      value={picker.value}
-      disabled={disabled}
-      onChange={event => picker.onChange(event.target.value)}
-    >
-      {picker.options.map(({ org_id, org_name }) => (
-        <option key={org_id} value={org_id}>
-          {org_name}
-        </option>
-      ))}
-    </select>
-  );
-}
+import { roleHome } from '@/consts/route-saas';
 
 export function DemoLoginPanel() {
   const demoLogin = useDemoLogin();
   const enterApp = useEnterApp();
-  const session = useQuery({ ...meQueryOptions(), enabled: false }).data ?? null;
-  const { scene } = useShowcaseScene();
-  const [chosen, setChosen] = useState<OrgType | null>(null);
-  const [shipperOrgId, setShipperOrgId] = useState<string>(DEMO_SHIPPER_ORGS[0].org_id);
-  const [forwarderOrgId, setForwarderOrgId] = useState<string>(DEMO_FORWARDER_ORGS[0].org_id);
-  const [picking, setPicking] = useState<Record<DemoOrgRoleT, boolean>>({
-    shipper: false,
-    forwarder: false,
-  });
-  const shipperOrg =
-    DEMO_SHIPPER_ORGS.find(({ org_id }) => org_id === shipperOrgId) ?? DEMO_SHIPPER_ORGS[0];
-  const forwarderOrg =
-    DEMO_FORWARDER_ORGS.find(({ org_id }) => org_id === forwarderOrgId) ?? DEMO_FORWARDER_ORGS[0];
-  const orgNames: Record<OrgType, string> = {
-    platform: DEMO_PLATFORM_ORG.org_name,
-    shipper: shipperOrg.org_name,
-    forwarder: forwarderOrg.org_name,
-  };
-  const pickers: Record<DemoOrgRoleT, OrgPickerT> = {
-    shipper: {
-      label: '데모 화주 조직',
-      action: '다른 화주로 바꾸기',
-      options: DEMO_SHIPPER_ORGS,
-      value: shipperOrg.org_id,
-      onChange: setShipperOrgId,
-    },
-    forwarder: {
-      label: '데모 포워더 조직',
-      action: '다른 포워더로 바꾸기',
-      options: DEMO_FORWARDER_ORGS,
-      value: forwarderOrg.org_id,
-      onChange: setForwarderOrgId,
-    },
+  const me = useMe();
+  const session = me.data ?? null;
+  const anonymous = isAxiosError(me.error) && me.error.response?.status === 401;
+
+  const enter = () => {
+    demoLogin.mutate({ new_world: true }, { onSuccess: enterApp });
   };
 
-  const enter = (orgType: OrgType) => {
-    setChosen(orgType);
-    demoLogin.mutate(
-      isDemoOrgRole(orgType)
-        ? { org_type: orgType, org_id: pickers[orgType].value }
-        : { org_type: orgType },
-      { onSuccess: enterApp }
-    );
-  };
-
-  if (session) {
-    return (
-      <div className="flex flex-col gap-2.5">
-        <p className="m2-sub mt-0">{session.active_org.org_name} 계정으로 들어갔습니다.</p>
-        <Link href={roleHome(session.active_org.org_type)} className="m2-btn m2-btn-sec self-start">
-          내 화면으로
-          <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
-        </Link>
-      </div>
-    );
+  if (!session && me.isPending) {
+    return <p className="m2-sub mt-0">계정 확인 중</p>;
   }
 
   return (
     <div className="flex flex-col gap-2.5">
-      {ORG_TYPES.map(orgType => (
-        <div key={orgType} className="flex flex-col gap-2">
-          <RoleButton
-            orgType={orgType}
-            title={
-              orgType === 'platform'
-                ? SAAS_ROUTES.platform.label
-                : `${SAAS_ROUTES[orgType].label} · ${orgNames[orgType]}`
-            }
-            avatar={avatarText(orgType, orgNames[orgType])}
-            linkKeys={roleLinkKeys(scene, orgType, shipperOrg.org_id)}
-            disabled={demoLogin.isPending}
-            isEntering={demoLogin.isPending && chosen === orgType}
-            onEnter={() => enter(orgType)}
-          />
-
-          {isDemoOrgRole(orgType) && (
-            <OrgPicker
-              picker={pickers[orgType]}
-              isOpen={picking[orgType]}
-              disabled={demoLogin.isPending}
-              onOpen={() => setPicking(state => ({ ...state, [orgType]: true }))}
-            />
-          )}
-        </div>
-      ))}
-
+      {session ? (
+        <p className="m2-sub mt-0">{session.active_org.org_name} 계정으로 들어갔습니다.</p>
+      ) : null}
+      <button
+        type="button"
+        className="m2-btn m2-btn-pri self-start disabled:cursor-wait"
+        disabled={demoLogin.isPending}
+        aria-busy={demoLogin.isPending}
+        onClick={enter}
+      >
+        {demoLogin.isPending ? '들어가는 중' : '데모로 둘러보기'}
+        <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+      </button>
+      {session ? (
+        <Link href={roleHome(session.active_org.org_type)} className="m2-btn m2-btn-sec self-start">
+          내 화면으로
+          <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+        </Link>
+      ) : null}
       {demoLogin.isError && (
         <p role="alert" className="text-[12.5px] font-medium text-m2-crit">
           {authErrorMessage(demoLogin.error, '데모 계정으로 들어가지 못했습니다.')}
+        </p>
+      )}
+      {me.isError && !anonymous && (
+        <p role="alert" className="text-[12.5px] font-medium text-m2-crit">
+          {authErrorMessage(me.error, '계정 정보를 확인하지 못했습니다.')}
         </p>
       )}
     </div>

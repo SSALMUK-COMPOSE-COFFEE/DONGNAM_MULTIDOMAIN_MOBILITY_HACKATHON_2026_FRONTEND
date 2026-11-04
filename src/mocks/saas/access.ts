@@ -1,7 +1,7 @@
 import { HttpResponse } from 'msw';
 
 import { SAAS_API_BASE, SAAS_HEADERS, SAAS_REQUESTED_WITH } from '@/consts/api-saas';
-import { type MockOrgT, PLATFORM_ORG_ID, findOrg, meOf } from '@/mocks/saas/orgs';
+import { type MockOrgT, PLATFORM_ORG_ID, demoWorldMe, findOrg, meOf } from '@/mocks/saas/orgs';
 import { type MockSessionT, mockDb, readSession } from '@/mocks/saas/state';
 import type { Me, OrgType } from '@/types/saas';
 
@@ -29,8 +29,13 @@ export const withRole = (me: Me, role: string | null | undefined): Me => {
   };
 };
 
-export const sessionMe = (session: MockSessionT) =>
-  withRole(meOf(session.org, session.email, session.name), session.role);
+export const sessionMe = (session: MockSessionT) => {
+  const base = session.world_id
+    ? demoWorldMe(session.org)
+    : meOf(session.org, session.email, session.name);
+
+  return withRole(base, session.role ?? null);
+};
 
 export const authenticate = (request: Request): PrincipalT | Response => {
   const session = readSession();

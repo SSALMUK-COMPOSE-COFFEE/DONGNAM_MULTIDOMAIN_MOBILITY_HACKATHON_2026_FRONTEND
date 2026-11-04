@@ -4,8 +4,7 @@ import { isAxiosError } from 'axios';
 import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
-import { useMe, useSessionSync } from '@/apis/saas/auth';
-import { useRoleSwitchStore } from '@/app/(saas)/app/_components/use-role-switch';
+import { useMe, useSessionSync, useSwitchTargetStore } from '@/apis/saas/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { orgTypeOfPath, roleHome } from '@/consts/route-saas';
 
@@ -14,7 +13,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const me = useMe();
   useSessionSync();
-  const switchTarget = useRoleSwitchStore(state => state.target);
+  const switchTarget = useSwitchTargetStore(state => state.target);
 
   const activeType = me.data?.active_org.org_type ?? null;
   const fitsTarget = switchTarget !== null && orgTypeOfPath(switchTarget) === activeType;
@@ -30,7 +29,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }, [redirectTo, router]);
 
   useEffect(() => {
-    if (hasArrived || isUnauthorized) useRoleSwitchStore.getState().setTarget(null);
+    if (hasArrived || isUnauthorized) useSwitchTargetStore.getState().setTarget(null);
   }, [hasArrived, isUnauthorized]);
 
   if (me.isError && !isUnauthorized) {

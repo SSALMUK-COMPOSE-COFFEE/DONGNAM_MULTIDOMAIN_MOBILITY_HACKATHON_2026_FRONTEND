@@ -82,20 +82,46 @@ export const demoEmail = (orgId: string) => `${orgId}@${DEMO_EMAIL_DOMAIN}`;
 export const firstOrgOfType = (orgType: OrgType) =>
   MOCK_ORGS.find(org => org.org_type === orgType) ?? null;
 
-const membershipOf = (org: MockOrgT): Membership => ({
+export const MOCK_WORLD_ID = 'wmock00000001';
+export const MOCK_WORLD_EXPIRES_AT = '2099-01-01T00:00:00.000Z';
+
+const membershipOf = (org: MockOrgT, worldId: string | null): Membership => ({
   org_id: org.org_id,
   org_type: org.org_type,
   org_name: org.org_name,
   role: 'admin',
   sandbox: org.sandbox,
+  world_id: worldId,
 });
 
 export const meOf = (org: MockOrgT, email = demoEmail(org.org_id), name = org.org_name): Me => {
-  const membership = membershipOf(org);
+  const membership = membershipOf(org, null);
 
   return {
     user: { id: `user-${org.org_id}`, email, name },
     memberships: [membership],
     active_org: membership,
+    world: null,
+  };
+};
+
+export const demoWorldMe = (active: MockOrgT): Me => {
+  const memberships = MOCK_ORGS.filter(org => org.sandbox).map(org =>
+    membershipOf(org, MOCK_WORLD_ID)
+  );
+  const activeMembership =
+    memberships.find(item => item.org_id === active.org_id) ?? membershipOf(active, MOCK_WORLD_ID);
+
+  return {
+    user: {
+      id: `user-${MOCK_WORLD_ID}`,
+      email: `${MOCK_WORLD_ID}@${DEMO_EMAIL_DOMAIN}`,
+      name: '데모',
+    },
+    memberships: memberships.some(item => item.org_id === activeMembership.org_id)
+      ? memberships
+      : [activeMembership, ...memberships],
+    active_org: activeMembership,
+    world: { world_id: MOCK_WORLD_ID, expires_at: MOCK_WORLD_EXPIRES_AT },
   };
 };

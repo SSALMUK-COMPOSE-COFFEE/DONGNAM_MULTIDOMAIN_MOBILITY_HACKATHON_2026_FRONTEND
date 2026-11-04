@@ -12,6 +12,16 @@ const ASSUMED_LOSS_CHIP = '근거: 기본값 가정';
 const ASSUMED_LOSS_NOTE = '가정: 아직 도착 검수 기록이 없어 정한 기본값입니다.';
 const LOSS_CARD = '내 출하 예상 손실률 (해상)';
 
+const enterDemoShipper = async (page: Page) => {
+  await page.getByRole('button', { name: '데모로 둘러보기' }).click();
+  await page.waitForURL(/\/test\/app\/platform/);
+  await page
+    .getByRole('region', { name: '데모 환경' })
+    .getByRole('button', { name: '진주 딸기 수출농가 A', exact: true })
+    .click();
+  await page.waitForURL(/\/test\/app\/shipper/);
+};
+
 const assumeDefaultLoss = (page: Page) =>
   page.addInitScript(() => {
     const urls = new WeakMap<XMLHttpRequest, string>();
@@ -390,11 +400,7 @@ test('데모 화주 홈 시즌 카드 숫자가 정산 화면 합계와 같고 �
 }) => {
   await page.goto(LOGIN_PATH);
   await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
-  await page
-    .getByRole('button', { name: /들어가기/ })
-    .nth(1)
-    .click();
-  await page.waitForURL(/\/test\/app\/shipper/);
+  await enterDemoShipper(page);
 
   const home = await seasonNumbers(page);
   expect(home.savings).not.toBe('0원');
@@ -443,11 +449,7 @@ test('도착 검수 기록이 없는 출하는 예상 손실률을 기본값 가
   await assumeDefaultLoss(page);
   await page.goto(LOGIN_PATH);
   await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
-  await page
-    .getByRole('button', { name: /들어가기/ })
-    .nth(1)
-    .click();
-  await page.waitForURL(/\/test\/app\/shipper/);
+  await enterDemoShipper(page);
 
   const card = page.getByRole('region', { name: LOSS_CARD });
   await expect(card.getByRole('definition')).toHaveText(/^\d+\.\d%$/);
@@ -494,11 +496,7 @@ test('도착 검수 기록이 없는 출하는 예상 손실률을 기본값 가
 test('화주 정산 화면이 1024·1280·390px에서 가로로 넘치지 않는다', async ({ page }) => {
   await page.goto(LOGIN_PATH);
   await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
-  await page
-    .getByRole('button', { name: /들어가기/ })
-    .nth(1)
-    .click();
-  await page.waitForURL(/\/test\/app\/shipper/);
+  await enterDemoShipper(page);
   await menu(page, /^정산/).click();
   await page.waitForURL(/\/test\/app\/shipper\/settlements/);
   await expect(page.getByRole('main').first().getByRole('table').first()).toBeVisible();
@@ -516,11 +514,7 @@ test('화주 확인 대기 계획은 홈 이번 시즌 금액에서 빼고 제�
   await markPlansAwaitingShipper(page);
   await page.goto(LOGIN_PATH);
   await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
-  await page
-    .getByRole('button', { name: /들어가기/ })
-    .nth(1)
-    .click();
-  await page.waitForURL(/\/test\/app\/shipper/);
+  await enterDemoShipper(page);
 
   const home = await seasonNumbers(page);
   expect(home).toEqual({ savings: '0원', fee: '0원', gain: '0원' });
@@ -538,11 +532,7 @@ test('일부 계획만 화주 확인 대기면 홈 시즌 금액과 정산 합�
   await markPlansAwaitingShipper(page, { addPlan: true, awaitingIndexes: [1] });
   await page.goto(LOGIN_PATH);
   await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
-  await page
-    .getByRole('button', { name: /들어가기/ })
-    .nth(1)
-    .click();
-  await page.waitForURL(/\/test\/app\/shipper/);
+  await enterDemoShipper(page);
 
   const home = await seasonNumbers(page);
   expect(home.savings).not.toBe('0원');

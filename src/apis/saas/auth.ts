@@ -1,8 +1,11 @@
 'use client';
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
+import { create } from 'zustand';
 
 import { getActiveOrgId, useActiveOrgStore } from '@/apis/saas/active-org';
 import { saasApi } from '@/apis/saas/client';
@@ -10,16 +13,58 @@ import { toastSaasError } from '@/apis/saas/errors';
 import { orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
 import { broadcastSessionChange, subscribeSessionChange } from '@/apis/saas/session-sync';
-import { useDemoOrgStore } from '@/app/(saas)/app/_components/demo-org-store';
 import { SAAS_ENDPOINTS } from '@/consts/api-saas';
+import { roleHome } from '@/consts/route-saas';
 import type {
   ActiveOrgRequest,
   DemoLoginRequest,
   LoginRequest,
   Me,
+  Membership,
   OrgType,
   SignupRequest,
 } from '@/types/saas';
+
+type SwitchTargetStoreT = {
+  target: string | null;
+  setTarget: (target: string | null) => void;
+};
+
+export const useSwitchTargetStore = create<SwitchTargetStoreT>()(set => ({
+  target: null,
+  setTarget: target => set({ target }),
+}));
+
+const lastOrgKey = (worldId: string, orgType: OrgType) => `fs.saas.last-org:${worldId}:${orgType}`;
+
+export const readLastOrg = (
+  worldId: string | null,
+  orgType: OrgType,
+  memberships: readonly Membership[]
+) => {
+  if (!worldId || typeof sessionStorage === 'undefined') return null;
+
+  try {
+    const orgId = sessionStorage.getItem(lastOrgKey(worldId, orgType));
+    if (!orgId) return null;
+
+    return memberships.some(item => item.org_id === orgId && item.org_type === orgType)
+      ? orgId
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+export const writeLastOrg = (worldId: string | null, orgType: OrgType, orgId: string) => {
+  if (!worldId || typeof sessionStorage === 'undefined') return;
+
+  try {
+    sessionStorage.setItem(lastOrgKey(worldId, orgType), orgId);
+  } catch {
+    return;
+  }
+};
 
 export const pinActiveOrg = (me: Me) => {
   const orgId = me.active_org.org_id;
@@ -27,6 +72,14 @@ export const pinActiveOrg = (me: Me) => {
   if (getActiveOrgId() !== orgId) useActiveOrgStore.getState().setOrgId(orgId);
 
   return me;
+};
+
+export const applyActiveOrg = (queryClient: QueryClient, me: Me) => {
+  pinActiveOrg(me);
+  writeLastOrg(me.world?.world_id ?? null, me.active_org.org_type, me.active_org.org_id);
+  queryClient.removeQueries({ queryKey: orgKeys.all });
+  queryClient.setQueryData(orgKeys.me, me);
+  broadcastSessionChange('switch');
 };
 
 export const getMe = async () => {
@@ -115,12 +168,8 @@ export const useDemoLogin = () => {
   const startSession = useStartSession();
 
   return useMutation({
-    mutationFn: (request: OrgType | DemoLoginRequest) =>
-      postDemoLogin(typeof request === 'string' ? { org_type: request } : request),
-    onSuccess: (me: Me) => {
-      useDemoOrgStore.getState().remember(me.active_org.org_type, me.active_org.org_id);
-      startSession(me);
-    },
+    mutationFn: (request: DemoLoginRequest) => postDemoLogin(request),
+    onSuccess: startSession,
   });
 };
 
@@ -136,6 +185,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: postLogout,
     onMutate: () => {
+      useSwitchTargetStore.getState().setTarget(null);
       useActiveOrgStore.getState().clearOrgId();
     },
     onSettled: () => {
@@ -145,15 +195,40 @@ export const useLogout = () => {
   });
 };
 
-const isMeQuery = (queryKey: readonly unknown[]) =>
-  queryKey.length === orgKeys.me.length && queryKey.every((part, i) => part === orgKeys.me[i]);
+export const isMeQuery = (queryKey: readonly unknown[]) =>
+  queryKey.length === orgKeys.me.length &&
+  queryKey.every((part, index) => part === orgKeys.me[index]);
 
 export const useSessionSync = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   useEffect(
     () =>
-      subscribeSessionChange(async () => {
+      subscribeSessionChange(async signal => {
+        if (signal.kind === 'reset') {
+          const me = queryClient.getQueryData<Me>(orgKeys.me) ?? null;
+          const mine = me?.world?.world_id ?? null;
+          if (!signal.world_id || signal.world_id !== mine || !me) return;
+
+          const home = roleHome('platform');
+          const platformId =
+            me.memberships.find(item => item.org_type === 'platform')?.org_id ?? null;
+
+          if (platformId && me.active_org.org_id !== platformId) {
+            applyActiveOrg(queryClient, await putActiveOrg(platformId));
+          }
+
+          queryClient.removeQueries({
+            queryKey: orgKeys.all,
+            predicate: query => !isMeQuery(query.queryKey),
+          });
+          useSwitchTargetStore.getState().setTarget(home);
+          router.replace(home);
+
+          return;
+        }
+
         await useActiveOrgStore.persist.rehydrate();
 
         const activeOrgOf = () =>
@@ -170,7 +245,7 @@ export const useSessionSync = () => {
         if (activeOrgOf() === before) queryClient.invalidateQueries(others);
         else queryClient.removeQueries(others);
       }),
-    [queryClient]
+    [queryClient, router]
   );
 };
 
@@ -191,10 +266,7 @@ export const useSwitchOrg = (boundOrgId: string | null = null) => {
         return false;
       }
 
-      pinActiveOrg(me);
-      queryClient.removeQueries({ queryKey: orgKeys.all });
-      queryClient.setQueryData(orgKeys.me, me);
-      broadcastSessionChange('switch');
+      applyActiveOrg(queryClient, me);
 
       return true;
     },

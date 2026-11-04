@@ -1,13 +1,16 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 
+import { isMeQuery, useMe, useSwitchTargetStore } from '@/apis/saas/auth';
 import { saasErrorDetail } from '@/apis/saas/errors';
+import { orgKeys } from '@/apis/saas/keys';
 import { useCanResetSandbox, useSandboxReset } from '@/apis/saas/sandbox';
-import { useRoleSwitchStore } from '@/app/(saas)/app/_components/use-role-switch';
+import { broadcastSessionChange } from '@/apis/saas/session-sync';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,58 +22,64 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { SAAS_PAGES } from '@/consts/route-saas';
+import { roleHome } from '@/consts/route-saas';
 
 const RESET_COOLDOWN_MS = 60_000;
+const RESET_COPY =
+  '이 둘러보기의 출하와 계획을 처음 상태로 되돌립니다. 다른 사람의 둘러보기는 그대로입니다.';
 
 type CooldownStoreT = {
-  until: number;
-  setUntil: (until: number) => void;
+  untilByWorld: Record<string, number>;
+  setUntil: (worldId: string, until: number) => void;
 };
 
-const COOLDOWN_KEY = 'fs.saas.sandbox-reset-until';
+const cooldownKey = (worldId: string) => `fs.saas.sandbox-reset-until:${worldId}`;
 
-const readStoredUntil = () => {
+const readStoredUntil = (worldId: string) => {
   try {
-    return Number(localStorage.getItem(COOLDOWN_KEY)) || 0;
+    return Number(localStorage.getItem(cooldownKey(worldId))) || 0;
   } catch {
     return 0;
   }
 };
 
-const writeStoredUntil = (until: number) => {
+const writeStoredUntil = (worldId: string, until: number) => {
   try {
-    localStorage.setItem(COOLDOWN_KEY, String(until));
+    localStorage.setItem(cooldownKey(worldId), String(until));
   } catch {
     return;
   }
 };
 
 const useCooldownStore = create<CooldownStoreT>()(set => ({
-  until: 0,
-  setUntil: until => {
-    writeStoredUntil(until);
-    set({ until });
+  untilByWorld: {},
+  setUntil: (worldId, until) => {
+    writeStoredUntil(worldId, until);
+    set(state => ({ untilByWorld: { ...state.untilByWorld, [worldId]: until } }));
   },
 }));
 
-const hydrateCooldown = () => {
-  const stored = readStoredUntil();
-  if (stored > useCooldownStore.getState().until) useCooldownStore.setState({ until: stored });
-};
-
-const useHydratedCooldown = () => {
+const useHydratedCooldown = (worldId: string | null) => {
   useEffect(() => {
-    hydrateCooldown();
+    if (!worldId) return;
+
+    const apply = () => {
+      const stored = readStoredUntil(worldId);
+      useCooldownStore.setState(state => ({
+        untilByWorld: { ...state.untilByWorld, [worldId]: stored },
+      }));
+    };
+
+    apply();
     const onStorage = (event: StorageEvent) => {
-      if (event.key === COOLDOWN_KEY) hydrateCooldown();
+      if (event.key === cooldownKey(worldId)) apply();
     };
     window.addEventListener('storage', onStorage);
 
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  }, [worldId]);
 
-  return useCooldownStore(state => state.until);
+  return useCooldownStore(state => (worldId ? (state.untilByWorld[worldId] ?? 0) : 0));
 };
 
 const untilFromResetAt = (resetAt: string) => {
@@ -108,16 +117,15 @@ const useRemainingSeconds = (until: number) => {
 
 export function SandboxResetButton() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const me = useMe().data ?? null;
   const canReset = useCanResetSandbox();
   const reset = useSandboxReset();
-  const until = useHydratedCooldown();
+  const worldId = me?.world?.world_id ?? me?.active_org.world_id ?? null;
+  const until = useHydratedCooldown(worldId);
   const remaining = useRemainingSeconds(until);
 
-  useEffect(() => {
-    if (canReset) router.prefetch(SAAS_PAGES.LOGIN);
-  }, [canReset, router]);
-
-  if (!canReset) return null;
+  if (!canReset || !worldId) return null;
 
   const coolingDown = remaining > 0;
   const idleLabel = coolingDown ? `${remaining}초 뒤 다시 초기화` : '데모 초기화';
@@ -126,14 +134,20 @@ export function SandboxResetButton() {
   const confirm = () =>
     reset
       .mutateAsync()
-      .then(({ reset_at }) => {
-        useCooldownStore.getState().setUntil(untilFromResetAt(reset_at));
-        useRoleSwitchStore.getState().setTarget(null);
-        router.replace(SAAS_PAGES.LOGIN);
+      .then(result => {
+        const resetWorldId = result.world_id || worldId;
+        useCooldownStore.getState().setUntil(resetWorldId, untilFromResetAt(result.reset_at));
+        useSwitchTargetStore.getState().setTarget(null);
+        queryClient.removeQueries({
+          queryKey: orgKeys.all,
+          predicate: query => !isMeQuery(query.queryKey),
+        });
+        broadcastSessionChange('reset', resetWorldId);
+        router.replace(roleHome('platform'));
       })
       .catch((error: unknown) => {
         const wait = retryAfterMs(error);
-        if (wait !== null) useCooldownStore.getState().setUntil(Date.now() + wait);
+        if (wait !== null) useCooldownStore.getState().setUntil(worldId, Date.now() + wait);
       });
 
   return (
@@ -150,11 +164,8 @@ export function SandboxResetButton() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>데모 세계를 처음 상태로 되돌릴까요?</AlertDialogTitle>
-          <AlertDialogDescription>
-            모든 데모 조직의 출하·계획·콜드체인 기록이 처음 상태로 돌아가고, 모든 데모 사용자가
-            로그아웃됩니다. 초기화가 끝나면 로그인 화면으로 이동합니다.
-          </AlertDialogDescription>
+          <AlertDialogTitle>이 둘러보기를 처음 상태로 되돌릴까요?</AlertDialogTitle>
+          <AlertDialogDescription>{RESET_COPY}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>취소</AlertDialogCancel>

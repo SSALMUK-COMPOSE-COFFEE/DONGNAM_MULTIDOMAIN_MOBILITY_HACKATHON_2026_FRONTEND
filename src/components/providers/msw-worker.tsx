@@ -18,7 +18,10 @@ export default function MswWorker() {
     workerStart ??= worker.start({
       onUnhandledFrame: 'bypass',
       quiet: true,
-      serviceWorker: { url: `${BASE_PATH}/mockServiceWorker.js` },
+      serviceWorker: {
+        url: `${BASE_PATH}/mockServiceWorker.js`,
+        options: { scope: BASE_PATH || '/' },
+      },
     });
     workerStart.then(markMockingReady);
   }, []);

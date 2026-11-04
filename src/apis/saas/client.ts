@@ -55,11 +55,10 @@ const currentAppPath = () => {
 };
 
 const redirectToLogin = () => {
-  getSaasQueryClient()?.removeQueries({ queryKey: orgKeys.all });
-
   if (typeof window === 'undefined') return;
   if (SAAS_PUBLIC_PATHS.includes(stripBasePath(window.location.pathname))) return;
 
+  getSaasQueryClient()?.removeQueries({ queryKey: orgKeys.all });
   window.location.assign(loginHref(currentAppPath()));
 };
 

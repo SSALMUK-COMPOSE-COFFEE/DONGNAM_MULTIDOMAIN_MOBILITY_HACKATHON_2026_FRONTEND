@@ -7,16 +7,21 @@ const enterAs = async (
   role: 'platform' | 'shipper' | 'forwarder',
   shipperOrgId?: string
 ) => {
-  const index = { platform: 0, shipper: 1, forwarder: 2 }[role];
-
-  if (shipperOrgId) {
-    await page.getByRole('button', { name: '다른 화주로 바꾸기' }).click();
-    await page.getByLabel('데모 화주 조직').selectOption(shipperOrgId);
+  const banner = page.getByRole('region', { name: '데모 환경' });
+  if ((await banner.count()) === 0) {
+    await page.getByRole('button', { name: '데모로 둘러보기' }).click();
+    await page.waitForURL(/\/test\/app\/platform/);
   }
-  await page
-    .getByRole('button', { name: /들어가기/ })
-    .nth(index)
-    .click();
+
+  let name = '진주 딸기 수출농가 A';
+  if (role === 'platform') name = '프레시스위치';
+  if (role === 'forwarder') name = '동남 콜드체인 포워딩';
+  if (role === 'shipper' && shipperOrgId === 'shipper-miryang') name = '밀양 딸기 수출농가 C';
+
+  const button = page
+    .getByRole('region', { name: '데모 환경' })
+    .getByRole('button', { name, exact: true });
+  if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
   await page.waitForURL(new RegExp(`/test/app/${role}`));
 };
 
@@ -299,24 +304,21 @@ test('목업 모드에서 플랫폼만 데모 초기화를 하고 쿨다운 동�
     await logout(page);
   });
 
-  await test.step('플랫폼이 확인 창을 거쳐 초기화하면 로그인 화면으로 간다', async () => {
+  await test.step('플랫폼이 확인 창을 거쳐 초기화하면 플랫폼 홈에 남는다', async () => {
     await enterAs(page, 'platform');
     await expect(resetButton).toHaveText('데모 초기화');
     await resetButton.click();
 
     const dialog = page.getByRole('alertdialog');
-    await expect(dialog).toContainText('모든 데모 사용자가 로그아웃됩니다');
+    await expect(dialog).toContainText('다른 사람');
+    await expect(dialog).not.toContainText('모든 데모 사용자가 로그아웃');
     await dialog.getByRole('button', { name: '초기화', exact: true }).click();
-    await page.waitForURL(/\/test\/login/);
-    await expect(page.getByRole('heading', { name: '데모 계정으로 둘러보기' })).toBeVisible();
+    await expect(page).toHaveURL(/\/test\/app\/platform/);
+    await expect(resetButton).toHaveText(/^\d+초 뒤 다시 초기화$/);
+    await expect(resetButton).toBeDisabled();
   });
 
   await test.step('쿨다운 동안 버튼이 꺼지고 남은 초가 줄어든다', async () => {
-    await page.getByRole('link', { name: '내 화면으로' }).click();
-    await page.waitForURL(/\/test\/app\/platform/);
-    await expect(resetButton).toHaveText(/^\d+초 뒤 다시 초기화$/);
-    await expect(resetButton).toBeDisabled();
-
     const before = await remainingSeconds();
     await page.clock.runFor(3000);
     await expect.poll(remainingSeconds).toBeLessThan(before);
@@ -329,7 +331,7 @@ test('목업 모드에서 플랫폼만 데모 초기화를 하고 쿨다운 동�
   });
 
   await test.step('남은 초를 모르는 화면에서 누르면 429의 남은 초로 버튼이 꺼진다', async () => {
-    await page.evaluate(() => localStorage.removeItem('fs.saas.sandbox-reset-until'));
+    await page.evaluate(() => localStorage.removeItem('fs.saas.sandbox-reset-until:wmock00000001'));
     await page.reload();
     await expect(resetButton).toHaveText('데모 초기화');
     await resetButton.click();

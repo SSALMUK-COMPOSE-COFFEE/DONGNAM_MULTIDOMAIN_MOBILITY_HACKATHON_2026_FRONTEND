@@ -4,8 +4,7 @@ import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { useLogout } from '@/apis/saas/auth';
-import { useRoleSwitchStore } from '@/app/(saas)/app/_components/use-role-switch';
+import { useLogout, useSwitchTargetStore } from '@/apis/saas/auth';
 import { SAAS_PAGES } from '@/consts/route-saas';
 
 export function LogoutButton() {
@@ -26,7 +25,7 @@ export function LogoutButton() {
       aria-label={label}
       title={label}
       onClick={() => {
-        useRoleSwitchStore.getState().setTarget(null);
+        useSwitchTargetStore.getState().setTarget(null);
         router.replace(SAAS_PAGES.LOGIN);
         logout.mutate();
       }}

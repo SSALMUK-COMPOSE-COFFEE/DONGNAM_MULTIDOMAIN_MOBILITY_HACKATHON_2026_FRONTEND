@@ -84,9 +84,9 @@ function RolesSection() {
     >
       <SectionHead
         id={LANDING_IDS.rolesTitle}
-        eyebrow="데모로 둘러보기"
-        title="역할을 골라 바로 들어가 보세요"
-        sub="비밀번호 없이 예시 조직 계정으로 들어갑니다. 데모 세계의 데이터는 실제 거래가 아닙니다."
+        eyebrow="역할"
+        title="화주, 플랫폼, 포워더가 한 계획에서 만납니다"
+        sub="둘러보기에 들어가면 배너에서 이 역할들을 오갑니다. 예시 데이터이며 실제 거래가 아닙니다."
       />
       <Suspense fallback={<LandingRolesSkeleton />}>
         <LandingRoles />

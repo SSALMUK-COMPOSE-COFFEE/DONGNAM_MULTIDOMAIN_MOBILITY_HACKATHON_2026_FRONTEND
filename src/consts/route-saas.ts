@@ -4,8 +4,6 @@ export const SESSION_COOKIE_NAME = 'fs_session';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-export const IS_SAAS_BUILD = BASE_PATH !== '';
-
 export const SAAS_PAGES = {
   LOGIN: '/login',
   SIGNUP: '/signup',

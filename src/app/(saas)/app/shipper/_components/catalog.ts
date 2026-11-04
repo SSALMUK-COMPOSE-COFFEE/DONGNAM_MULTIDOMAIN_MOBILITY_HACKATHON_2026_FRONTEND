@@ -1,4 +1,4 @@
-import type { IntakeFormOptionsT } from '@/components/intake-form';
+import type { IntakeFormOptionsT } from '@/components/intake-form/types';
 import type { PlanSessionT } from '@/types/api';
 import type { ShipperCatalogT } from '@/types/saas-shipper';
 
