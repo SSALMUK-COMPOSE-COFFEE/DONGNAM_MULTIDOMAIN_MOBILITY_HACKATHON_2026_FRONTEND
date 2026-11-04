@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
+import { PlaneIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePlatformFuelShock } from '@/apis/saas/platform-analysis';
@@ -8,11 +9,12 @@ import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { won } from '@/app/(saas)/app/platform/_components/m2-format';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { SegTabs } from '@/app/(saas)/app/platform/_components/seg-tabs';
+import { ContainerLoadBar, getShipperColor } from '@/components/container-load-bar';
 import { CompareBars } from '@/components/map-hero';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SaasPlanSessionT } from '@/types/api-saas';
 import type { PlatformFuelShockRequestT, PlatformFuelShockResultT } from '@/types/saas-analysis';
-import { getShipperName } from '@/utils/scenario';
+import { getShipperName, getShipperShortName } from '@/utils/scenario';
 
 type ShockCaseT = PlatformFuelShockResultT['cases'][number];
 type ModeSwitchT = ShockCaseT['switches'][number];
@@ -106,7 +108,7 @@ function FuelShockBody({
   const others = result.cases.filter(shockCase => shockCase !== baseline);
   const [pickedKey, setPickedKey] = useState('');
   const selected =
-    others.find(shockCase => caseKey(shockCase) === pickedKey) ?? others.at(-1) ?? baseline;
+    result.cases.find(shockCase => caseKey(shockCase) === pickedKey) ?? others.at(-1) ?? baseline;
   const maxSavings = Math.max(...result.cases.map(({ total_savings }) => total_savings), 0);
   const thresholds = [...result.thresholds].sort((a, b) =>
     a.direction === b.direction
@@ -136,18 +138,20 @@ function FuelShockBody({
         }))}
       />
 
-      {others.length > 1 ? (
+      {result.cases.length > 1 ? (
         <SegTabs<string>
           label="비교할 할증료"
           value={caseKey(selected)}
           onChange={setPickedKey}
-          options={others.map(shockCase => ({
+          options={result.cases.map(shockCase => ({
             value: caseKey(shockCase),
             label: perKg(shockCase.surcharge_per_kg),
           }))}
           className="self-start"
         />
       ) : null}
+
+      <ShockLoads scenario={session.scenario} shockCase={selected} />
 
       {selected !== baseline ? (
         <CaseDetail session={session} baseline={baseline} shockCase={selected} />
@@ -209,6 +213,68 @@ function CaseBlock({ shockCase, isSelected }: { shockCase: ShockCaseT; isSelecte
           <b>{won(shockCase.total_fee)}</b>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ShockLoads({
+  scenario,
+  shockCase,
+}: {
+  scenario: SaasPlanSessionT['scenario'];
+  shockCase: ShockCaseT;
+}) {
+  const assignments = shockCase.lots
+    .filter(({ mode }) => mode === 'sea')
+    .map(({ location, shipper_id, product_id, pallets }) => ({
+      container_id: location,
+      shipper_id,
+      product_id,
+      pallets,
+    }));
+  const airLots = shockCase.lots.filter(({ mode }) => mode === 'air');
+  const isSo2 = (productId: string) =>
+    !!scenario.products.find(({ id }) => id === productId)?.so2_treated;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="m2-lbl">컨테이너 배정 · 할증 {perKg(shockCase.surcharge_per_kg)}</div>
+        {shockCase.plan_changed ? <span className="m2-chip m2-chip-warn">배정 바뀜</span> : null}
+      </div>
+      {shockCase.containers.map(container => (
+        <ContainerLoadBar
+          key={container.container_id}
+          container={container}
+          plan={{ assignments }}
+          scenario={scenario}
+        />
+      ))}
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-panel px-5 py-4">
+        <PlaneIcon className="size-5 text-air" />
+        <p className="font-bold">
+          항공 <span className="num text-air">{shockCase.air_pallets}</span>파렛트
+        </p>
+        {airLots.length === 0 && shockCase.unassigned_pallets === 0 ? (
+          <p className="text-muted-foreground">모두 해상 공동적재</p>
+        ) : null}
+        <div className="flex flex-wrap gap-4 text-sm">
+          {airLots.map(({ lot_id, shipper_id, product_id, pallets }) => (
+            <span key={lot_id} className="flex items-center gap-1.5">
+              <span
+                className={cn(
+                  'size-3 rounded-[2px]',
+                  getShipperColor(scenario, shipper_id, isSo2(product_id))
+                )}
+              />
+              {getShipperShortName(scenario, shipper_id)} <span className="num">{pallets}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      {shockCase.unassigned_pallets > 0 ? (
+        <p className="m2-note m2-note-warn mt-0">미배정 {shockCase.unassigned_pallets}파렛트</p>
+      ) : null}
     </div>
   );
 }
