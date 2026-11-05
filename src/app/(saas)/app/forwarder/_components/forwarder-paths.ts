@@ -10,6 +10,8 @@ const query = (params: Record<string, string | undefined>) => {
 
 export const FORWARDER_PATHS = {
   HOME: '/app/forwarder',
+  CONTAINERS: '/app/forwarder/containers',
+  POOL: '/app/forwarder/lots',
   PLAN: (planId: string) => `/app/forwarder/plans/detail${query({ plan_id: planId })}`,
   ORDERS: '/app/forwarder/orders',
   COLDCHAIN: (planId?: string, containerId?: string) =>
