@@ -94,7 +94,11 @@ export function QuantityAdjustmentDialog({
                   {fieldError}
                 </p>
               ) : (
-                <span>예상 부담금을 확인한 뒤 변경을 요청하세요.</span>
+                <span>
+                  {Number(quantity) === currentQuantity
+                    ? '변경하려면 현재보다 적은 수량을 입력하세요.'
+                    : '예상 부담금을 확인한 뒤 변경을 요청하세요.'}
+                </span>
               )}
               <button type="button" disabled={submitting} onClick={() => onQuantityChange('0')}>
                 전량 취소

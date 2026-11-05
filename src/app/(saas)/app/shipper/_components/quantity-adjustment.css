@@ -73,6 +73,10 @@
   line-height: 1.5;
 }
 .quantity-adjust-entry-bottom > button {
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 8px;
+  background: transparent;
   flex: none;
   color: var(--m2-brand-ink);
   font-weight: 600;

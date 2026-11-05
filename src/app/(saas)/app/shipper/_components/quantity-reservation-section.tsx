@@ -336,7 +336,10 @@ export function QuantityAdjustmentFlow({
         <button
           type="button"
           className="self-start text-xs font-semibold text-m2-brand-ink underline"
+          disabled={submit.isPending}
           onClick={() => {
+            if (submit.isPending) return;
+            setRequestError(null);
             onRefresh();
             void quote.refetch();
           }}
@@ -354,7 +357,11 @@ export function QuantityAdjustmentFlow({
       shipmentLabel={label}
       currentQuantity={state.current_quantity}
       quantity={quantity}
-      onQuantityChange={setQuantity}
+      onQuantityChange={value => {
+        if (submit.isPending) return;
+        setQuantity(value);
+        setRequestError(null);
+      }}
       fieldError={fieldError}
       requestError={requestError}
       quoteContent={quoteContent}
@@ -362,7 +369,7 @@ export function QuantityAdjustmentFlow({
       submitting={submit.isPending}
       canConfirm={canConfirm}
       onConfirm={() => {
-        if (!canConfirm || !quote.data) return;
+        if (!canConfirm || !quote.data || submit.isPending) return;
         setRequestError(null);
         submit.mutate(
           { quote_id: quote.data.quote_id, idempotency_key: `quantity-${quote.data.quote_id}` },

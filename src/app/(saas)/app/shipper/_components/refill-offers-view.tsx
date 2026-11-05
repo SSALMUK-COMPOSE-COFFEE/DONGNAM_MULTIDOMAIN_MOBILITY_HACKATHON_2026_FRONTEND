@@ -156,11 +156,16 @@ function OfferResponse({
       remainingText={`응답 ${remainingTimeText(offer.expires_at, now)}`}
       statusText={statusText}
       quantity={quantity}
-      onQuantityChange={setQuantity}
+      onQuantityChange={value => {
+        if (pending) return;
+        setQuantity(value);
+        setRequestError(null);
+      }}
       fieldError={fieldError}
       requestError={requestError ?? offer.reason}
       actionable={actionable}
       pending={pending}
+      canAccept={valid}
       onAccept={() => {
         if (!actionable || !valid || pending) return;
         if (!acceptKey.current || acceptKey.current.quantity !== count)

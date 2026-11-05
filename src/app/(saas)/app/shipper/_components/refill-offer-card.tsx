@@ -15,6 +15,7 @@ type RefillOfferCardPropsT = {
   requestError?: string | null;
   actionable: boolean;
   pending: boolean;
+  canAccept: boolean;
   onAccept: () => void;
   onDecline: () => void;
 };
@@ -32,6 +33,7 @@ export function RefillOfferCard({
   requestError,
   actionable,
   pending,
+  canAccept,
   onAccept,
   onDecline,
 }: RefillOfferCardPropsT) {
@@ -84,10 +86,10 @@ export function RefillOfferCard({
             <button
               type="button"
               className="m2-btn m2-btn-pri"
-              disabled={pending}
+              disabled={pending || !canAccept}
               onClick={onAccept}
             >
-              {pending ? '처리 중' : '수량 확인 후 수락'}
+              {pending ? '처리 중' : '선택 수량 수락'}
             </button>
           </div>
         </div>
