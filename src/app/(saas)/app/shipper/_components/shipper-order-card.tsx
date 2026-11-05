@@ -40,9 +40,16 @@ type ShipperOrderCardPropsT = {
   order: ShipperOrderT;
   own: OwnScopeT;
   labels: LotLabelMapT;
+  readOnly?: boolean;
 };
 
-export function ShipperOrderCard({ planId, order, own, labels }: ShipperOrderCardPropsT) {
+export function ShipperOrderCard({
+  planId,
+  order,
+  own,
+  labels,
+  readOnly = false,
+}: ShipperOrderCardPropsT) {
   const mine = myPendingConfirmations([order], own);
   const decision = useOrderDecision(planId, mine);
   const ownShippers = new Set(own.shipperIds);
@@ -111,8 +118,16 @@ export function ShipperOrderCard({ planId, order, own, labels }: ShipperOrderCar
               );
             })}
           </ul>
-          <DecisionButtons decision={decision} acceptLabel="수락" className="mt-3 justify-end" />
-          <RejectForm decision={decision} />
+          {!readOnly && (
+            <>
+              <DecisionButtons
+                decision={decision}
+                acceptLabel="수락"
+                className="mt-3 justify-end"
+              />
+              <RejectForm decision={decision} />
+            </>
+          )}
         </div>
       </div>
     </section>

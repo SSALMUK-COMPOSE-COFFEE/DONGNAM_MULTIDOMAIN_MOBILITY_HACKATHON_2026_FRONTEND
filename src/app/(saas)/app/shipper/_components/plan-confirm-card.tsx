@@ -34,6 +34,8 @@ type PlanConfirmCardPropsT = {
   planLabel?: string;
   replanPending?: boolean;
   showDetailLink?: boolean;
+  actionOnly?: boolean;
+  readOnly?: boolean;
 };
 
 export function PlanConfirmCard({
@@ -42,6 +44,8 @@ export function PlanConfirmCard({
   planLabel = '',
   replanPending = false,
   showDetailLink = false,
+  actionOnly = false,
+  readOnly = false,
 }: PlanConfirmCardPropsT) {
   const query = useShipperPlanConfirmation(planId);
 
@@ -60,6 +64,13 @@ export function PlanConfirmCard({
   const isReplanning = replanPending || isReplanPending(view);
   const rows = view.confirmations;
   if (rows.length === 0) return isReplanning ? <ReplanPendingNotice /> : null;
+  if (
+    actionOnly &&
+    !isReplanning &&
+    view.plan_status !== 'pending_shipper_confirmation' &&
+    !rows.some(row => row.status === 'pending' || row.status === 'rejected')
+  )
+    return null;
 
   return (
     <PlanConfirmBody
@@ -70,6 +81,8 @@ export function PlanConfirmCard({
       planStatus={view.plan_status}
       isReplanning={isReplanning}
       showDetailLink={showDetailLink}
+      actionOnly={actionOnly}
+      readOnly={readOnly}
     />
   );
 }
@@ -82,6 +95,8 @@ type PlanConfirmBodyPropsT = {
   planStatus: string;
   isReplanning: boolean;
   showDetailLink: boolean;
+  actionOnly: boolean;
+  readOnly: boolean;
 };
 
 function PlanConfirmBody({
@@ -92,6 +107,8 @@ function PlanConfirmBody({
   planStatus,
   isReplanning,
   showDetailLink,
+  actionOnly,
+  readOnly,
 }: PlanConfirmBodyPropsT) {
   const decide = useDecidePlanConfirmation(planId);
   const reasonId = useId();
@@ -100,7 +117,7 @@ function PlanConfirmBody({
   const pending = rows.filter(({ status }) => status === 'pending');
   const rejected = rows.filter(({ status }) => status === 'rejected');
   const lotIds = [...new Set(rows.flatMap(({ lot_ids }) => lot_ids))];
-  const isOpen = pending.length > 0 && !isReplanning;
+  const isOpen = pending.length > 0 && !isReplanning && !readOnly;
   const pendingAccept = decide.isPending ? (decide.variables?.accept ?? null) : null;
 
   const submit = (accept: boolean) => {
@@ -139,7 +156,11 @@ function PlanConfirmBody({
       return '거절을 보냈습니다. 포워더가 사유를 확인하고 계획을 다시 검토합니다.';
     if (planStatus === 'committed') return '모든 화주가 수락해 계획이 확정되었습니다.';
 
-    return '수락했습니다. 다른 화주의 수락을 기다리고 있습니다.';
+    if (planStatus === 'pending_confirmation')
+      return '내 최초 계획 확인 기록입니다. 변경 실행 지시는 별도로 확인합니다.';
+    if (planStatus === 'pending_shipper_confirmation')
+      return '내 최초 계획 확인은 끝났습니다. 전체 계획의 확정 상태는 상단에서 확인하세요.';
+    return '내 최초 계획 확인 기록입니다.';
   };
 
   return (
@@ -152,30 +173,36 @@ function PlanConfirmBody({
         {statusChip()}
       </div>
 
-      <div className="m2-lines mt-0">
-        {planLabel ? (
-          <div>
-            <span>계획</span>
-            <b className="m2-num">{planLabel}</b>
-          </div>
-        ) : null}
-        <div>
-          <span>내 출하</span>
-          <b className="break-words">
-            {lotIds.length > 0
-              ? lotIds.map(id => labels.get(id) ?? '내 출하').join(', ')
-              : '출하 정보 없음'}
-          </b>
-        </div>
-        {rows
-          .filter(({ decided_at }) => decided_at)
-          .map(row => (
-            <div key={`${row.round}:${row.shipper_id}`}>
-              <span>{row.status === 'rejected' ? '거절한 시각' : '수락한 시각'}</span>
-              <b className="m2-num">{fmtMonthDayTime(row.decided_at)}</b>
+      {!actionOnly && (
+        <dl className="m2-lines shipper-plan-facts mt-0">
+          {planLabel ? (
+            <div>
+              <dt>계획</dt>
+              <dd className="m2-num">{planLabel}</dd>
             </div>
-          ))}
-      </div>
+          ) : null}
+          <div>
+            <dt>내 출하</dt>
+            <dd>
+              <ul className="shipper-plan-lot-list">
+                {lotIds.length > 0 ? (
+                  lotIds.map(id => <li key={id}>{labels.get(id) ?? '내 출하'}</li>)
+                ) : (
+                  <li>출하 정보 없음</li>
+                )}
+              </ul>
+            </dd>
+          </div>
+          {rows
+            .filter(({ decided_at }) => decided_at)
+            .map(row => (
+              <div key={`${row.round}:${row.shipper_id}`}>
+                <dt>{row.status === 'rejected' ? '거절한 시각' : '수락한 시각'}</dt>
+                <dd className="m2-num">{fmtMonthDayTime(row.decided_at)}</dd>
+              </div>
+            ))}
+        </dl>
+      )}
 
       {rejected.map(row =>
         row.reason ? (

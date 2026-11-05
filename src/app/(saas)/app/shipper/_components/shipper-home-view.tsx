@@ -5,6 +5,7 @@ import { ArrowRightIcon, CalendarDaysIcon, PackageIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { useMe } from '@/apis/saas/auth';
+import { useRefillOffers } from '@/apis/saas/quantity-reservations';
 import {
   shipperPlanQueryOptions,
   useShipperCatalog,
@@ -31,6 +32,7 @@ import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-path
 import { useNowMinute } from '@/app/(saas)/app/shipper/_components/use-now';
 import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
 import { MapLinkProvider } from '@/components/map-link';
+import { remainingMilliseconds, useServerNow } from '@/hooks/useServerNow';
 import type { ShipperLotT, ShipperPlanItemT } from '@/types/saas-shipper';
 
 const CHANGE_TYPE = {
@@ -206,6 +208,15 @@ export function ShipperHomeView() {
   const tasks = useShipperTasks();
   const planConfirmations = useShipperPlanConfirmations('pending');
   const changes = useShipperChangeRequests({ limit: 3 });
+  const refillOffers = useRefillOffers();
+  const offerNow = useServerNow(refillOffers.data?.[0]?.server_now, refillOffers.dataUpdatedAt);
+  const offersReady = refillOffers.isSuccess && (!refillOffers.data.length || offerNow !== null);
+  const pendingOfferCount = offersReady
+    ? refillOffers.data.filter(
+        offer =>
+          offer.status === 'pending' && (remainingMilliseconds(offer.expires_at, offerNow) ?? 0) > 0
+      ).length
+    : 0;
   const now = useNowMinute();
   const own = ownScopeOf(catalog.data);
   const labels = lotLabelMap(lots.data, catalog.data ?? null);
@@ -215,7 +226,8 @@ export function ShipperHomeView() {
       myPendingConfirmations(orders, own).map(item => ({ plan, ...item }))
     )
     .sort((a, b) => timeOf(a.confirmation.deadline) - timeOf(b.confirmation.deadline));
-  const actionCount = planIds.length + executionTasks.length + tasks.requests.length;
+  const actionCount =
+    planIds.length + executionTasks.length + tasks.requests.length + pendingOfferCount;
   const tasksLoading =
     tasks.plans.isPending ||
     tasks.isOrdersLoading ||
@@ -271,6 +283,18 @@ export function ShipperHomeView() {
           </section>
         )}
 
+        {refillOffers.isError && (
+          <QueryError
+            message="빈자리 제안을 불러오지 못했습니다."
+            onRetry={() => refillOffers.refetch()}
+            isRetrying={refillOffers.isFetching}
+          />
+        )}
+        {!refillOffers.isError && !offersReady && (
+          <div aria-label="빈자리 제안 확인 중">
+            <CardSkeleton height={80} />
+          </div>
+        )}
         {tasksError && (
           <QueryError
             message="확인할 업무를 모두 불러오지 못했습니다."
@@ -299,6 +323,14 @@ export function ShipperHomeView() {
               </h2>
             </div>
             <div className="grid grid-cols-2 gap-3 max-[767.98px]:grid-cols-1">
+              {pendingOfferCount > 0 && (
+                <ActionRow
+                  href={SHIPPER_PATHS.REFILL_OFFERS}
+                  title={`받은 빈자리 제안 ${fmtCount(pendingOfferCount)}건`}
+                  description="응답 기한이 남아 있는 제안을 확인하세요."
+                />
+              )}
+
               {planIds.map(planId => {
                 const plan = tasks.plans.data?.find(item => item.plan_id === planId);
                 return (
@@ -337,6 +369,7 @@ export function ShipperHomeView() {
           !tasksError &&
           lots.isSuccess &&
           actionCount === 0 &&
+          offersReady &&
           !needsOnboarding && (
             <div className="rounded-xl border border-m2-line bg-white/60 px-5 py-4">
               <p className="text-sm font-semibold">

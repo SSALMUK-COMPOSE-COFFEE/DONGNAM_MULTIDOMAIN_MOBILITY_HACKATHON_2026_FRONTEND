@@ -10,6 +10,9 @@ export const SHIPPER_PATHS = {
   PLANS: '/app/shipper/plans',
   PLAN: (planId: string) => `/app/shipper/plans/detail?plan_id=${encodeURIComponent(planId)}`,
   REQUESTS: '/app/shipper/requests',
+  REFILL_OFFERS: '/app/shipper/refill-offers',
+  QUANTITY: (planId: string, lotId: string) =>
+    `/app/shipper/lots/detail?plan_id=${encodeURIComponent(planId)}&lot_id=${encodeURIComponent(lotId)}`,
   SETTLEMENTS: '/app/shipper/settlements',
   ADD_PACKHOUSE: '/app/shipper/onboarding/new',
   ONBOARDING: '/app/shipper/onboarding',

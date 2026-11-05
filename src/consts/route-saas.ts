@@ -109,6 +109,7 @@ export const SAAS_ROUTES = {
         countKey: 'shipperPendingRequests',
         countStrong: true,
       },
+      { href: '/app/shipper/refill-offers', label: '빈자리 제안', icon: 'requests' },
       { href: '/app/shipper/coldchain', label: '내 화물 상태', icon: 'coldchain' },
       { href: '/app/shipper/onboarding', label: '출하 장소 관리', icon: 'home' },
       { href: '/app/shipper/products', label: '품목 관리', icon: 'lots' },

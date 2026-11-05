@@ -1,11 +1,17 @@
 'use client';
 
 import { cn } from 'cn';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type MouseEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useDeleteShipperLot, useShipperLots, useUpdateShipperLot } from '@/apis/saas/shipper';
+import {
+  useDeleteShipperLot,
+  useShipperLots,
+  useShipperPlans,
+  useUpdateShipperLot,
+} from '@/apis/saas/shipper';
 import {
   LOCKED_LOT_STATUSES,
   LOT_STATUS_LABEL,
@@ -17,6 +23,7 @@ import {
 } from '@/app/(saas)/app/shipper/_components/loss-disclosure-card';
 import { LotEditDialog } from '@/app/(saas)/app/shipper/_components/lot-edit-dialog';
 import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
+import { LotQuantityEntry } from '@/app/(saas)/app/shipper/_components/lot-quantity-entry';
 import { LotStatusChip } from '@/app/(saas)/app/shipper/_components/lot-status-chip';
 import {
   CARD_HIDE,
@@ -61,9 +68,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
   const searchParams = useSearchParams();
   const filter = FILTERS.find(({ value }) => value === searchParams.get('status'))?.value ?? 'all';
   const setFilter = (value: FilterT) => router.push(SHIPPER_PATHS.LOT_LIST(value));
+  const [quantityLot, setQuantityLot] = useState<ShipperLotT | null>(null);
   const [editing, setEditing] = useState<ShipperLotT | null>(null);
   const [deleting, setDeleting] = useState<ShipperLotT | null>(null);
   const lots = useShipperLots();
+  const plans = useShipperPlans();
   const updateLot = useUpdateShipperLot();
   const deleteLot = useDeleteShipperLot();
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -256,9 +265,35 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                     </td>
                     <td className={cn('r max-[767.98px]:basis-full', CARD_PUSH)}>
                       <div className="flex min-h-8 items-center justify-end">
-                        {isLocked ? (
-                          <span className="text-[12px] text-m2-muted">계획 확정 후 변경 불가</span>
-                        ) : (
+                        {lot.status === 'planned' && (
+                          <button
+                            type="button"
+                            className="m2-btn m2-btn-sec m2-btn-sm"
+                            aria-label={`${label} 수량 변경`}
+                            onClick={event => {
+                              rememberOpener(event);
+                              setQuantityLot(lot);
+                            }}
+                          >
+                            수량 변경
+                          </button>
+                        )}
+                        {isLocked && lot.status !== 'planned' && (
+                          <Link
+                            className="m2-btn m2-btn-sec m2-btn-sm"
+                            href={(() => {
+                              const matching = (plans.data ?? []).filter(plan =>
+                                plan.my_lot_ids.includes(lot.id)
+                              );
+                              return matching.length === 1
+                                ? SHIPPER_PATHS.QUANTITY(matching[0].plan_id, lot.id)
+                                : SHIPPER_PATHS.PLANS;
+                            })()}
+                          >
+                            예약 상세
+                          </Link>
+                        )}
+                        {!isLocked && (
                           <div className="flex justify-end gap-1.5">
                             {lot.status === 'registered' && (
                               <>
@@ -320,6 +355,25 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
         </div>
       )}
 
+      {quantityLot && (
+        <LotQuantityEntry
+          lot={quantityLot}
+          label={lotLabel(quantityLot, catalog)}
+          candidates={(plans.data ?? []).filter(plan => plan.my_lot_ids.includes(quantityLot.id))}
+          isLoading={plans.isPending}
+          isError={plans.isError}
+          onRetry={() => {
+            void plans.refetch();
+          }}
+          returnTo={SHIPPER_PATHS.LOT_LIST(filter)}
+          onClose={() => {
+            setQuantityLot(null);
+            requestAnimationFrame(() => {
+              (openerRef.current?.isConnected ? openerRef.current : headingRef.current)?.focus();
+            });
+          }}
+        />
+      )}
       {editing && catalog && (
         <LotEditDialog
           lot={editing}
