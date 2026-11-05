@@ -121,7 +121,11 @@ export function PackhouseForm({ productOptions, onCreated }: PackhouseFormPropsT
   const [form, setForm] = useState<FormT>(EMPTY_FORM);
   const [submitted, setSubmitted] = useState(false);
   const createPackhouse = useCreateShipperPackhouse();
-  const update = (patch: Partial<FormT>) => setForm(prev => ({ ...prev, ...patch }));
+  const savingRef = useRef(false);
+  const update = (patch: Partial<FormT>) => {
+    if (savingRef.current || createPackhouse.isPending) return;
+    setForm(prev => ({ ...prev, ...patch }));
+  };
 
   const clientErrors = submitted ? validate(form) : {};
   const serverErrors = Object.fromEntries(
@@ -146,7 +150,7 @@ export function PackhouseForm({ productOptions, onCreated }: PackhouseFormPropsT
       className="grid items-start gap-6 min-[1100px]:grid-cols-[minmax(300px,0.85fr)_minmax(0,1.15fr)]"
       onSubmit={event => {
         event.preventDefault();
-        if (createPackhouse.isPending) return;
+        if (savingRef.current || createPackhouse.isPending) return;
         setSubmitted(true);
         const errors = validate(form);
         const first = FIELD_ORDER.find(field => errors[field]);
@@ -161,6 +165,7 @@ export function PackhouseForm({ productOptions, onCreated }: PackhouseFormPropsT
 
           return;
         }
+        savingRef.current = true;
         createPackhouse.mutate(
           {
             name: form.name.trim(),
@@ -170,6 +175,9 @@ export function PackhouseForm({ productOptions, onCreated }: PackhouseFormPropsT
             product_ids: form.productIds,
           },
           {
+            onSettled: () => {
+              savingRef.current = false;
+            },
             onSuccess: packhouse => {
               setForm(EMPTY_FORM);
               setSubmitted(false);
@@ -179,7 +187,7 @@ export function PackhouseForm({ productOptions, onCreated }: PackhouseFormPropsT
         );
       }}
     >
-      <div className="flex min-w-0 flex-col gap-4">
+      <fieldset disabled={createPackhouse.isPending} className="flex min-w-0 flex-col gap-4">
         <div className="m2-field mb-0">
           <label htmlFor={ids.name}>출하 장소 이름</label>
           <input
@@ -298,11 +306,11 @@ export function PackhouseForm({ productOptions, onCreated }: PackhouseFormPropsT
         <button
           type="submit"
           className="m2-btn m2-btn-pri m2-btn-lg w-full"
-          aria-disabled={createPackhouse.isPending}
+          disabled={createPackhouse.isPending}
         >
           {createPackhouse.isPending ? '등록 중' : '출하 장소 등록'}
         </button>
-      </div>
+      </fieldset>
       <section
         className="min-w-0 min-[1100px]:sticky min-[1100px]:top-0"
         aria-label="출하 장소 위치 지도"
@@ -312,9 +320,11 @@ export function PackhouseForm({ productOptions, onCreated }: PackhouseFormPropsT
         <div role="group" aria-label="지도에서 위치 고르기 (키보드는 위도·경도 입력칸 사용)">
           <PackhouseMap
             value={coordinateOf(form)}
-            onPick={({ lat, lon }) => {
-              update({ lat: String(lat), lon: String(lon) });
-            }}
+            {...(!createPackhouse.isPending && {
+              onPick: ({ lat, lon }: CoordinateT) => {
+                update({ lat: String(lat), lon: String(lon) });
+              },
+            })}
           />
         </div>
       </section>

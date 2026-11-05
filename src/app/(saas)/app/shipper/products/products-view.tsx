@@ -24,6 +24,16 @@ import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-
 import { ProductCards, ProductList } from '@/app/(saas)/app/shipper/products/product-list';
 import { useProductViewPreference } from '@/app/(saas)/app/shipper/products/product-view-preference';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -279,7 +289,7 @@ export function ProductsView() {
               <Select value={sort} onValueChange={setSort}>
                 <SelectTrigger
                   aria-label="품목 정렬"
-                  className="w-[136px] shrink-0 bg-white"
+                  className="w-[160px] shrink-0 bg-white"
                   style={{ fontSize: 14 }}
                 >
                   <SelectValue />
@@ -287,7 +297,7 @@ export function ProductsView() {
                 <SelectContent>
                   <SelectItem value="name">이름순</SelectItem>
                   <SelectItem value="temperature">온도 낮은순</SelectItem>
-                  <SelectItem value="shelf">보관 기간순</SelectItem>
+                  <SelectItem value="shelf">보관 기간 짧은순</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -311,29 +321,17 @@ export function ProductsView() {
           )}
         </section>
       )}
-      <Dialog
-        open={open}
-        onOpenChange={value => {
-          if (!value) setEditor(null);
-        }}
-      >
-        <DialogContent
-          data-ui="m2"
-          className="max-h-[90dvh] overflow-y-auto px-6 pt-6 sm:max-w-lg"
+      {open && (
+        <ProductEditor
+          key={`${orgId}-${editor === 'new' ? 'new' : editor?.id}`}
+          product={editor === 'new' ? null : editor}
+          onDone={() => setEditor(null)}
           onCloseAutoFocus={event => {
             event.preventDefault();
             restoreFocus();
           }}
-        >
-          {open && (
-            <ProductEditor
-              key={`${orgId}-${editor === 'new' ? 'new' : editor?.id}`}
-              product={editor === 'new' ? null : editor}
-              onDone={() => setEditor(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+        />
+      )}
       <Dialog
         open={removeOpen}
         onOpenChange={value => {
@@ -395,9 +393,11 @@ export function ProductsView() {
 function ProductEditor({
   product,
   onDone,
+  onCloseAutoFocus,
 }: {
   product: ShipperProductT | null;
   onDone: () => void;
+  onCloseAutoFocus: (event: Event) => void;
 }) {
   const id = useId();
   const save = useSaveShipperProduct();
@@ -409,6 +409,21 @@ function ProductEditor({
       ])
     )
   );
+  const [initialForm] = useState(form);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const savingRef = useRef(false);
+  const dirty = Object.keys(DEFAULTS).some(key => {
+    if (key === 'name') return form[key].trim() !== initialForm[key].trim();
+    if (key === 'so2_treated') return form[key] !== initialForm[key];
+    const value = form[key].trim();
+    const initial = initialForm[key].trim();
+    return value === '' || initial === '' ? value !== initial : Number(value) !== Number(initial);
+  });
+  const requestClose = () => {
+    if (savingRef.current || save.isPending || discardOpen) return;
+    if (dirty) setDiscardOpen(true);
+    else onDone();
+  };
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<ProductErrorsT>({});
   const formRef = useRef<HTMLFormElement>(null);
@@ -420,6 +435,7 @@ function ProductEditor({
       );
   };
   const updateField = (key: string, value: string) => {
+    if (savingRef.current || save.isPending) return;
     setForm(current => ({ ...current, [key]: value }));
     setFieldErrors(current => {
       const next = { ...current };
@@ -460,6 +476,7 @@ function ProductEditor({
   );
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (savingRef.current || save.isPending) return;
     setError('');
     const errors = validateProduct(form);
     formRef.current?.querySelectorAll<HTMLInputElement>('input[type="number"]').forEach(input => {
@@ -482,6 +499,7 @@ function ProductEditor({
       co2_pct: form.co2_pct === '' ? null : Number(form.co2_pct),
       so2_treated: form.so2_treated === 'true',
     };
+    savingRef.current = true;
     save.mutate(
       { id: product?.id, input },
       {
@@ -490,6 +508,7 @@ function ProductEditor({
           onDone();
         },
         onError: failure => {
+          savingRef.current = false;
           const errors: ProductErrorsT = {};
           if (isAxiosError(failure)) {
             const detail: unknown = failure.response?.data?.detail;
@@ -514,75 +533,97 @@ function ProductEditor({
     );
   };
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>{product ? '품목 수정' : '품목 추가'}</DialogTitle>
-        <DialogDescription>
-          우리 회사 출하에 사용할 품목 이름과 보관 조건을 입력하세요.
-        </DialogDescription>
-      </DialogHeader>
-      <form ref={formRef} noValidate onSubmit={submit} className="flex flex-col gap-4">
-        <fieldset disabled={save.isPending} className="flex min-w-0 flex-col gap-4">
-          <div className="m2-field mb-0">
-            <label htmlFor={`${id}-name`}>품목 이름</label>
-            <input
-              id={`${id}-name`}
-              name="name"
-              aria-invalid={!!fieldErrors.name}
-              {...(fieldErrors.name ? { 'aria-describedby': `${id}-name-error` } : {})}
-              className="m2-inp w-full"
-              value={form.name}
-              maxLength={200}
-              required
-              onChange={event => updateField('name', event.target.value)}
-            />
-            {fieldError('name')}
-          </div>
-          <fieldset className="grid grid-cols-2 gap-3">
-            <legend className="mb-2 text-[13px] font-semibold">보관 온도</legend>
-            {field('temp_min_c', '최저 온도 (°C)', { min: -100, max: 100 })}
-            {field('temp_max_c', '최고 온도 (°C)', { min: -100, max: 100 })}
+    <Dialog open onOpenChange={value => !value && requestClose()}>
+      <DialogContent
+        data-ui="m2"
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto px-6 pt-6 sm:max-w-lg"
+        onCloseAutoFocus={onCloseAutoFocus}
+        onEscapeKeyDown={event => {
+          if (discardOpen) {
+            event.preventDefault();
+            setDiscardOpen(false);
+          }
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>{product ? '품목 수정' : '품목 추가'}</DialogTitle>
+          <DialogDescription>
+            우리 회사 출하에 사용할 품목 이름과 보관 조건을 입력하세요.
+          </DialogDescription>
+        </DialogHeader>
+        <form ref={formRef} noValidate onSubmit={submit} className="flex flex-col gap-4">
+          <fieldset disabled={save.isPending} className="flex min-w-0 flex-col gap-4">
+            <div className="m2-field mb-0">
+              <label htmlFor={`${id}-name`}>품목 이름</label>
+              <input
+                id={`${id}-name`}
+                name="name"
+                aria-invalid={!!fieldErrors.name}
+                {...(fieldErrors.name ? { 'aria-describedby': `${id}-name-error` } : {})}
+                className="m2-inp w-full"
+                value={form.name}
+                maxLength={200}
+                required
+                onChange={event => updateField('name', event.target.value)}
+              />
+              {fieldError('name')}
+            </div>
+            <fieldset className="grid grid-cols-2 gap-3">
+              <legend className="mb-2 text-[13px] font-semibold">보관 온도</legend>
+              {field('temp_min_c', '최저 온도 (°C)', { min: -100, max: 100 })}
+              {field('temp_max_c', '최고 온도 (°C)', { min: -100, max: 100 })}
+            </fieldset>
+            <div className="grid grid-cols-2 gap-3">
+              {field('shelf_life_days', '보관 가능 기간 (일)', { min: 1, max: 3650, step: '1' })}
+              {field('pallet_kg', '1파렛트 무게 (kg)', { min: 0, max: 10000 })}
+            </div>
+            <fieldset className="grid grid-cols-2 gap-3">
+              <legend className="mb-2 text-[13px] font-semibold">가스 조건 (선택)</legend>
+              {field('o2_pct', '산소 (%)', { min: 0, max: 100, optional: true })}
+              {field('co2_pct', '이산화탄소 (%)', { min: 0, max: 100, optional: true })}
+            </fieldset>
+            <p className="text-m2-ink-3 -mt-2 text-[12px]">별도 가스 조건이 없으면 비워 두세요.</p>
+            <label className="flex items-center gap-2 text-[13px]">
+              <input
+                type="checkbox"
+                checked={form.so2_treated === 'true'}
+                onChange={event => updateField('so2_treated', String(event.target.checked))}
+              />
+              SO₂ 처리 품목
+            </label>
           </fieldset>
-          <div className="grid grid-cols-2 gap-3">
-            {field('shelf_life_days', '보관 가능 기간 (일)', { min: 1, max: 3650, step: '1' })}
-            {field('pallet_kg', '1파렛트 무게 (kg)', { min: 0, max: 10000 })}
+          {error && (
+            <p role="alert" className="text-[13px] text-m2-crit">
+              {error}
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="m2-btn m2-btn-sec"
+              onClick={requestClose}
+              disabled={save.isPending}
+            >
+              취소
+            </button>
+            <button type="submit" className="m2-btn m2-btn-pri" disabled={save.isPending}>
+              {save.isPending ? '저장 중' : '저장'}
+            </button>
           </div>
-          <fieldset className="grid grid-cols-2 gap-3">
-            <legend className="mb-2 text-[13px] font-semibold">가스 조건 (선택)</legend>
-            {field('o2_pct', '산소 (%)', { min: 0, max: 100, optional: true })}
-            {field('co2_pct', '이산화탄소 (%)', { min: 0, max: 100, optional: true })}
-          </fieldset>
-          <p className="text-m2-ink-3 -mt-2 text-[12px]">별도 가스 조건이 없으면 비워 두세요.</p>
-          <label className="flex items-center gap-2 text-[13px]">
-            <input
-              type="checkbox"
-              checked={form.so2_treated === 'true'}
-              onChange={event =>
-                setForm(current => ({ ...current, so2_treated: String(event.target.checked) }))
-              }
-            />
-            SO₂ 처리 품목
-          </label>
-        </fieldset>
-        {error && (
-          <p role="alert" className="text-[13px] text-m2-crit">
-            {error}
-          </p>
-        )}
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            className="m2-btn m2-btn-sec"
-            onClick={onDone}
-            disabled={save.isPending}
-          >
-            취소
-          </button>
-          <button type="submit" className="m2-btn m2-btn-pri" disabled={save.isPending}>
-            {save.isPending ? '저장 중' : '저장'}
-          </button>
-        </div>
-      </form>
-    </>
+        </form>
+      </DialogContent>
+      <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>변경 내용을 버릴까요?</AlertDialogTitle>
+            <AlertDialogDescription>저장하지 않은 변경 내용이 사라집니다.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>계속 수정</AlertDialogCancel>
+            <AlertDialogAction onClick={onDone}>변경 내용 버리기</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Dialog>
   );
 }

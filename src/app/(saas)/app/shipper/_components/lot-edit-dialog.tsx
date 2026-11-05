@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useUpdateShipperLot } from '@/apis/saas/shipper';
@@ -9,6 +9,16 @@ import { SELL_WINDOW_LABEL, lotWarningsOf } from '@/app/(saas)/app/shipper/_comp
 import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { errorDetail, toFieldErrors } from '@/app/(saas)/app/shipper/_components/query-state';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
@@ -49,14 +59,16 @@ const otherFieldMessages = (error: unknown) =>
     .filter(({ field }) => !isEditField(field))
     .map(({ message }) => message);
 
-type EditFormT = { [K in EditFieldT]-?: NonNullable<ShipperLotPatchT[K]> };
+type EditFormT = Omit<{ [K in EditFieldT]-?: NonNullable<ShipperLotPatchT[K]> }, 'pallets'> & {
+  pallets: string;
+};
 
 const changedFields = (lot: ShipperLotT, form: EditFormT): ShipperLotPatchT => {
   const patch: ShipperLotPatchT = {};
 
   if (form.product !== lot.product_id) patch.product = form.product;
   if (form.destination !== lot.destination) patch.destination = form.destination;
-  if (form.pallets !== lot.pallets) patch.pallets = form.pallets;
+  if (Number(form.pallets) !== lot.pallets) patch.pallets = Number(form.pallets);
   if (form.ready_date !== lot.ready_date) patch.ready_date = form.ready_date;
   if (form.sell_window !== lot.sell_window) patch.sell_window = form.sell_window;
 
@@ -69,19 +81,54 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
   const [form, setForm] = useState<EditFormT>({
     product: lot.product_id,
     destination: lot.destination,
-    pallets: lot.pallets,
+    pallets: String(lot.pallets),
     ready_date: lot.ready_date,
     sell_window: lot.sell_window,
   });
-  const update = (patch: Partial<EditFormT>) => setForm(prev => ({ ...prev, ...patch }));
+  const savingRef = useRef(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const palletLimit =
+    Math.max(0, ...catalog.containers.map(container => container.capacity_pallets)) || 20;
+  const count = Number(form.pallets);
+  const palletError = (() => {
+    if (!form.pallets.trim()) return '파렛트 수량을 입력하세요.';
+    if (!/^\d+$/.test(form.pallets.trim()) || !Number.isSafeInteger(count) || count < 1) {
+      return '파렛트 수량은 1 이상의 정수로 입력하세요.';
+    }
+    if (count > palletLimit) {
+      return `컨테이너 1대 용량(${palletLimit}파렛트)을 넘습니다. 나눠서 등록하세요.`;
+    }
+  })();
+  const dirty = Object.keys(changedFields(lot, form)).length > 0;
+  const requestClose = () => {
+    if (savingRef.current || updateLot.isPending || discardOpen) return;
+    if (dirty) setDiscardOpen(true);
+    else onClose();
+  };
+  const update = (patch: Partial<EditFormT>) => {
+    if (savingRef.current || updateLot.isPending) return;
+    setForm(prev => ({ ...prev, ...patch }));
+  };
   const fieldErrors = toFieldErrors(updateLot.error);
-  const errorOf = (field: EditFieldT) => fieldErrors.find(error => error.field === field)?.message;
+  const errorOf = (field: EditFieldT) =>
+    (field === 'pallets' && submitted && palletError) ||
+    fieldErrors.find(error => error.field === field)?.message;
   const otherErrors = otherFieldMessages(updateLot.error);
   const label = lotLabel(lot, catalog);
 
   return (
-    <Dialog open onOpenChange={open => !open && onClose()}>
-      <DialogContent className="pt-6" onCloseAutoFocus={onCloseAutoFocus}>
+    <Dialog open onOpenChange={open => !open && requestClose()}>
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto pt-6"
+        onCloseAutoFocus={onCloseAutoFocus}
+        onEscapeKeyDown={event => {
+          if (discardOpen) {
+            event.preventDefault();
+            setDiscardOpen(false);
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>출하 수정</DialogTitle>
           <DialogDescription>
@@ -89,9 +136,16 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
           </DialogDescription>
         </DialogHeader>
         <form
-          className="flex flex-col gap-4"
+          className="flex min-h-0 flex-col gap-4"
+          noValidate
           onSubmit={event => {
             event.preventDefault();
+            if (savingRef.current || updateLot.isPending) return;
+            setSubmitted(true);
+            if (palletError) {
+              event.currentTarget.querySelector<HTMLInputElement>('input[type="number"]')?.focus();
+              return;
+            }
             const patch = changedFields(lot, form);
 
             if (Object.keys(patch).length === 0) {
@@ -99,6 +153,7 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
 
               return;
             }
+            savingRef.current = true;
             updateLot.mutate(
               { lotId: lot.id, patch },
               {
@@ -113,6 +168,7 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
                   onClose();
                 },
                 onError: error => {
+                  savingRef.current = false;
                   const others = otherFieldMessages(error);
 
                   if (toFieldErrors(error).length === 0) {
@@ -125,91 +181,107 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
             );
           }}
         >
-          <EditField label="품목" error={errorOf('product')}>
-            {field => (
-              <Select value={form.product} onValueChange={product => update({ product })}>
-                <SelectTrigger className="w-full" {...field}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.products.map(({ id, label: optionLabel }) => (
-                    <SelectItem key={id} value={id}>
-                      {optionLabel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </EditField>
-          <EditField label="수량 (파렛트)" error={errorOf('pallets')}>
-            {field => (
-              <Input
-                {...field}
-                type="number"
-                min={1}
-                className="num"
-                value={form.pallets}
-                onChange={event => update({ pallets: Number(event.target.value) })}
-              />
-            )}
-          </EditField>
-          <EditField label="목적지" error={errorOf('destination')}>
-            {field => (
-              <Select
-                value={form.destination}
-                onValueChange={destination => update({ destination })}
-              >
-                <SelectTrigger className="w-full" {...field}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.destinations.map(({ id, label: optionLabel }) => (
-                    <SelectItem key={id} value={id}>
-                      {optionLabel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </EditField>
-          <EditField label="출하 가능일" error={errorOf('ready_date')}>
-            {field => (
-              <DatePicker
-                {...field}
-                className="num"
-                value={form.ready_date}
-                onValueChange={ready_date => update({ ready_date })}
-              />
-            )}
-          </EditField>
-          <EditField label="판매 기간" error={errorOf('sell_window')}>
-            {field => (
-              <Select
-                value={form.sell_window}
-                onValueChange={sellWindow =>
-                  update({ sell_window: sellWindow as EditFormT['sell_window'] })
-                }
-              >
-                <SelectTrigger className="w-full" {...field}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(SELL_WINDOW_LABEL) as EditFormT['sell_window'][]).map(value => (
-                    <SelectItem key={value} value={value}>
-                      {SELL_WINDOW_LABEL[value]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </EditField>
+          <fieldset disabled={updateLot.isPending} className="flex min-w-0 flex-col gap-4">
+            <EditField label="품목" error={errorOf('product')}>
+              {field => (
+                <Select
+                  disabled={updateLot.isPending}
+                  value={form.product}
+                  onValueChange={product => update({ product })}
+                >
+                  <SelectTrigger className="w-full" {...field}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.products.map(({ id, label: optionLabel }) => (
+                      <SelectItem key={id} value={id}>
+                        {optionLabel}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </EditField>
+            <EditField label="수량 (파렛트)" error={errorOf('pallets')}>
+              {field => (
+                <Input
+                  {...field}
+                  type="number"
+                  min={1}
+                  max={palletLimit}
+                  step={1}
+                  className="num"
+                  value={form.pallets}
+                  onChange={event => update({ pallets: event.target.value })}
+                />
+              )}
+            </EditField>
+            <EditField label="목적지" error={errorOf('destination')}>
+              {field => (
+                <Select
+                  disabled={updateLot.isPending}
+                  value={form.destination}
+                  onValueChange={destination => update({ destination })}
+                >
+                  <SelectTrigger className="w-full" {...field}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.destinations.map(({ id, label: optionLabel }) => (
+                      <SelectItem key={id} value={id}>
+                        {optionLabel}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </EditField>
+            <EditField label="출하 가능일" error={errorOf('ready_date')}>
+              {field => (
+                <DatePicker
+                  {...field}
+                  disabled={updateLot.isPending}
+                  className="num"
+                  value={form.ready_date}
+                  onValueChange={ready_date => update({ ready_date })}
+                />
+              )}
+            </EditField>
+            <EditField label="판매 기간" error={errorOf('sell_window')}>
+              {field => (
+                <Select
+                  disabled={updateLot.isPending}
+                  value={form.sell_window}
+                  onValueChange={sellWindow =>
+                    update({ sell_window: sellWindow as EditFormT['sell_window'] })
+                  }
+                >
+                  <SelectTrigger className="w-full" {...field}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(SELL_WINDOW_LABEL) as EditFormT['sell_window'][]).map(value => (
+                      <SelectItem key={value} value={value}>
+                        {SELL_WINDOW_LABEL[value]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </EditField>
+          </fieldset>
           {otherErrors.length > 0 && (
             <p role="alert" className="text-sm text-berry">
               {otherErrors.join(' · ')}
             </p>
           )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={requestClose}
+              disabled={updateLot.isPending}
+            >
               닫기
             </Button>
             <Button type="submit" disabled={updateLot.isPending}>
@@ -218,6 +290,18 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
           </DialogFooter>
         </form>
       </DialogContent>
+      <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>변경 내용을 버릴까요?</AlertDialogTitle>
+            <AlertDialogDescription>저장하지 않은 변경 내용이 사라집니다.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>계속 수정</AlertDialogCancel>
+            <AlertDialogAction onClick={onClose}>변경 내용 버리기</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
