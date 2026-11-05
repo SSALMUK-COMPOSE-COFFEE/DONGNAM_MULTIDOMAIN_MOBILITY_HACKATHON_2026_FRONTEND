@@ -1031,7 +1031,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update Me */
+        patch: operations["update_me_test_api_me_patch"];
         trace?: never;
     };
     "/test/api/saas/catalog": {
@@ -1043,6 +1044,23 @@ export interface paths {
         };
         /** Read Catalog */
         get: operations["read_catalog_test_api_saas_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_test_api_saas_admin_overview_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1258,6 +1276,129 @@ export interface paths {
         head?: never;
         /** Update Packhouse */
         patch: operations["update_packhouse_test_api_saas_shipper_packhouses__packhouse_id__patch"];
+        trace?: never;
+    };
+    "/test/api/saas/shipper/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Products */
+        get: operations["list_products_test_api_saas_shipper_products_get"];
+        put?: never;
+        /** Create Product */
+        post: operations["create_product_test_api_saas_shipper_products_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/shipper/products/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Archive Product */
+        delete: operations["archive_product_test_api_saas_shipper_products__product_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Product */
+        patch: operations["update_product_test_api_saas_shipper_products__product_id__patch"];
+        trace?: never;
+    };
+    "/test/api/saas/shipper/products/{product_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Product */
+        post: operations["restore_product_test_api_saas_shipper_products__product_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/resources/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Options */
+        get: operations["options_test_api_saas_resources_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Own Resources */
+        get: operations["list_own_resources_test_api_saas_forwarder_resources_get"];
+        put?: never;
+        /** Create Resource */
+        post: operations["create_resource_test_api_saas_forwarder_resources_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/platform/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Available Resources */
+        get: operations["list_available_resources_test_api_saas_platform_resources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/resources/{resource_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Resource */
+        delete: operations["delete_resource_test_api_saas_forwarder_resources__resource_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Resource */
+        patch: operations["update_resource_test_api_saas_forwarder_resources__resource_id__patch"];
         trace?: never;
     };
     "/test/api/saas/platform/lots": {
@@ -1510,7 +1651,8 @@ export interface paths {
         /** List Plans */
         get: operations["list_plans_test_api_saas_forwarder_plans_get"];
         put?: never;
-        post?: never;
+        /** Create Plan */
+        post: operations["create_plan_test_api_saas_forwarder_plans_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1617,6 +1759,227 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/lots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shipping Pool */
+        get: operations["shipping_pool_test_api_saas_forwarder_lots_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plans/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Plan */
+        post: operations["preview_plan_test_api_saas_forwarder_plans_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plans/{plan_id}/add-lot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Lot */
+        post: operations["add_lot_test_api_saas_forwarder_plans__plan_id__add_lot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plans/{plan_id}/confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Confirmation */
+        get: operations["confirmation_test_api_saas_forwarder_plans__plan_id__confirmation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plans/{plan_id}/confirmation/auto-accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Auto Accept */
+        post: operations["auto_accept_test_api_saas_forwarder_plans__plan_id__confirmation_auto_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plans/{plan_id}/confirmation/recompute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recompute */
+        post: operations["recompute_test_api_saas_forwarder_plans__plan_id__confirmation_recompute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/plan-confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Attention */
+        get: operations["attention_test_api_saas_forwarder_plan_confirmations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/change-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change Requests */
+        get: operations["change_requests_test_api_saas_forwarder_change_requests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/change-requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change Request */
+        get: operations["change_request_test_api_saas_forwarder_change_requests__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/change-requests/{request_id}/replan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replan Request */
+        post: operations["replan_request_test_api_saas_forwarder_change_requests__request_id__replan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/change-requests/{request_id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Request */
+        post: operations["apply_request_test_api_saas_forwarder_change_requests__request_id__apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/forwarder/change-requests/{request_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Request */
+        post: operations["reject_request_test_api_saas_forwarder_change_requests__request_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/test/api/saas/org": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Org */
+        patch: operations["update_org_test_api_saas_org_patch"];
         trace?: never;
     };
     "/test/api/saas/orgs": {
@@ -1971,6 +2334,58 @@ export interface components {
             lot_id: string;
             /** Idempotency Key */
             idempotency_key?: string | null;
+        };
+        /** AdminCompany */
+        AdminCompany: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+            /** Sandbox */
+            sandbox: boolean;
+            /** Members Count */
+            members_count: number;
+        };
+        /** AdminCounts */
+        AdminCounts: {
+            /** Companies */
+            companies: number;
+            /** Users */
+            users: number;
+            /** Shipments */
+            shipments: number;
+            /** Plans */
+            plans: number;
+        };
+        /** AdminMembership */
+        AdminMembership: {
+            /** Org Id */
+            org_id: string;
+            /** Org Name */
+            org_name: string;
+            /** Role */
+            role: string;
+        };
+        /** AdminOverview */
+        AdminOverview: {
+            counts: components["schemas"]["AdminCounts"];
+            /** Companies */
+            companies: components["schemas"]["AdminCompany"][];
+            /** Users */
+            users: components["schemas"]["AdminUser"][];
+        };
+        /** AdminUser */
+        AdminUser: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** Memberships */
+            memberships: components["schemas"]["AdminMembership"][];
         };
         /** AirHint */
         AirHint: {
@@ -3023,6 +3438,8 @@ export interface components {
             source: string;
             /** Id */
             id: string;
+            /** Name */
+            name?: string | null;
             /** Voyage Id */
             voyage_id: string;
             /**
@@ -3035,6 +3452,14 @@ export interface components {
              * @default 20
              */
             capacity_pallets: number;
+            /** Temp Min C */
+            temp_min_c?: number | null;
+            /** Temp Max C */
+            temp_max_c?: number | null;
+            /** Forwarder Org Id */
+            forwarder_org_id?: string | null;
+            /** Resource Revision */
+            resource_revision?: number | null;
         };
         /** ContainerEconomics */
         ContainerEconomics: {
@@ -3461,6 +3886,8 @@ export interface components {
              * @default false
              */
             include_registered: boolean;
+            /** Forwarder Org Id */
+            forwarder_org_id?: string | null;
         };
         /** CurrentReading */
         CurrentReading: {
@@ -4653,6 +5080,8 @@ export interface components {
             ready_date: string;
             /** Shipper */
             shipper: string;
+            /** Packhouse Id */
+            packhouse_id?: string | null;
             /** Destination */
             destination: string;
             /** Sell By Date */
@@ -4905,6 +5334,8 @@ export interface components {
             id: string;
             /** Shipper Id */
             shipper_id: string;
+            /** Packhouse Id */
+            packhouse_id?: string | null;
             /** Product Id */
             product_id: string;
             /** Pallets */
@@ -5651,6 +6082,11 @@ export interface components {
             /** Org Name */
             org_name: string;
         };
+        /** OrgUpdate */
+        OrgUpdate: {
+            /** Name */
+            name: string;
+        };
         /** OutageSummary */
         OutageSummary: {
             /** Cumulative Minutes */
@@ -6259,6 +6695,8 @@ export interface components {
              * @default false
              */
             auto_accept: boolean;
+            /** Forwarder Org Id */
+            forwarder_org_id?: string | null;
         };
         /** PlatformSettlement */
         PlatformSettlement: {
@@ -6735,10 +7173,102 @@ export interface components {
             early_harvest_loss_rate_per_day: components["schemas"]["Quantity"];
             air_loss_rate: components["schemas"]["Quantity"];
         };
+        /** ProductCreate */
+        ProductCreate: {
+            /** Name */
+            name: string;
+            /** Temp Min C */
+            temp_min_c: number;
+            /** Temp Max C */
+            temp_max_c: number;
+            /** Shelf Life Days */
+            shelf_life_days: number;
+            /** Pallet Kg */
+            pallet_kg: number;
+            /**
+             * So2 Treated
+             * @default false
+             */
+            so2_treated: boolean;
+            /** O2 Pct */
+            o2_pct?: number | null;
+            /** Co2 Pct */
+            co2_pct?: number | null;
+        };
         /** ProductOption */
         ProductOption: {
             /** Product Id */
             product_id: string;
+            /** Name */
+            name: string;
+        };
+        /** ProductOut */
+        ProductOut: {
+            /**
+             * Source
+             * @default 가정
+             */
+            source: string;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Temp Min C */
+            temp_min_c: number;
+            /** Temp Max C */
+            temp_max_c: number;
+            /** O2 Pct */
+            o2_pct?: number | null;
+            /** Co2 Pct */
+            co2_pct?: number | null;
+            /** Shelf Life Days */
+            shelf_life_days: number;
+            /**
+             * So2 Treated
+             * @default false
+             */
+            so2_treated: boolean;
+            /**
+             * Pallet Kg
+             * @default 415
+             */
+            pallet_kg: number;
+            /**
+             * Pallet Kg Assumed
+             * @default false
+             */
+            pallet_kg_assumed: boolean;
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
+            /** Writable */
+            writable: boolean;
+            /** Replaces Id */
+            replaces_id?: string | null;
+        };
+        /** ProductPatch */
+        ProductPatch: {
+            /** Name */
+            name?: string | null;
+            /** Temp Min C */
+            temp_min_c?: number | null;
+            /** Temp Max C */
+            temp_max_c?: number | null;
+            /** Shelf Life Days */
+            shelf_life_days?: number | null;
+            /** Pallet Kg */
+            pallet_kg?: number | null;
+            /** So2 Treated */
+            so2_treated?: boolean | null;
+            /** O2 Pct */
+            o2_pct?: number | null;
+            /** Co2 Pct */
+            co2_pct?: number | null;
+        };
+        /** ProfileUpdate */
+        ProfileUpdate: {
             /** Name */
             name: string;
         };
@@ -7238,6 +7768,148 @@ export interface components {
             destination_port_id: string;
             /** Destination Name */
             destination_name: string;
+        };
+        /** ResourceCreate */
+        ResourceCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "40RH-CA" | "40RH" | "20RF";
+            /** Capacity Pallets */
+            capacity_pallets: number;
+            /** Temp Min C */
+            temp_min_c: number;
+            /** Temp Max C */
+            temp_max_c: number;
+            /** Vessel Name */
+            vessel_name: string;
+            /** Terminal */
+            terminal: string;
+            /** Origin */
+            origin: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Etd
+             * Format: date-time
+             */
+            etd: string;
+            /**
+             * Cy Cutoff
+             * Format: date-time
+             */
+            cy_cutoff: string;
+            /** Transit Days */
+            transit_days: number;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+        };
+        /** ResourceOptions */
+        ResourceOptions: {
+            /** Ports */
+            ports: components["schemas"]["Port"][];
+            /** Container Kinds */
+            container_kinds: string[];
+            /**
+             * Allocation Notice
+             * @default 앱 안의 가용 공간 배정입니다. 실제 선사 예약·운송은 포워더가 별도로 진행합니다.
+             */
+            allocation_notice: string;
+        };
+        /** ResourceOut */
+        ResourceOut: {
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "40RH-CA" | "40RH" | "20RF";
+            /** Capacity Pallets */
+            capacity_pallets: number;
+            /** Temp Min C */
+            temp_min_c: number;
+            /** Temp Max C */
+            temp_max_c: number;
+            /** Vessel Name */
+            vessel_name: string;
+            /** Terminal */
+            terminal: string;
+            /** Origin */
+            origin: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Etd
+             * Format: date-time
+             */
+            etd: string;
+            /**
+             * Cy Cutoff
+             * Format: date-time
+             */
+            cy_cutoff: string;
+            /** Transit Days */
+            transit_days: number;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Id */
+            id: string;
+            /** Forwarder Org Id */
+            forwarder_org_id: string;
+            /** Forwarder Org Name */
+            forwarder_org_name: string;
+            /** Allocated Plan Id */
+            allocated_plan_id: string | null;
+            /** Allocated Pallets */
+            allocated_pallets: number;
+            /** Available Pallets */
+            available_pallets: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "available" | "allocated" | "disabled";
+            /** Source */
+            source: string;
+        };
+        /** ResourcePatch */
+        ResourcePatch: {
+            /** Name */
+            name?: string | null;
+            /** Kind */
+            kind?: ("40RH-CA" | "40RH" | "20RF") | null;
+            /** Capacity Pallets */
+            capacity_pallets?: number | null;
+            /** Temp Min C */
+            temp_min_c?: number | null;
+            /** Temp Max C */
+            temp_max_c?: number | null;
+            /** Vessel Name */
+            vessel_name?: string | null;
+            /** Terminal */
+            terminal?: string | null;
+            /** Origin */
+            origin?: string | null;
+            /** Destination */
+            destination?: string | null;
+            /** Etd */
+            etd?: string | null;
+            /** Cy Cutoff */
+            cy_cutoff?: string | null;
+            /** Transit Days */
+            transit_days?: number | null;
+            /** Enabled */
+            enabled?: boolean | null;
         };
         /** RouteChange */
         RouteChange: {
@@ -8122,6 +8794,8 @@ export interface components {
             ready_date: string;
             /** Shipper */
             shipper?: string | null;
+            /** Packhouse Id */
+            packhouse_id?: string | null;
             /** Destination */
             destination: string;
             /** Sell By Date */
@@ -11666,6 +12340,39 @@ export interface operations {
             };
         };
     };
+    update_me_test_api_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeUser"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_catalog_test_api_saas_catalog_get: {
         parameters: {
             query?: {
@@ -11693,6 +12400,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    overview_test_api_saas_admin_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverview"];
                 };
             };
         };
@@ -12200,6 +12927,324 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PackhouseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_products_test_api_saas_shipper_products_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_product_test_api_saas_shipper_products_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_product_test_api_saas_shipper_products__product_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_product_test_api_saas_shipper_products__product_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_product_test_api_saas_shipper_products__product_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    options_test_api_saas_resources_options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResourceOptions"];
+                };
+            };
+        };
+    };
+    list_own_resources_test_api_saas_forwarder_resources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResourceOut"][];
+                };
+            };
+        };
+    };
+    create_resource_test_api_saas_forwarder_resources_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResourceCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_available_resources_test_api_saas_platform_resources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResourceOut"][];
+                };
+            };
+        };
+    };
+    delete_resource_test_api_saas_forwarder_resources__resource_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resource_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_resource_test_api_saas_forwarder_resources__resource_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resource_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResourcePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResourceOut"];
                 };
             };
             /** @description Validation Error */
@@ -12776,6 +13821,39 @@ export interface operations {
             };
         };
     };
+    create_plan_test_api_saas_forwarder_plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanSession"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_plan_test_api_saas_forwarder_plans__plan_id__get: {
         parameters: {
             query?: never;
@@ -12967,6 +14045,439 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ForwarderOrder"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    shipping_pool_test_api_saas_forwarder_lots_get: {
+        parameters: {
+            query?: {
+                status?: ("registered" | "planned" | "shipped" | "cancelled") | null;
+                scenario_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformLot"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_plan_test_api_saas_forwarder_plans_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_lot_test_api_saas_forwarder_plans__plan_id__add_lot_post: {
+        parameters: {
+            query?: {
+                llm?: boolean | null;
+            };
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddLotRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirmation_test_api_saas_forwarder_plans__plan_id__confirmation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanConfirmationState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    auto_accept_test_api_saas_forwarder_plans__plan_id__confirmation_auto_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanConfirmationState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recompute_test_api_saas_forwarder_plans__plan_id__confirmation_recompute_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecomputeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecomputeResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attention_test_api_saas_forwarder_plan_confirmations_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanConfirmationState"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_requests_test_api_saas_forwarder_change_requests_get: {
+        parameters: {
+            query?: {
+                status?: ("open" | "applied" | "rejected") | null;
+                plan_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformChangeRequest"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_request_test_api_saas_forwarder_change_requests__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformChangeRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replan_request_test_api_saas_forwarder_change_requests__request_id__replan_post: {
+        parameters: {
+            query?: {
+                llm?: boolean | null;
+            };
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeRequestReplan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_request_test_api_saas_forwarder_change_requests__request_id__apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequestApply"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeRequestApplied"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_request_test_api_saas_forwarder_change_requests__request_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequestReject"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformChangeRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_org_test_api_saas_org_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrgUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgSummary"];
                 };
             };
             /** @description Validation Error */

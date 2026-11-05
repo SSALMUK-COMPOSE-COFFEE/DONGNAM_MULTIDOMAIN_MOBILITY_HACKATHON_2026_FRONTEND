@@ -21,6 +21,8 @@ export const SAAS_ENDPOINTS = {
   AUTH_LOGOUT: '/auth/logout',
   AUTH_ACTIVE_ORG: '/auth/active-org',
   ME: '/me',
+  COMPANY: '/saas/org',
+  ADMIN_OVERVIEW: '/saas/admin/overview',
   PUBLIC_SHOWCASE: '/public/showcase',
 } as const;
 
@@ -31,3 +33,17 @@ export const SAAS_AUTH_ENDPOINTS: readonly string[] = [
   SAAS_ENDPOINTS.AUTH_LOGOUT,
   SAAS_ENDPOINTS.PUBLIC_SHOWCASE,
 ];
+
+export const SAAS_RESOURCE_ENDPOINTS = {
+  FORWARDER: '/saas/forwarder/resources',
+  RESOURCE: (id: string) => `/saas/forwarder/resources/${encodeURIComponent(id)}`,
+  PLATFORM: '/saas/platform/resources',
+  OPTIONS: '/saas/resources/options',
+} as const;
+
+export const SAAS_ALLOCATION_ENDPOINTS = {
+  LOTS: (role: 'platform' | 'forwarder') => `/saas/${role}/lots`,
+  PLANS: (role: 'platform' | 'forwarder') => `/saas/${role}/plans`,
+  PREVIEW: (role: 'platform' | 'forwarder') => `/saas/${role}/plans/preview`,
+  CATALOG: '/saas/catalog',
+} as const;
