@@ -10,7 +10,6 @@ import { forwarderKeys, useForwarderOrgId } from '@/apis/saas/forwarder';
 import { analysisKeys } from '@/apis/saas/keys';
 import { allocationKeys } from '@/apis/saas/planning';
 import type {
-  PlanConfirmationStateT,
   RecomputeRequestT,
   RecomputeResultT,
 } from '@/apis/saas/platform-confirm';
@@ -224,23 +223,6 @@ export const useForwarderRejectChangeRequest = () => {
       toast.success('변경 요청을 반려했습니다. 화주에게 알림을 남겼습니다.');
     },
     onError: toastSaasError('변경 요청을 반려하지 못했습니다.'),
-  });
-};
-
-export const useForwarderAutoAcceptConfirmation = (planId: string) => {
-  const invalidate = useInvalidateOperations();
-  return useMutation({
-    mutationFn: async () =>
-      (
-        await saasApi.post<PlanConfirmationStateT>(
-          `/saas/forwarder/plans/${encodeURIComponent(planId)}/confirmation/auto-accept`
-        )
-      ).data,
-    onSuccess: () => {
-      invalidate(planId);
-      toast.success('남은 화주 확인을 모두 수락 처리했습니다.');
-    },
-    onError: toastSaasError('자동 수락하지 못했습니다.'),
   });
 };
 

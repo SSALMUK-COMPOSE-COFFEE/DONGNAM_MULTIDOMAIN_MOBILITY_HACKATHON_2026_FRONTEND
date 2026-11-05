@@ -1,6 +1,6 @@
 'use client';
 
-import { useIsSandbox, useMe } from '@/apis/saas/auth';
+import { useMe } from '@/apis/saas/auth';
 import { useForwarderConfirmation, useForwarderPlan } from '@/apis/saas/forwarder';
 import type { ReplanResponseT } from '@/types/api';
 import type { SaasPlanSessionT } from '@/types/api-saas';
@@ -18,7 +18,6 @@ export const scrollToReplanCandidates = () => {
 
 export const useReplanGate = (session: SaasPlanSessionT) => {
   const me = useMe();
-  const isSandbox = useIsSandbox();
   const plan = useForwarderPlan(session.plan_id);
   const confirmation = useForwarderConfirmation(session.plan_id);
   const state = confirmation.data ?? null;
@@ -28,15 +27,13 @@ export const useReplanGate = (session: SaasPlanSessionT) => {
     currentRows.filter(row => row.status === 'rejected').map(row => row.shipper_id)
   );
   const isAwaiting =
-    !isSandbox &&
-    ((state?.status ?? session.status) === 'pending_shipper_confirmation' ||
-      currentRows.some(row => present.has(row.shipper_id) && row.status !== 'accepted'));
+    (state?.status ?? session.status) === 'pending_shipper_confirmation' ||
+    currentRows.some(row => present.has(row.shipper_id) && row.status !== 'accepted');
   const canOperate = me.data?.active_org.org_type === 'forwarder' && plan.isSuccess;
   const isUnknown =
     plan.isPending || plan.isError || confirmation.isPending || confirmation.isError;
   const applyBlockReason = (replan: ReplanResponseT): string | null => {
     if (!canOperate || isUnknown) return FORWARDER_UNKNOWN_REASON;
-    if (isSandbox) return null;
     const event = replan.event;
     const cancelled =
       event.type === 'cancel' ? session.scenario.lots.find(({ id }) => id === event.lot_id) : null;
@@ -44,5 +41,5 @@ export const useReplanGate = (session: SaasPlanSessionT) => {
       return AWAITING_APPLY_REASON;
     return null;
   };
-  return { isSandbox, isAwaiting, canOperate, isUnknown, applyBlockReason };
+  return { isAwaiting, canOperate, isUnknown, applyBlockReason };
 };

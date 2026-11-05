@@ -133,20 +133,6 @@ export const SAAS_ROUTES = {
   },
 } as const satisfies Record<OrgType, SaasRoleRouteT>;
 
-export type SandboxStepT = {
-  step: string;
-  label: string;
-  orgType: OrgType;
-  href: string;
-};
-
-export const SANDBOX_SCENARIO_STEPS = [
-  { step: '①', label: '출하 등록', orgType: 'shipper', href: '/app/shipper/lots' },
-  { step: '②', label: '계획 생성', orgType: 'forwarder', href: '/app/forwarder/lots' },
-  { step: '③', label: '화주 확정', orgType: 'shipper', href: '/app/shipper/plans' },
-  { step: '④', label: '실행 지시', orgType: 'forwarder', href: '/app/forwarder/orders' },
-] as const satisfies readonly SandboxStepT[];
-
 export const SIGNUP_ORG_TYPES = ['shipper', 'forwarder'] as const satisfies readonly OrgType[];
 
 export const roleCompanySettings = (orgType: OrgType) =>

@@ -4,7 +4,6 @@ import { CopyIcon } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useIsSandbox } from '@/apis/saas/auth';
 import { saasErrorDetail, saasErrorReason, saasErrorStatus } from '@/apis/saas/errors';
 import { useRegisterDevice } from '@/apis/saas/platform';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,6 @@ export function RegisterDeviceCard() {
   const [name, setName] = useState('');
   const [issued, setIssued] = useState<RegisteredDeviceT | null>(null);
   const register = useRegisterDevice();
-  const isSandbox = useIsSandbox();
   const trimmedId = deviceId.trim();
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -71,11 +69,6 @@ export function RegisterDeviceCard() {
             X-Device-Token
           </code>
           헤더에 이 토큰을 넣습니다.
-          {isSandbox && (
-            <span className="mt-1 block">
-              기기 id는 서버가 이 둘러보기 전용으로 붙입니다. demo- 는 있어도 되고 없어도 됩니다.
-            </span>
-          )}
         </div>
       </div>
       <div>
@@ -87,7 +80,7 @@ export function RegisterDeviceCard() {
               className="m2-inp"
               value={deviceId}
               onChange={event => setDeviceId(event.target.value)}
-              placeholder={isSandbox ? 'sensor-1' : 'arduino-02'}
+              placeholder="arduino-02"
               maxLength={100}
               required
             />

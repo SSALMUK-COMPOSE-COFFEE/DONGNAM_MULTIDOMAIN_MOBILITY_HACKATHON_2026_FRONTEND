@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
-import { useDemoLogin, useMe } from '@/apis/saas/auth';
-import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
+import { useMe } from '@/apis/saas/auth';
 import { PalletBar, type PalletSegmentT } from '@/components/pallet-bar';
 import { SAAS_PAGES, roleHome } from '@/consts/route-saas';
 
@@ -29,11 +27,7 @@ const LOADS: { title: string; capacity: number; segments: PalletSegmentT[] }[] =
 ];
 
 export function LandingHero() {
-  const router = useRouter();
-  const demo = useDemoLogin();
   const session = useMe().data;
-  const enterDemo = () =>
-    demo.mutate({ new_world: true }, { onSuccess: () => router.replace(roleHome('platform')) });
 
   return (
     <section className="fs-public-hero" aria-labelledby="landing-title">
@@ -60,23 +54,11 @@ export function LandingHero() {
             {session && !session.world ? '내 업무 화면으로' : '로그인'}
             <span aria-hidden>↗</span>
           </Link>
-          <button
-            type="button"
-            className="fs-public-secondary"
-            disabled={demo.isPending}
-            aria-busy={demo.isPending}
-            onClick={enterDemo}
-          >
-            {demo.isPending ? '데모 여는 중…' : '데모 체험하기'}
+          <a href="/intake" className="fs-public-secondary">
+            시연 화면 보기
             <span aria-hidden>→</span>
-          </button>
+          </a>
         </div>
-        <p className="fs-public-demo-note">가입 없이 예시 출하로 먼저 둘러보세요.</p>
-        {demo.isError && (
-          <p role="alert" className="fs-public-error">
-            {authErrorMessage(demo.error, '데모를 열지 못했습니다. 다시 시도해 주세요.')}
-          </p>
-        )}
       </div>
       <div className="fs-public-pooling" aria-labelledby="pooling-title">
         <h2 id="pooling-title">

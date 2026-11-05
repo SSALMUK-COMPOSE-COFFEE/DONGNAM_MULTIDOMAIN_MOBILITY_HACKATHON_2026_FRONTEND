@@ -1,18 +1,13 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { cn } from 'cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { useIsSandbox } from '@/apis/saas/auth';
 import {
-  coldchainKeys,
   useColdchainContainers,
-  useColdchainOrgId,
   useColdchainSettlementPreview,
-  useColdchainSimulation,
   useColdchainTwin,
 } from '@/apis/saas/coldchain';
 import {
@@ -125,17 +120,8 @@ export function ColdchainView() {
 function PlanColdchain({ planId }: { planId: string }) {
   const planQuery = usePlatformPlan(planId);
   const summariesQuery = useColdchainContainers(planId);
-  const queryClient = useQueryClient();
-  const orgId = useColdchainOrgId();
   const [openedAt] = useState(() => new Date().toISOString());
   const [pickedContainerId, setPickedContainerId] = useState('');
-  const isSandbox = useIsSandbox();
-  const simulation = useColdchainSimulation(planId);
-  const runSimulation = (id: string) =>
-    simulation.mutate(id, {
-      onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: coldchainKeys.plan(orgId, planId) }),
-    });
 
   const streamPlanId = planQuery.isSuccess ? planId : '';
   const { alerts, status, reconnect } = usePlatformAlertStream(streamPlanId, (alert: AlertT) => {
@@ -210,16 +196,6 @@ function PlanColdchain({ planId }: { planId: string }) {
                 {status === 'stopped' && (
                   <button type="button" className="m2-btn m2-btn-sec m2-btn-sm" onClick={reconnect}>
                     다시 연결
-                  </button>
-                )}
-                {isSandbox && (
-                  <button
-                    type="button"
-                    className="m2-btn m2-btn-pri m2-btn-sm ml-auto"
-                    disabled={simulation.isPending}
-                    onClick={() => runSimulation(containerId)}
-                  >
-                    시뮬레이션 실행
                   </button>
                 )}
               </div>

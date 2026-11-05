@@ -2,7 +2,6 @@
 
 import { useId, useState } from 'react';
 
-import { useIsSandbox } from '@/apis/saas/auth';
 import { useAssignForwarder, useForwarderOrgs, usePlatformPlans } from '@/apis/saas/platform';
 import {
   AWAITING_SHIPPERS_STATUS,
@@ -44,11 +43,10 @@ type ForwarderAssignCardPropsT = {
 
 export function ForwarderAssignCard({ planId, planStatus }: ForwarderAssignCardPropsT) {
   const forwardersQuery = useForwarderOrgs();
-  const isSandbox = useIsSandbox();
   const confirmation = usePlatformConfirmation(planId);
   const counts = confirmationCounts(confirmation.data);
   const isAwaiting = (confirmation.data?.status ?? planStatus) === AWAITING_SHIPPERS_STATUS;
-  const isBlocked = isAwaiting && !isSandbox;
+  const isBlocked = isAwaiting;
   const blockedId = useId();
   const plansQuery = usePlatformPlans();
   const { assign, unassign } = useAssignForwarder(planId);
@@ -60,7 +58,6 @@ export function ForwarderAssignCard({ planId, planStatus }: ForwarderAssignCardP
   const isBusy = assign.isPending || unassign.isPending;
   const assignLabel = (assign.isPending && '배정 중') || (current ? '포워더 바꾸기' : '배정하기');
   const isBeforeConfirmation =
-    isSandbox &&
     !!current &&
     (isAwaiting ||
       isFlaggedBeforeConfirmation(current) ||
@@ -157,12 +154,6 @@ export function ForwarderAssignCard({ planId, planStatus }: ForwarderAssignCardP
         {isBlocked && (
           <p id={blockedId} className="m2-note mt-1 text-[12.5px]">
             참여 화주가 모두 수락해야 포워더를 배정할 수 있습니다{waitText}.
-          </p>
-        )}
-        {isAwaiting && isSandbox && !current && (
-          <p className="m2-note mt-1 text-[12.5px]">
-            데모 환경이라 화주 확인 전에도 배정할 수 있습니다. 배정하면 &lsquo;화주 확인 전
-            배정&rsquo;으로 표시됩니다.
           </p>
         )}
       </div>

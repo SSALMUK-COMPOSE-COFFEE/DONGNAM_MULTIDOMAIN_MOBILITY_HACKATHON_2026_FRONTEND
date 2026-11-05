@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
-import { useIsSandbox } from '@/apis/saas/auth';
 import { useForwarderScheduleCheck } from '@/apis/saas/forwarder-operations';
 import { kstDayTime } from '@/app/(saas)/app/platform/_components/m2-format';
 import { hoursText } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
@@ -26,8 +23,6 @@ const signedHours = (hours: number) =>
 
 export function ScheduleCheckCard({ session, isReplanning, onRun }: ScheduleCheckCardPropsT) {
   const { plan_id: planId, plan } = session;
-  const isSandbox = useIsSandbox();
-  const [mixDemo, setMixDemo] = useState(true);
   const check = useForwarderScheduleCheck(planId);
   const result = check.data ?? null;
   const usedDemo = result?.demo_mixed ?? false;
@@ -35,7 +30,7 @@ export function ScheduleCheckCard({ session, isReplanning, onRun }: ScheduleChec
     plan.containers.find(({ used, voyage_id }) => used && voyage_id === voyageId)?.container_id ??
     null;
 
-  const runCheck = () => check.mutate({ demo: isSandbox && mixDemo });
+  const runCheck = () => check.mutate({ demo: false });
 
   return (
     <section className="m2-card flex min-w-0 flex-col gap-3">
@@ -56,17 +51,6 @@ export function ScheduleCheckCard({ session, isReplanning, onRun }: ScheduleChec
         >
           {check.isPending ? '확인 중' : '해수부 일정 확인'}
         </button>
-        {isSandbox && (
-          <label className="flex items-center gap-2 text-[12.5px] text-m2-ink-2">
-            <input
-              type="checkbox"
-              className="m2-cb"
-              checked={mixDemo}
-              onChange={event => setMixDemo(event.target.checked)}
-            />
-            시연 선박 실적 섞기
-          </label>
-        )}
       </div>
 
       {check.isPending && <Skeleton className="h-24 w-full rounded-[14px]" />}

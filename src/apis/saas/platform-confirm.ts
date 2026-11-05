@@ -23,8 +23,6 @@ export const AWAITING_SHIPPERS_STATUS = 'pending_shipper_confirmation';
 export const PLATFORM_CONFIRM_ENDPOINTS = {
   ATTENTION: '/saas/platform/plan-confirmations',
   STATE: (planId: string) => `/saas/platform/plans/${encodeURIComponent(planId)}/confirmation`,
-  AUTO_ACCEPT: (planId: string) =>
-    `/saas/platform/plans/${encodeURIComponent(planId)}/confirmation/auto-accept`,
   RECOMPUTE: (planId: string) =>
     `/saas/platform/plans/${encodeURIComponent(planId)}/confirmation/recompute`,
 } as const;
@@ -48,14 +46,6 @@ export const getPlatformAttention = async () => {
   const { data } = await saasApi.get<PlanConfirmationStateT[]>(
     PLATFORM_CONFIRM_ENDPOINTS.ATTENTION,
     { params: { limit: ATTENTION_LIMIT } }
-  );
-
-  return data;
-};
-
-export const postPlatformAutoAccept = async (planId: string) => {
-  const { data } = await saasApi.post<PlanConfirmationStateT>(
-    PLATFORM_CONFIRM_ENDPOINTS.AUTO_ACCEPT(planId)
   );
 
   return data;
@@ -116,22 +106,6 @@ const useInvalidatePlanState = (planId: string) => {
     queryClient.invalidateQueries({ queryKey: platformKeys.settlements(orgId) });
     invalidatePlatformMetrics(queryClient, orgId);
   };
-};
-
-export const useAutoAcceptConfirmation = (planId: string) => {
-  const queryClient = useQueryClient();
-  const orgId = usePlatformOrgId();
-  const invalidate = useInvalidatePlanState(planId);
-
-  return useMutation({
-    mutationFn: () => postPlatformAutoAccept(planId),
-    onSuccess: state => {
-      queryClient.setQueryData(platformConfirmKeys.state(orgId, planId), state);
-      toast.success('남은 화주 확인을 모두 수락 처리했습니다.');
-    },
-    onError: toastSaasError('자동 수락하지 못했습니다.'),
-    onSettled: invalidate,
-  });
 };
 
 export const useRecomputeWithoutRejected = (planId: string) => {

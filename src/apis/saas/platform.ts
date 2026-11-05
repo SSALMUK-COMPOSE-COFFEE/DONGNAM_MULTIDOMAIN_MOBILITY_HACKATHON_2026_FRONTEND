@@ -27,8 +27,6 @@ import type {
   PlanEventT,
   ReplanResponseT,
   ScenarioT,
-  SimulationRequestT,
-  SimulationRunT,
   TwinStateT,
 } from '@/types/api';
 import type { SaasPlanSessionT } from '@/types/api-saas';
@@ -70,7 +68,6 @@ export const PLATFORM_ENDPOINTS = {
   COLDCHAIN_CONTAINER: (containerId: string) =>
     `/coldchain/containers/${encodeURIComponent(containerId)}`,
   COLDCHAIN_ALERTS_STREAM: '/coldchain/alerts/stream',
-  COLDCHAIN_SIMULATE: '/coldchain/simulate',
 } as const;
 
 const SSE_RECONNECT_MS = 3_000;
@@ -79,8 +76,6 @@ const SSE_MAX_FAILURES = 6;
 export const PLATFORM_LOTS_LIMIT = 1_000;
 export const PLATFORM_PLANS_LIMIT = 500;
 const TWIN_POLLING_MS = 5_000;
-const SIMULATOR_DEVICE_ID = 'sim-01';
-const SIMULATION_INTERVAL_SECONDS = 1;
 const SUMMARY_POLLING_MS = 10_000;
 const PLAN_PREVIEW_TIMEOUT_MS = 30_000;
 
@@ -113,15 +108,6 @@ export const invalidatePlatformMetrics = (queryClient: QueryClient, orgId: strin
   queryClient.invalidateQueries({ queryKey: platformKeys.metrics(orgId) });
 
 export const usePlatformOrgId = () => useMe().data?.active_org.org_id ?? '';
-
-export const postPlatformSimulation = async (request: SimulationRequestT) => {
-  const { data } = await saasApi.post<SimulationRunT>(
-    PLATFORM_ENDPOINTS.COLDCHAIN_SIMULATE,
-    request
-  );
-
-  return data;
-};
 
 export const getPlatformCatalog = async () => {
   const { data } = await saasApi.get<ScenarioT>(PLATFORM_ENDPOINTS.CATALOG);
@@ -498,29 +484,6 @@ export const useBindDevice = () => {
       toast.success(`${binding.device_id} 기기를 ${binding.container_id}에 연결했습니다.`);
     },
     onError: toastSaasError('기기를 컨테이너에 연결하지 못했습니다.'),
-  });
-};
-
-export const usePlatformSimulation = (planId: string) => {
-  const queryClient = useQueryClient();
-  const orgId = usePlatformOrgId();
-
-  return useMutation({
-    mutationFn: (containerId: string) =>
-      postPlatformSimulation({
-        preset: 'power_cut_restore',
-        container_id: containerId,
-        plan_id: planId,
-        device_id: SIMULATOR_DEVICE_ID,
-        stage: 'terminal',
-        interval_seconds: SIMULATION_INTERVAL_SECONDS,
-        reset: true,
-      }),
-    onSuccess: (_run, containerId) => {
-      queryClient.invalidateQueries({ queryKey: platformKeys.containers(orgId, planId) });
-      toast.success(`${containerId} 단전 시뮬레이션을 시작했습니다.`);
-    },
-    onError: toastSaasError('시뮬레이션을 시작하지 못했습니다.'),
   });
 };
 

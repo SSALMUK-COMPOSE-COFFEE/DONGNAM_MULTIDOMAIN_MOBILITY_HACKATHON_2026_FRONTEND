@@ -2,13 +2,10 @@
 
 import { cn } from 'cn';
 
-import { useIsSandbox, useMe } from '@/apis/saas/auth';
+import { useMe } from '@/apis/saas/auth';
 import { saasErrorDetail, saasErrorStatus } from '@/apis/saas/errors';
 import { useForwarderConfirmation } from '@/apis/saas/forwarder';
-import {
-  useForwarderAutoAcceptConfirmation,
-  useForwarderRecomputeWithoutRejected,
-} from '@/apis/saas/forwarder-operations';
+import { useForwarderRecomputeWithoutRejected } from '@/apis/saas/forwarder-operations';
 import {
   AWAITING_SHIPPERS_STATUS,
   type PlanConfirmationStatusT,
@@ -47,15 +44,13 @@ export function PlanConfirmationCard({ session }: { session: SaasPlanSessionT })
 function ForwarderPlanConfirmationCard({ session }: { session: SaasPlanSessionT }) {
   const planId = session.plan_id;
   const query = useForwarderConfirmation(planId);
-  const isSandbox = useIsSandbox();
-  const autoAccept = useForwarderAutoAcceptConfirmation(planId);
   const recompute = useForwarderRecomputeWithoutRejected(planId);
   const state = query.data ?? null;
   const counts = confirmationCounts(state);
   const planStatus = state?.status ?? session.status;
   const isAwaiting = planStatus === AWAITING_SHIPPERS_STATUS;
   const isCommitted = planStatus === 'committed';
-  const isBusy = autoAccept.isPending || recompute.isPending;
+  const isBusy = recompute.isPending;
   const recomputeConflict =
     recompute.isError && saasErrorStatus(recompute.error) === 409
       ? (saasErrorDetail(recompute.error) ?? '지금은 거절한 화주를 빼고 다시 짤 수 없습니다.')
@@ -145,16 +140,6 @@ function ForwarderPlanConfirmationCard({ session }: { session: SaasPlanSessionT 
 
       {state && (counts.pending > 0 || counts.rejected > 0) && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {isSandbox && counts.pending > 0 && (
-            <button
-              type="button"
-              className="m2-btn m2-btn-pri"
-              disabled={isBusy}
-              onClick={() => autoAccept.mutate()}
-            >
-              {autoAccept.isPending ? '수락 처리 중' : '전원 자동 수락'}
-            </button>
-          )}
           {counts.rejected > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -178,9 +163,6 @@ function ForwarderPlanConfirmationCard({ session }: { session: SaasPlanSessionT 
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          )}
-          {isSandbox && counts.pending > 0 && (
-            <span className="m2-sub mt-0 text-[12px]">데모 환경에서만 보이는 버튼입니다.</span>
           )}
         </div>
       )}

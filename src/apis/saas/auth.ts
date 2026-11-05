@@ -3,7 +3,6 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 import { create } from 'zustand';
 
@@ -14,10 +13,8 @@ import { orgKeys } from '@/apis/saas/keys';
 import { saasRetry } from '@/apis/saas/retry';
 import { broadcastSessionChange, subscribeSessionChange } from '@/apis/saas/session-sync';
 import { SAAS_ENDPOINTS } from '@/consts/api-saas';
-import { roleHome } from '@/consts/route-saas';
 import type {
   ActiveOrgRequest,
-  DemoLoginRequest,
   LoginRequest,
   Me,
   MeUser,
@@ -113,12 +110,6 @@ export const postLogin = async (request: LoginRequest) => {
   return data;
 };
 
-export const postDemoLogin = async (request: DemoLoginRequest) => {
-  const { data } = await saasApi.post<Me>(SAAS_ENDPOINTS.AUTH_DEMO_LOGIN, request);
-
-  return data;
-};
-
 export const postSignup = async (request: SignupRequest) => {
   const { data } = await saasApi.post<Me>(SAAS_ENDPOINTS.AUTH_SIGNUP, request);
 
@@ -143,8 +134,6 @@ export const useMe = () => {
   return useQuery(meQueryOptions());
 };
 
-export const useIsSandbox = () => useMe().data?.active_org.sandbox ?? false;
-
 const useStartSession = () => {
   const queryClient = useQueryClient();
 
@@ -163,15 +152,6 @@ export const useLogin = () => {
   const startSession = useStartSession();
 
   return useMutation({ mutationFn: postLogin, onSuccess: startSession });
-};
-
-export const useDemoLogin = () => {
-  const startSession = useStartSession();
-
-  return useMutation({
-    mutationFn: (request: DemoLoginRequest) => postDemoLogin(request),
-    onSuccess: startSession,
-  });
 };
 
 export const useSignup = () => {
@@ -202,40 +182,10 @@ export const isMeQuery = (queryKey: readonly unknown[]) =>
 
 export const useSessionSync = () => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   useEffect(
     () =>
-      subscribeSessionChange(async signal => {
-        if (signal.kind === 'reset') {
-          const me = queryClient.getQueryData<Me>(orgKeys.me) ?? null;
-          const mine = me?.world?.world_id ?? null;
-          if (!signal.world_id || signal.world_id !== mine || !me) return;
-
-          const home = roleHome('platform');
-          const platformId =
-            me.memberships.find(item => item.org_type === 'platform')?.org_id ?? null;
-
-          if (platformId && me.active_org.org_id !== platformId) {
-            try {
-              applyActiveOrg(queryClient, await putActiveOrg(platformId));
-            } catch {
-              await queryClient
-                .invalidateQueries({ queryKey: orgKeys.me, exact: true })
-                .catch(() => null);
-            }
-          }
-
-          queryClient.removeQueries({
-            queryKey: orgKeys.all,
-            predicate: query => !isMeQuery(query.queryKey),
-          });
-          useSwitchTargetStore.getState().setTarget(home);
-          router.replace(home);
-
-          return;
-        }
-
+      subscribeSessionChange(async () => {
         await useActiveOrgStore.persist.rehydrate();
 
         const activeOrgOf = () =>
@@ -252,7 +202,7 @@ export const useSessionSync = () => {
         if (activeOrgOf() === before) queryClient.invalidateQueries(others);
         else queryClient.removeQueries(others);
       }),
-    [queryClient, router]
+    [queryClient]
   );
 };
 

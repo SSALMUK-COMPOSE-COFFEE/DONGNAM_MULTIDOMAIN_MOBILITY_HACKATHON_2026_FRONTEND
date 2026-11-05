@@ -8,7 +8,7 @@ import { useMe } from '@/apis/saas/auth';
 import { saasApi } from '@/apis/saas/client';
 import { toastSaasError } from '@/apis/saas/errors';
 import { orgKeys } from '@/apis/saas/keys';
-import { usePlatformAlertStream, usePlatformSimulation } from '@/apis/saas/platform';
+import { usePlatformAlertStream } from '@/apis/saas/platform';
 import { settlementPreviewQueryOptions } from '@/apis/saas/platform-analysis';
 import { saasRetry } from '@/apis/saas/retry';
 import type { SaasSchemaT } from '@/types/api-saas';
@@ -272,8 +272,6 @@ export const useColdchainSettlementPreview = (
 
   return useQuery({ ...options, enabled: options.enabled !== false && hasData });
 };
-
-export const useColdchainSimulation = usePlatformSimulation;
 
 const ACTION_SUCCESS: Record<ColdchainActionStepT, string> = {
   accept: '조치를 수락했습니다.',
