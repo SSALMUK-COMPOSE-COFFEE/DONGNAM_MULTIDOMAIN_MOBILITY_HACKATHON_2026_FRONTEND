@@ -119,7 +119,7 @@ function PnlBody({ data, line }: { data: PlatformBusinessT; line: PlatformBusine
         <PnlRow
           label={`포워더 몫 ${shareText(line.forwarder_share)}`}
           value={signedWon(-line.forwarder_cost)}
-          title={line.label}
+          title="포워더 운임은 별도 청구"
         />
         {line.variable_cost !== 0 ? (
           <PnlRow label="변동비" value={signedWon(-line.variable_cost)} />
@@ -144,7 +144,9 @@ function PnlBody({ data, line }: { data: PlatformBusinessT; line: PlatformBusine
         />
       </div>
 
-      <p className="mt-1 text-[11.5px] text-m2-muted">{line.label}</p>
+      <p className="mt-1 text-[11.5px] text-m2-muted">
+        포워더 성과보수 배분 {shareText(line.forwarder_share)} · 운임은 별도 청구
+      </p>
 
       <h3 className="m2-h3 mt-4">연 환산</h3>
       <div className="m2-lines mt-1">

@@ -60,7 +60,9 @@ function YearsTable({ line }: { line: BusinessYearLineT }) {
             <tr key={row.year}>
               <td className="min-w-[180px]">
                 <div className="font-semibold text-m2-ink">{row.year}년 차</div>
-                <div className="text-[11.5px] leading-[1.4] text-m2-muted">{row.stage}</div>
+                <div className="text-[11.5px] leading-[1.4] text-m2-muted">
+                  {row.stage.replace(/\(D13에 따라 /g, '(')}
+                </div>
               </td>
               <td className="r m2-num">{countText(row.pallets)}</td>
               <td className="r m2-num">
@@ -123,7 +125,7 @@ function YearsBody({ data }: { data: BusinessYearsT }) {
       {line ? (
         <>
           <div className="m2-kv mb-3">
-            <span>{line.forwarder_label}</span>
+            <span>포워더 성과보수 배분 {shareText(line.forwarder_share)} · 운임은 별도 청구</span>
             <span>
               손익분기 {yearText(line.breakeven_year_before_subsidy)}(지원금 후{' '}
               {yearText(line.breakeven_year_after_subsidy)})
@@ -139,8 +141,8 @@ function YearsBody({ data }: { data: BusinessYearsT }) {
         <p className="m2-sub">이 조합의 연차 손익이 없습니다.</p>
       )}
 
-      <div className="mt-4 flex flex-col gap-1.5">
-        <h3 className="m2-h3">가정과 출처</h3>
+      <details className="mt-4 flex flex-col gap-1.5">
+        <summary className="cursor-pointer font-semibold">계산 가정과 근거</summary>
         <SourceLine
           source={`과금: 성과보수 ${shareText(data.fee_rate)}, 파렛트 이용료 ${won(data.base_fee_per_pallet)}(${data.base_fee_from_year}년 차부터 전 품목)`}
         />
@@ -163,12 +165,12 @@ function YearsBody({ data }: { data: BusinessYearsT }) {
             <summary className="cursor-pointer font-semibold text-m2-ink-2">계산 규칙</summary>
             <ul className="mt-1 list-disc pl-4 leading-[1.5]">
               {data.rules.map(rule => (
-                <li key={rule}>{rule}</li>
+                <li key={rule}>{rule.replace(/D13: /g, '')}</li>
               ))}
             </ul>
           </details>
         ) : null}
-      </div>
+      </details>
     </>
   );
 }
@@ -178,7 +180,7 @@ function YearsShell({ children }: { children: ReactNode }) {
     <section className="m2-card" aria-labelledby="business-years-title">
       <div className="m2-card-h">
         <h2 id="business-years-title" className="m2-h2">
-          연차별 BM
+          연도별 손익 전망
         </h2>
         <AssumptionBadge />
       </div>

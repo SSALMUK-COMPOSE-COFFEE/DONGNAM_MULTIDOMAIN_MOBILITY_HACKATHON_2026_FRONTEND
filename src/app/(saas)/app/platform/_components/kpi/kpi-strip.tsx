@@ -4,7 +4,6 @@ import { cn } from 'cn';
 import type { ReactNode } from 'react';
 
 import { usePlatformMetrics } from '@/apis/saas/platform-metrics';
-import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import { AssumptionBadge } from '@/app/(saas)/app/platform/_components/kpi/assumption-badge';
 import {
   EMPTY_VALUE,
@@ -155,12 +154,14 @@ function KpiTiles({ data }: { data: PlatformMetricsT }) {
         unit="t"
         basis={co2Basis}
         assumed={co2Assumed}
-        definition={`${data.air_avoided_definition}. ${co2.factor_source}. ${co2.distance_source}`}
+        definition={`${data.air_avoided_definition}. ${co2.factor_source}. ${co2.distance_source.replaceAll('선과장', '출하 장소')}`}
       >
         <details className="text-[11.5px] leading-[1.45] text-m2-muted">
           <summary className="cursor-pointer select-none">배출계수·거리 출처</summary>
           <p className="mt-1 break-words">{co2.factor_source}</p>
-          <p className="mt-1 break-words">{co2.distance_source}</p>
+          <p className="mt-1 break-words">
+            {co2.distance_source.replaceAll('선과장', '출하 장소')}
+          </p>
         </details>
       </KpiTile>
       <KpiTile
@@ -228,17 +229,7 @@ export function PlatformKpiStrip() {
     </span>
   );
 
-  if (data.plan_count === 0) {
-    return (
-      <KpiShell basis={basis}>
-        <EmptyState
-          compact
-          title="이번 달 계획이 아직 없습니다"
-          description="공동적재 계획을 만들면 절감·적재율·CO₂ 감축이 여기에 쌓입니다."
-        />
-      </KpiShell>
-    );
-  }
+  if (data.plan_count === 0) return null;
 
   return (
     <KpiShell basis={basis}>

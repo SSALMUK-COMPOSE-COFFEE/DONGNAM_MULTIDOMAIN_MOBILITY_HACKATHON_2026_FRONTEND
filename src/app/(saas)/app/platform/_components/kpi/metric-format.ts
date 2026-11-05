@@ -30,6 +30,6 @@ export const isAssumed = (source: string | null | undefined) =>
 export const signedWon = (krw: number) =>
   krw < 0
     ? `−${Math.abs(Math.round(krw)).toLocaleString('ko-KR')}원`
-    : `${Math.round(krw).toLocaleString('ko-KR')}원`;
+    : `${(Math.round(krw) || 0).toLocaleString('ko-KR')}원`;
 
 export const shareText = (ratio: number) => `${Math.round(ratio * 100)}%`;

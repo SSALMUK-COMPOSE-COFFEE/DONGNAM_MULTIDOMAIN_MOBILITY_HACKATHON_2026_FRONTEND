@@ -19,9 +19,6 @@ import { PLATFORM_PATHS } from '@/app/(saas)/app/platform/_components/paths';
 import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { StatTile } from '@/app/(saas)/app/platform/_components/stat-tile';
-import { BusinessPnlCard } from '@/app/(saas)/app/platform/settlements/_components/business-pnl-card';
-import { BusinessYearsCard } from '@/app/(saas)/app/platform/settlements/_components/business-years-card';
-import { RegionCard } from '@/app/(saas)/app/platform/settlements/_components/region-card';
 import { RevenueMixCard } from '@/app/(saas)/app/platform/settlements/_components/revenue-mix-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PlatformSettlementT } from '@/types/saas-platform';
@@ -36,10 +33,13 @@ function SettlementShell({ children, actions }: { children: ReactNode; actions?:
     <>
       <PlatformHeader
         eyebrow="정산"
-        title="품목마다 정한 규칙으로만 받습니다"
-        sub="항공을 대신하는 품목은 절감액의 성과보수, 이미 배로 가던 품목은 파렛트 이용료를 받습니다."
+        title="정산 내역"
+        sub="계획별 절감액, 성과보수와 파렛트 이용료를 확인하세요."
       >
         {actions}
+        <Link href="/app/platform/settlements/analysis" className="m2-btn m2-btn-sec">
+          사업 분석
+        </Link>
       </PlatformHeader>
       {children}
     </>
@@ -80,9 +80,6 @@ export function SettlementView() {
           title="아직 정산할 계획이 없습니다"
           description="공동적재 계획을 만들면 화주별 절감액과 성과보수·이용료가 계산됩니다."
         />
-        <div className="mt-4">
-          <BusinessYearsCard />
-        </div>
       </SettlementShell>
     );
   }
@@ -117,19 +114,11 @@ export function SettlementView() {
       <div className="mb-4 grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
         <StatTile label="화주 총비용 절감" value={wonNumber(totalSaving)} unit="원" />
         <StatTile label="플랫폼 수익" value={wonNumber(totalFee)} unit="원" note={feeNote} />
-        <StatTile label="화주에게 돌아간 몫" value={wonNumber(totalSaving - totalFee)} unit="원" />
-      </div>
-
-      <div className="mb-4 grid items-start gap-4 min-[1280px]:grid-cols-2">
-        <div className="flex min-w-0 flex-col gap-4">
-          <RevenueMixCard rows={data} labelOf={ruleLabel} />
-          <RegionCard />
-        </div>
-        <BusinessPnlCard />
-      </div>
-
-      <div className="mb-4">
-        <BusinessYearsCard />
+        <StatTile
+          label="수수료 차감 후 절감액"
+          value={wonNumber(totalSaving - totalFee)}
+          unit="원"
+        />
       </div>
 
       <section className="m2-card">
@@ -156,7 +145,7 @@ export function SettlementView() {
                 <th className="r">이용료</th>
                 <th className="r">품질 환급</th>
                 <th className="r">플랫폼 수익</th>
-                <th className="r">화주 몫</th>
+                <th className="r">수수료 차감 후 절감액</th>
               </tr>
             </thead>
             <tbody>
@@ -230,6 +219,9 @@ export function SettlementView() {
           </table>
         </div>
       </section>
+      <div className="mt-4">
+        <RevenueMixCard rows={data} labelOf={ruleLabel} />
+      </div>
     </SettlementShell>
   );
 }
