@@ -90,7 +90,7 @@ export function PlansView() {
       {plans.data.length === 0 ? (
         <EmptyState
           title="아직 들어간 운송계획이 없습니다"
-          description="출하를 등록하면 플랫폼이 다른 화주 출하와 묶어 계획을 만듭니다."
+          description="출하를 등록하면 포워더가 다른 화주의 출하와 묶어 운송계획을 제안합니다."
           action={{ href: SHIPPER_PATHS.LOTS, label: '출하 등록하기' }}
         />
       ) : (

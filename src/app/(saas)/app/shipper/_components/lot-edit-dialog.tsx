@@ -10,6 +10,7 @@ import { lotLabel } from '@/app/(saas)/app/shipper/_components/lot-label';
 import { plainWords } from '@/app/(saas)/app/shipper/_components/plain-words';
 import { errorDetail, toFieldErrors } from '@/app/(saas)/app/shipper/_components/query-state';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Dialog,
   DialogContent,
@@ -80,7 +81,7 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
 
   return (
     <Dialog open onOpenChange={open => !open && onClose()}>
-      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
+      <DialogContent className="pt-6" onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
           <DialogTitle>출하 수정</DialogTitle>
           <DialogDescription>
@@ -173,12 +174,11 @@ export function LotEditDialog({ lot, catalog, onClose, onCloseAutoFocus }: LotEd
           </EditField>
           <EditField label="출하 가능일" error={errorOf('ready_date')}>
             {field => (
-              <Input
+              <DatePicker
                 {...field}
-                type="date"
                 className="num"
                 value={form.ready_date}
-                onChange={event => update({ ready_date: event.target.value })}
+                onValueChange={ready_date => update({ ready_date })}
               />
             )}
           </EditField>

@@ -101,7 +101,7 @@ export function OrdersView() {
         {open.length === 0 ? (
           <EmptyState
             title="확정할 실행 지시가 없습니다"
-            description="플랫폼이 재최적화 대안을 적용하면 실행 지시가 여기에 옵니다."
+            description="공동적재 계획의 변경 대안을 적용하면 실행 지시가 여기에 표시됩니다."
             action={{ href: FORWARDER_PATHS.HOME, label: '배정된 항차 보기' }}
           />
         ) : (

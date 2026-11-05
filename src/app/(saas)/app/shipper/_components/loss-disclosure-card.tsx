@@ -108,7 +108,7 @@ export function LossDisclosureCard({ lots, isError, catalog }: LossDisclosureCar
       )}
       {!isError && overall === null && (
         <p className="m2-sub mt-0">
-          출하를 등록하면 품목·목적지별로 바다로 보낼 때 예상되는 손실률이 여기에 나옵니다.
+          출하 등록 후 품목·목적지별 예상 해상 운송 손실률을 확인할 수 있습니다.
         </p>
       )}
       {!isError && overall !== null && (

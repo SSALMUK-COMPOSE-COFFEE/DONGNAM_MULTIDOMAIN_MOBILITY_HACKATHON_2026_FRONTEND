@@ -108,7 +108,7 @@ export function MyLotsCard({
           {myPlan && (
             <span className="m2-sub mt-0 max-[720px]:hidden">행을 고르면 지도에 표시</span>
           )}
-          <Link href={SHIPPER_PATHS.LOTS} className="m2-btn m2-btn-sec m2-btn-sm">
+          <Link href={SHIPPER_PATHS.LOT_LIST()} className="m2-btn m2-btn-sec m2-btn-sm">
             {total > visible.length ? `전체 ${total}건` : '출하 관리'}
           </Link>
         </div>
@@ -117,7 +117,7 @@ export function MyLotsCard({
       {lots && visible.length === 0 && (
         <EmptyState
           title="등록한 출하가 없습니다"
-          description="품목·수량·목적지·출하 가능일·선과장만 넣으면 됩니다."
+          description="품목·수량·목적지·출하 가능일·출하 장소만 넣으면 됩니다."
         />
       )}
       {visible.length > 0 && (

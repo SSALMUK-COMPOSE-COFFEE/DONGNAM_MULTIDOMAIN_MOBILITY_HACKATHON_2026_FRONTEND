@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
 import { type ReactNode, useMemo } from 'react';
@@ -75,7 +76,7 @@ export function RequestsView() {
       <div className="m2-card">
         <EmptyState
           title="응답할 요청이 없습니다"
-          description="내 출하가 들어간 계획이 생기면 실행 지시와 요청이 여기에 모입니다."
+          description="참여한 운송계획의 변경·확인 요청을 조회할 수 있습니다."
         />
       </div>
     );
@@ -129,21 +130,46 @@ export function RequestsView() {
           return (
             <div
               key={order.order_id}
-              className="m2-block flex items-center gap-4 max-[767.98px]:flex-col max-[767.98px]:items-start"
+              className="m2-block is-lit flex items-start gap-4 max-[767.98px]:flex-col max-[767.98px]:items-start"
             >
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <p className="font-semibold">
-                  {vesselText(plan.vessel, splits.get(plan.plan_id))}
-                  <span className="m2-sub m2-num mt-0 ml-2 inline">
-                    {departureText(plan.departure, splits.get(plan.plan_id))}
-                  </span>
-                </p>
-                {mine.map(({ shipper_id, reason_text, net_cost_delta, deadline }) => (
-                  <p key={shipper_id} className="m2-sub mt-0">
-                    {plainWords(reason_text.join(' · '), labels)} · 내 비용{' '}
-                    <span className="m2-num text-m2-ink">{fmtBurden(net_cost_delta)}</span> · 기한{' '}
-                    <span className="m2-num">{fmtMonthDayTime(deadline)}</span>
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <p className="text-[14.5px] font-semibold">
+                    {vesselText(plan.vessel, splits.get(plan.plan_id))}
+                    <span className="m2-num ml-2 text-[12.5px] font-normal text-m2-muted">
+                      {departureText(plan.departure, splits.get(plan.plan_id))}
+                    </span>
                   </p>
+                  {mine.map(({ shipper_id, reason_text }) => (
+                    <div key={shipper_id} className="flex flex-wrap gap-1.5">
+                      {reason_text.map(reason => (
+                        <span key={reason} className="m2-chip">
+                          {plainWords(reason, labels)}
+                        </span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                {mine.map(({ shipper_id, net_cost_delta, deadline }) => (
+                  <dl key={shipper_id} className="flex flex-wrap gap-x-8 gap-y-2">
+                    <div className="flex flex-col gap-0.5">
+                      <dt className="text-[11.5px] text-m2-muted">내 비용</dt>
+                      <dd
+                        className={cn(
+                          'm2-num text-[13.5px] font-semibold',
+                          net_cost_delta > 0 ? 'text-m2-berry-ink' : 'text-m2-ok-ink'
+                        )}
+                      >
+                        {fmtBurden(net_cost_delta)}
+                      </dd>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <dt className="text-[11.5px] text-m2-muted">확정 기한</dt>
+                      <dd className="m2-num text-[13.5px] font-semibold text-m2-ink">
+                        {fmtMonthDayTime(deadline)}
+                      </dd>
+                    </div>
+                  </dl>
                 ))}
               </div>
               <Link href={SHIPPER_PATHS.PLAN(plan.plan_id)} className="m2-btn m2-btn-pri m2-btn-sm">

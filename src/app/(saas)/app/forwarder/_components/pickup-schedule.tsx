@@ -25,7 +25,7 @@ export function PickupSchedule({ session, scene }: PickupSchedulePropsT) {
     <section className="m2-card">
       <div className="m2-card-h">
         <div>
-          <h2 className="m2-h2">집하 순서 · 선과장 위치</h2>
+          <h2 className="m2-h2">집하 순서 · 출하 장소 위치</h2>
           <div className="m2-sub">
             정차지별 화주·좌표·준비 시각{scene.port ? ` · 도착 ${scene.port.name}` : ''}
           </div>
@@ -40,7 +40,7 @@ export function PickupSchedule({ session, scene }: PickupSchedulePropsT) {
               <tr>
                 <th>운행</th>
                 <th className="r">순서</th>
-                <th>선과장 · 지역 · 좌표</th>
+                <th>출하 장소 · 지역 · 좌표</th>
                 <th>화주</th>
                 <th className="r">파렛트</th>
                 <th>준비</th>

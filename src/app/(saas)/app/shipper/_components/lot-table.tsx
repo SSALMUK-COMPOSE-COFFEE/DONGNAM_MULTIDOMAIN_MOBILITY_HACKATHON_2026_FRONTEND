@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { type MouseEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -56,7 +57,10 @@ const FILTERS: { value: FilterT; label: string }[] = [
 ];
 
 export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
-  const [filter, setFilter] = useState<FilterT>('all');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const filter = FILTERS.find(({ value }) => value === searchParams.get('status'))?.value ?? 'all';
+  const setFilter = (value: FilterT) => router.push(SHIPPER_PATHS.LOT_LIST(value));
   const [editing, setEditing] = useState<ShipperLotT | null>(null);
   const [deleting, setDeleting] = useState<ShipperLotT | null>(null);
   const lots = useShipperLots();
@@ -94,8 +98,8 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
     if (filter !== 'all') return '';
 
     return needsPackhouse
-      ? '선과장을 먼저 등록하면 출하를 올릴 수 있어요.'
-      : '위 양식으로 첫 출하를 등록하세요.';
+      ? '출하 장소를 먼저 등록하면 출하를 올릴 수 있어요.'
+      : '새 출하 등록에서 첫 출하를 등록하세요.';
   };
 
   const setStatus = (lot: ShipperLotT, status: 'registered' | 'cancelled') =>
@@ -117,7 +121,8 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           내 출하
           {lots.data && (
             <span className="m2-sub mt-0 ml-2 inline font-medium">
-              <span className="m2-num">{lots.data.length}</span>건
+              <span className="m2-num">{visible.length}</span>건
+              {filter !== 'all' && <span className="ml-1">/ 전체 {lots.data.length}건</span>}
             </span>
           )}
         </h2>
@@ -158,13 +163,29 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           title={filter === 'all' ? '등록한 출하가 없습니다' : '이 상태의 출하가 없습니다'}
           description={emptyDescription()}
           {...(filter === 'all' && needsPackhouse
-            ? { action: { href: SHIPPER_PATHS.ONBOARDING, label: '선과장 등록하기' } }
+            ? { action: { href: SHIPPER_PATHS.ADD_PACKHOUSE, label: '출하 장소 등록하기' } }
             : {})}
         />
       )}
       {visible.length > 0 && (
         <div className="overflow-x-auto">
-          <table className={cn('m2-table', CARD_TABLE)}>
+          <table
+            className={cn(
+              'm2-table min-[768px]:min-w-[1080px] min-[768px]:table-fixed min-[768px]:[&_tbody_td]:h-[72px] max-[767.98px]:[&_tbody_tr:first-child]:border-t! max-[767.98px]:[&_tbody_tr:first-child]:border-transparent!',
+              CARD_TABLE
+            )}
+          >
+            <colgroup className="max-[767.98px]:hidden">
+              <col style={{ width: '23%' }} />
+              <col style={{ width: '6%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '7%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '18%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th>출하</th>
@@ -196,9 +217,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                     className={lot.status === 'cancelled' ? 'is-dis' : ''}
                   >
                     <td className={CARD_MAIN}>
-                      <div className="m2-who">
-                        {label}
-                        <small>
+                      <div className="m2-who min-w-0">
+                        <span className="block truncate" title={label}>
+                          {label}
+                        </span>
+                        <small className="min-h-4 truncate max-[767.98px]:line-clamp-2! max-[767.98px]:min-h-8 max-[767.98px]:whitespace-normal!">
                           {packhouseName(lot.packhouse)}
                           <span className={MOBILE_ONLY}>
                             {packhouseName(lot.packhouse) ? ' · ' : ''}
@@ -212,7 +235,11 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                     <td className={cn('m2-num', CARD_HIDE)}>{fmtDay(lot.ready_date)}</td>
                     <td className={cn('m2-num', CARD_HIDE)}>{fmtMonthDay(lot.sell_by_date)}</td>
                     <td className={CARD_HIDE}>{SELL_WINDOW_LABEL[lot.sell_window]}</td>
-                    <td className={CARD_HIDE}>{portName(lot.destination)}</td>
+                    <td className={CARD_HIDE}>
+                      <span className="block truncate" title={portName(lot.destination)}>
+                        {portName(lot.destination)}
+                      </span>
+                    </td>
                     <td>
                       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                         <span className={cn('text-[12px] text-m2-muted', MOBILE_ONLY)}>
@@ -227,61 +254,63 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                     <td>
                       <LotStatusChip status={lot.status} />
                     </td>
-                    <td className={cn('r', CARD_PUSH)}>
-                      {isLocked ? (
-                        <span className="text-[12px] text-m2-muted">계획 확정 후 변경 불가</span>
-                      ) : (
-                        <div className="flex justify-end gap-1.5">
-                          {lot.status === 'registered' && (
-                            <>
-                              <button
-                                type="button"
-                                className="m2-btn m2-btn-sec m2-btn-sm"
-                                disabled={isBusy || !catalog}
-                                aria-label={`${label} 수정`}
-                                onClick={event => {
-                                  rememberOpener(event);
-                                  setEditing(lot);
-                                }}
-                              >
-                                수정
-                              </button>
+                    <td className={cn('r max-[767.98px]:basis-full', CARD_PUSH)}>
+                      <div className="flex min-h-8 items-center justify-end">
+                        {isLocked ? (
+                          <span className="text-[12px] text-m2-muted">계획 확정 후 변경 불가</span>
+                        ) : (
+                          <div className="flex justify-end gap-1.5">
+                            {lot.status === 'registered' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="m2-btn m2-btn-sec m2-btn-sm"
+                                  disabled={isBusy || !catalog}
+                                  aria-label={`${label} 수정`}
+                                  onClick={event => {
+                                    rememberOpener(event);
+                                    setEditing(lot);
+                                  }}
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  type="button"
+                                  className="m2-btn m2-btn-sec m2-btn-sm"
+                                  disabled={isBusy}
+                                  aria-label={`${label} 취소`}
+                                  onClick={() => setStatus(lot, 'cancelled')}
+                                >
+                                  취소
+                                </button>
+                              </>
+                            )}
+                            {lot.status === 'cancelled' && (
                               <button
                                 type="button"
                                 className="m2-btn m2-btn-sec m2-btn-sm"
                                 disabled={isBusy}
-                                aria-label={`${label} 취소`}
-                                onClick={() => setStatus(lot, 'cancelled')}
+                                aria-label={`${label} 되살리기`}
+                                onClick={() => setStatus(lot, 'registered')}
                               >
-                                취소
+                                되살리기
                               </button>
-                            </>
-                          )}
-                          {lot.status === 'cancelled' && (
+                            )}
                             <button
                               type="button"
-                              className="m2-btn m2-btn-sec m2-btn-sm"
+                              className="m2-btn m2-btn-sm bg-m2-berry-soft text-m2-berry-ink"
                               disabled={isBusy}
-                              aria-label={`${label} 되살리기`}
-                              onClick={() => setStatus(lot, 'registered')}
+                              aria-label={`${label} 삭제`}
+                              onClick={event => {
+                                rememberOpener(event);
+                                setDeleting(lot);
+                              }}
                             >
-                              되살리기
+                              삭제
                             </button>
-                          )}
-                          <button
-                            type="button"
-                            className="m2-btn m2-btn-sm bg-m2-berry-soft text-m2-berry-ink"
-                            disabled={isBusy}
-                            aria-label={`${label} 삭제`}
-                            onClick={event => {
-                              rememberOpener(event);
-                              setDeleting(lot);
-                            }}
-                          >
-                            삭제
-                          </button>
-                        </div>
-                      )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

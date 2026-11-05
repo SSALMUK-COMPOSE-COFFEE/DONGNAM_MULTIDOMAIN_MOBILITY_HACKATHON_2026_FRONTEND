@@ -219,7 +219,7 @@ function LandStep({
         {hasBefore ? `${kmLabel(kmBefore)} → ${kmLabel(kmAfter)}` : kmLabel(kmAfter)}
       </p>
       {hasBefore && changes.length === 0 && (
-        <p className="text-m2-faint">방문 선과장·출발 시각 그대로</p>
+        <p className="text-m2-faint">방문 출하 장소·출발 시각 그대로</p>
       )}
       {hasBefore &&
         changes.map(change => (

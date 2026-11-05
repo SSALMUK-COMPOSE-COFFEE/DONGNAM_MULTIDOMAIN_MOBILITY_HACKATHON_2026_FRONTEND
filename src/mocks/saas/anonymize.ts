@@ -52,7 +52,7 @@ export const createAnonymizer = (scenario: ScenarioT, ownShipperIds: readonly st
           tokens.set(shipper.packhouse_id, anonId);
           hiddenPackhouses.add(anonId);
           const packhouse = packhouses.get(shipper.packhouse_id);
-          if (packhouse) tokens.set(packhouse.name, `${OTHER_SHIPPER_LABEL} ${letter} 선과장`);
+          if (packhouse) tokens.set(packhouse.name, `${OTHER_SHIPPER_LABEL} ${letter} 출하 장소`);
         }
       }
 

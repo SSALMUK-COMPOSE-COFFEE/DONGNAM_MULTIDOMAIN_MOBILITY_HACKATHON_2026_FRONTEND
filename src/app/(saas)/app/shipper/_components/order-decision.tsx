@@ -23,7 +23,7 @@ type DecisionT = { accept: boolean; note: string | null };
 
 const REASON_MAX = 300;
 
-const REJECTED_MESSAGE = '계획을 거절했습니다. 플랫폼이 다시 계획을 짭니다.';
+const REJECTED_MESSAGE = '계획을 거절했습니다. 포워더가 계획을 다시 검토합니다.';
 
 const latestPerOrder = (responses: ShipperOrderT[]) => [
   ...new Map(responses.map(order => [order.order_id, order])).values(),
@@ -155,14 +155,14 @@ export function RejectForm({ decision }: { decision: OrderDecisionT }) {
       <textarea
         id={inputId}
         className="m2-inp h-auto min-h-[72px] w-full resize-y py-2.5 text-[13.5px]"
-        placeholder="예: 그날 선과장 작업이 어려워요"
+        placeholder="예: 그날 출하 장소 작업이 어려워요"
         value={decision.reason}
         onChange={event => decision.setReason(event.target.value)}
         disabled={decision.isPending}
         required
       />
       <p className="m2-sub mt-0 text-[12px]">
-        거절하면 이번 변경은 반영되지 않고 플랫폼이 사유를 보고 다시 계획합니다.
+        거절하면 이번 변경은 반영되지 않고 포워더가 사유를 확인하고 계획을 다시 검토합니다.
       </p>
       <div className="flex flex-wrap justify-end gap-2">
         <button

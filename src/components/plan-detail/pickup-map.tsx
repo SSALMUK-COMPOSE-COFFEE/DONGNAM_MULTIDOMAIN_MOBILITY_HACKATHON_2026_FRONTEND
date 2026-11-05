@@ -18,7 +18,7 @@ const ROUTE_COLOR: Record<string, string> = {
   grape_so2: '#6b55d9',
 };
 const DEFAULT_ROUTE_COLOR = '#1a7bff';
-/** 가장자리 선과장 이름표가 잘리지 않도록 둔 여백 (px) */
+/** 가장자리 출하 장소 이름표가 잘리지 않도록 둔 여백 (px) */
 const BOUNDS_PADDING = 48;
 
 export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
@@ -41,7 +41,7 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
     <Card>
       <CardHeader>
         <CardTitle>
-          선과장 집하 경로
+          출하 장소 집하 경로
           <span className="ml-2 text-base font-medium text-muted-foreground">
             트럭{' '}
             <span className="num">{new Set(truckRoutes.map(({ truck_id }) => truck_id)).size}</span>
@@ -85,7 +85,7 @@ export function PickupMap({ scenario, voyagePickups }: PickupMapPropsT) {
 type PlaceT = { id: string; name: string; lat: number; lon: number };
 
 /**
- * 고정 중심·확대 수준으로는 상주·포항이 지도 밖으로 나가므로 경로에 든 선과장과 항구가 들어오게 맞춘다.
+ * 고정 중심·확대 수준으로는 상주·포항이 지도 밖으로 나가므로 경로에 든 출하 장소과 항구가 들어오게 맞춘다.
  * Map 이 center·level prop 을 레이아웃 effect 에서 다시 적용하므로, 그 뒤(일반 effect)에 맞춰야 덮이지 않는다
  */
 function FitToPlaces({ places }: { places: PlaceT[] }) {
@@ -101,7 +101,7 @@ function FitToPlaces({ places }: { places: PlaceT[] }) {
 }
 
 /**
- * 선과장·항구 이름표.
+ * 출하 장소·항구 이름표.
  * CustomOverlayMap 은 카카오가 관리하는 DOM 안에 React portal 로 그리는데, 숨겨진 화면(Activity)에서
  * 계획이 바뀌어 다시 그리면 카카오가 바꿔 둔 DOM 에 끼워 넣다가 insertBefore 오류로 화면 전체가 깨졌다.
  * 그래서 React 를 거치지 않고 카카오 API 로 직접 만들고 지운다

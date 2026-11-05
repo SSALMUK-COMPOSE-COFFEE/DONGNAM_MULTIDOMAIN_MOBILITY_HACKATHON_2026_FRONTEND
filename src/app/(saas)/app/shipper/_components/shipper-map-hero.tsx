@@ -87,7 +87,7 @@ const journeyOf = ({ firstStop, voyage, scene, container, destinationName, sellB
 };
 
 export const routeStopText = ({ sequence, own, name, eta }: RouteStopT) =>
-  [`${sequence}번째 정차`, own ? `내 선과장 ${name}` : '다른 화주', fmtTime(eta)].join(' · ');
+  [`${sequence}번째 정차`, own ? `내 출하 장소 ${name}` : '다른 화주', fmtTime(eta)].join(' · ');
 
 function JourneyStep({ cell, isNow }: { cell: JourneyCellT; isNow: boolean }) {
   const { className: linkClassName, ...link } = useMapLinkTarget(cell.keys);
@@ -173,7 +173,7 @@ function MyPanel({ myPlan }: { myPlan: MyPlanT }) {
 
   return (
     <HeroPanel
-      label="이 계획 절감액 (내 몫)"
+      label="이 계획 절감액 (수수료 차감 후 절감액)"
       value={
         <>
           {fmtCount(Math.round(settlement.gain))}
@@ -229,7 +229,7 @@ export function ShipperMapHero({
           <RouteStops myPlan={myPlan} />
         </>
       }
-      placeLabel={place => (narrow ? place.name : `내 선과장 · ${place.name}`)}
+      placeLabel={place => (narrow ? place.name : `내 출하 장소 · ${place.name}`)}
       placeSublabel={placeSublabel}
       portSublabel={
         firstStop

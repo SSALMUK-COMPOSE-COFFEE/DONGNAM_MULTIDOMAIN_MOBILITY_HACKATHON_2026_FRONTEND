@@ -43,30 +43,30 @@ const BASIS_HINT: Record<ShipperSettlementT['basis'], string> = {
 };
 
 const RULE_HINT: Record<string, string> = {
-  performance: '성과보수: 아낀 금액에서 정해진 비율만 수수료로 냅니다',
-  usage_fee: '파렛트 이용료: 포도처럼 원래 배로 가던 품목은 성과보수 대신 파렛트당 이용료만 냅니다',
-  mixed: '품목에 따라 성과보수와 파렛트 이용료를 함께 냅니다',
+  performance: '성과보수: 예상 절감액에 정해진 비율을 적용해 수수료를 계산합니다',
+  usage_fee: '파렛트 이용료: 해당 품목의 파렛트 수에 따라 이용료를 계산합니다',
+  mixed: '품목별 성과보수와 파렛트 이용료를 합산해 계산합니다',
 };
 
-const BASELINE_HINT = '혼자 항공으로 보냈다면 드는 예상 비용';
-const SHARED_HINT = '같이 실을 때 드는 예상 비용';
-const SAVINGS_HINT = '비교 기준 − 공동적재';
-const FEE_HINT = '환급 뒤 실제 내는 금액';
-const REFUND_HINT = '손실이 예측을 넘어 돌려받은 수수료';
-const GAIN_HINT = '절감 − 수수료';
+const BASELINE_HINT = '단독 운송 비교 기준의 예상 비용';
+const SHARED_HINT = '운송·집하·보관과 품질 위험을 반영한 공동적재 예상 비용';
+const SAVINGS_HINT = '비교 기준 예상 비용 − 공동적재 예상 비용';
+const FEE_HINT = '검수 환급 계산액을 반영한 예상 수수료';
+const REFUND_HINT = '검수 입력으로 계산한 수수료 환급액';
+const GAIN_HINT = '예상 절감액 − 예상 수수료';
 
-const PILOT_HINT = '무료 시범 항차: 수수료를 받지 않고, 원래 냈을 금액만 함께 보여 드립니다';
+const PILOT_HINT = '무료 시범 항차: 계획 수수료는 면제하며 면제 전 예상 수수료도 함께 표시합니다';
 
 const COLUMNS: { key: string; title: string; hint: string; right?: boolean }[] = [
-  { key: 'vessel', title: '선박 · 출항', hint: '내 화물이 탄 배' },
+  { key: 'vessel', title: '선박 · 출항', hint: '내 화물이 배정된 선박과 출항 예정 시각' },
   { key: 'rule', title: '근거 · 과금', hint: '비용 계산 근거와 수수료 방식' },
   { key: 'pallets', title: '해상 / 항공 파렛트', hint: '이 계획의 내 파렛트', right: true },
-  { key: 'baseline', title: '비교 기준', hint: BASELINE_HINT, right: true },
-  { key: 'shared', title: '공동적재', hint: SHARED_HINT, right: true },
-  { key: 'savings', title: '절감', hint: SAVINGS_HINT, right: true },
-  { key: 'fee', title: '수수료', hint: FEE_HINT, right: true },
-  { key: 'refund', title: '품질 환급', hint: REFUND_HINT, right: true },
-  { key: 'gain', title: '내 몫', hint: GAIN_HINT, right: true },
+  { key: 'baseline', title: '비교 기준 예상비용', hint: BASELINE_HINT, right: true },
+  { key: 'shared', title: '공동적재 예상비용', hint: SHARED_HINT, right: true },
+  { key: 'savings', title: '예상 절감액', hint: SAVINGS_HINT, right: true },
+  { key: 'fee', title: '예상 수수료', hint: FEE_HINT, right: true },
+  { key: 'refund', title: '품질 환급 계산액', hint: REFUND_HINT, right: true },
+  { key: 'gain', title: '수수료 차감 후 예상 절감액', hint: GAIN_HINT, right: true },
 ];
 
 const SAVINGS_BASELINE_LABEL = '단독 항공 대비';
@@ -243,10 +243,15 @@ function SettlementRow({ row, awaiting }: { row: ShipperSettlementT; awaiting: b
       <td className={cn('r m2-num', CARD_HIDE)}>
         <div className="m2-who font-normal">
           {fmtWon(row.fee)}
-          {pilot && <small>원래 {fmtWon(originalFeeOf(row))}</small>}
+          {pilot && <small>면제 전 예상 {fmtWon(originalFeeOf(row))}</small>}
         </div>
       </td>
-      <td className={cn('r m2-num', CARD_HIDE)}>{fmtWon(row.quality_refund)}</td>
+      <td className={cn('r m2-num', CARD_HIDE)}>
+        <div className="m2-who font-normal">
+          {fmtWon(row.quality_refund)}
+          {row.quality_refund > 0 ? <small>검수 반영 계산</small> : null}
+        </div>
+      </td>
       <td className={cn('r m2-num', !awaiting && 'font-semibold', CARD_HIDE)}>
         {fmtWon(row.shipper_gain)}
       </td>
@@ -260,24 +265,33 @@ function SettlementRow({ row, awaiting }: { row: ShipperSettlementT; awaiting: b
           <MobileLine label={baselineLabel} hint={BASELINE_HINT}>
             {fmtWon(row.baseline_cost)}
           </MobileLine>
-          <MobileLine label="공동적재" hint={SHARED_HINT}>
+          <MobileLine label="공동적재 예상비용" hint={SHARED_HINT}>
             {fmtWon(row.shared_cost)}
           </MobileLine>
-          <MobileLine label="절감" hint={SAVINGS_HINT} tone={awaiting ? '' : 'text-m2-ok-ink'}>
+          <MobileLine
+            label="예상 절감액"
+            hint={SAVINGS_HINT}
+            tone={awaiting ? '' : 'text-m2-ok-ink'}
+          >
             {fmtWon(row.savings)}
           </MobileLine>
-          <MobileLine label="수수료" hint={FEE_HINT}>
+          <MobileLine label="예상 수수료" hint={FEE_HINT}>
             {fmtWon(row.fee)}
           </MobileLine>
           {pilot && (
-            <MobileLine label="무료 시범 · 원래 냈을 수수료" hint={PILOT_HINT}>
+            <MobileLine label="무료 시범 · 면제 전 예상 수수료" hint={PILOT_HINT}>
               {fmtWon(originalFeeOf(row))}
             </MobileLine>
           )}
-          <MobileLine label="품질 환급" hint={REFUND_HINT}>
+          <MobileLine label="품질 환급 계산액" hint={REFUND_HINT}>
             {fmtWon(row.quality_refund)}
+            {row.quality_refund > 0 ? (
+              <span className="mt-1 block text-[11px] font-normal text-m2-muted">
+                검수 반영 계산
+              </span>
+            ) : null}
           </MobileLine>
-          <MobileLine label="내 몫" hint={GAIN_HINT}>
+          <MobileLine label="수수료 차감 후 예상 절감액" hint={GAIN_HINT}>
             {fmtWon(row.shipper_gain)}
           </MobileLine>
         </div>
@@ -364,7 +378,7 @@ export function SettlementsView() {
   if (settlements.isError || plans.isError) {
     return (
       <QueryError
-        message="정산 내역을 불러오지 못했습니다."
+        message="예상 정산 내역을 불러오지 못했습니다."
         onRetry={() => {
           void settlements.refetch();
           void plans.refetch();
@@ -381,8 +395,8 @@ export function SettlementsView() {
     return (
       <div className="m2-card">
         <EmptyState
-          title="아직 정산할 계획이 없습니다"
-          description="공동적재 계획에 출하가 들어가면 아낀 금액과 수수료가 여기에 쌓입니다."
+          title="예상 정산을 조회할 계획이 없습니다"
+          description="참여한 공동적재 계획의 예상 비용·절감액·수수료를 확인할 수 있습니다."
           action={{ href: SHIPPER_PATHS.PLANS, label: '계획 확인' }}
         />
       </div>
@@ -405,9 +419,10 @@ export function SettlementsView() {
   const pilotWaivedFee = sumOf(pilotRows, originalFeeOf);
   const feeNote = () => {
     if (pilotRows.length === 0) return FEE_HINT;
-    if (pilotRows.length === rows.length) return `무료 시범 · 원래 ${fmtWon(pilotWaivedFee)}`;
+    if (pilotRows.length === rows.length)
+      return `무료 시범 · 면제 전 예상 ${fmtWon(pilotWaivedFee)}`;
 
-    return `무료 시범 ${pilotRows.length}건 ${fmtWon(pilotWaivedFee)} 면제 뒤 금액`;
+    return `무료 시범 ${pilotRows.length}건 ${fmtWon(pilotWaivedFee)} 면제 후 예상 금액`;
   };
   const savingsNote = () => {
     const base =
@@ -426,26 +441,26 @@ export function SettlementsView() {
     <div className="flex flex-col gap-4">
       <div className="m2-grid grid-cols-4 max-[1180px]:grid-cols-2 max-[479.98px]:grid-cols-1">
         <Stat
-          label="내 절감 합계"
+          label="예상 절감 합계"
           value={totalSavings}
           tone="var(--m2-ok-ink)"
           note={savingsNote()}
         />
-        <Stat label="수수료" value={totalFee} note={feeNote()} />
-        <Stat label="내 몫" value={totalGain} tone="var(--m2-navy)" />
-        <Stat label="품질 환급" value={totalRefund} />
+        <Stat label="예상 수수료" value={totalFee} note={feeNote()} />
+        <Stat label="수수료 차감 후 예상 절감액" value={totalGain} tone="var(--m2-navy)" />
+        <Stat label="품질 환급 계산액" value={totalRefund} note="검수 입력이 있는 경우 반영" />
       </div>
 
-      <section className="m2-card" aria-label="계획별 정산">
+      <section className="m2-card" aria-label="계획별 예상 정산">
         <div className="m2-card-h">
-          <h2 className="m2-h2">계획별 정산</h2>
+          <h2 className="m2-h2">계획별 예상 정산</h2>
           <span className="m2-sub mt-0">원</span>
         </div>
         {rows.length > 0 ? (
           <SettlementTable rows={rows} awaiting={false} />
         ) : (
           <p className="m2-sub mt-0 text-[13px]">
-            내가 확인한 계획이 아직 없습니다. 확인을 마치면 여기에 쌓입니다.
+            확인한 계획이 없습니다. 계획 확인 후 예상 정산 내역을 조회할 수 있습니다.
           </p>
         )}
         {awaitingRows.length > 0 && (

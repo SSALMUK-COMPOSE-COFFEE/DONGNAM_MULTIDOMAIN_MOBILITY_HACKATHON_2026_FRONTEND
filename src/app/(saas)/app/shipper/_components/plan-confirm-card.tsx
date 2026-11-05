@@ -18,7 +18,7 @@ import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-path
 
 const REASON_MAX = 500;
 
-export const REPLAN_PENDING_TEXT = '다른 화주 사정으로 계획을 다시 짜는 중입니다.';
+export const REPLAN_PENDING_TEXT = '운송계획을 다시 검토하고 있습니다.';
 
 export function ReplanPendingNotice({ className }: { className?: string }) {
   return (
@@ -133,9 +133,10 @@ function PlanConfirmBody({
   const description = () => {
     if (isReplanning) return REPLAN_PENDING_TEXT;
     if (pending.length > 0) {
-      return '플랫폼이 내 출하를 다른 화주 출하와 묶었습니다. 내용을 보고 수락하거나 사유를 적어 거절하세요.';
+      return '포워더가 내 출하의 운송계획을 제안했습니다. 내용을 보고 수락하거나 사유를 적어 거절하세요.';
     }
-    if (rejected.length > 0) return '거절을 보냈습니다. 플랫폼이 사유를 보고 다시 짭니다.';
+    if (rejected.length > 0)
+      return '거절을 보냈습니다. 포워더가 사유를 확인하고 계획을 다시 검토합니다.';
     if (planStatus === 'committed') return '모든 화주가 수락해 계획이 확정되었습니다.';
 
     return '수락했습니다. 다른 화주의 수락을 기다리고 있습니다.';
@@ -234,7 +235,7 @@ function PlanConfirmBody({
           <textarea
             id={`${reasonId}-text`}
             className="m2-inp h-auto min-h-[72px] w-full resize-y py-2.5 text-[13.5px]"
-            placeholder="예: 그날 선과장 작업이 어려워요"
+            placeholder="예: 그날 출하 장소 작업이 어려워요"
             value={reason}
             maxLength={REASON_MAX}
             onChange={event => setReason(event.target.value.slice(0, REASON_MAX))}
@@ -242,7 +243,7 @@ function PlanConfirmBody({
             required
           />
           <p className="m2-sub mt-0 text-[12px]">
-            사유는 플랫폼에만 전달되고 다른 화주에게는 보이지 않습니다.
+            사유는 담당 포워더에게 전달되고 다른 화주에게는 보이지 않습니다.
           </p>
           <div className="flex flex-wrap justify-end gap-2">
             <button

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 
 import { useAnswerShipperRequest } from '@/apis/saas/shipper';
@@ -108,88 +109,162 @@ export function RequestList({
       }
     );
 
-  return (
-    <ul className="flex flex-col gap-2.5">
-      {items.map(item => {
-        const { order, request } = item;
-        const canAnswer = isRequestAnswerable(order, request);
-        const statusLabel = isRequestAwaitingForwarder(order, request)
-          ? awaitingForwarderLabel(order, ownShipperIds)
-          : requestStatusLabel(request);
-        const isBusy = answer.isPending && answer.variables?.requestId === request.request_id;
+  const groups = items.reduce<{ planLabel: string | null; items: RequestItemT[] }[]>(
+    (acc, item) => {
+      const planLabel = item.planLabel ?? null;
+      const last = acc.at(-1);
+      if (last && last.planLabel === planLabel) last.items.push(item);
+      else acc.push({ planLabel, items: [item] });
+      return acc;
+    },
+    []
+  );
 
-        return (
-          <li
-            key={`${order.order_id}:${request.request_id}`}
-            className="m2-block flex items-start gap-4 max-[767.98px]:flex-col max-[767.98px]:gap-2.5"
-            style={canAnswer ? { boxShadow: '0 0 0 1.5px var(--m2-brand)' } : {}}
-          >
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="m2-chip">{REQUEST_KIND_LABEL[request.kind]}</span>
-                <span className="font-semibold">{plainWords(request.counterparty)}</span>
-                {!isRequestAddressedToShipper(request) && (
-                  <span className="m2-sub mt-0">포워더가 회신 기록</span>
-                )}
-                <span className="m2-sub mt-0">{request.channel}</span>
-              </div>
-              {item.planLabel && <p className="m2-sub mt-0">{item.planLabel}</p>}
-              <p className="text-[13.5px] [overflow-wrap:anywhere]">
-                {requestTextOf(request, labels)}
-              </p>
-              {request.text.trim() && (
-                <details className="text-[12.5px] text-m2-muted">
-                  <summary className="w-fit cursor-pointer font-semibold text-m2-brand-ink">
-                    원문 보기
-                  </summary>
-                  <p className="mt-1 [overflow-wrap:anywhere]">
-                    {plainWords(request.text, labels)}
-                  </p>
-                </details>
-              )}
-              <p className="m2-sub mt-0 flex flex-wrap gap-x-5">
-                <span>
-                  기한{' '}
-                  <span className="m2-num text-m2-ink">{fmtMonthDayTime(request.deadline)}</span>
-                </span>
-                {request.container_id && <span className="m2-num">{request.container_id}</span>}
-                {request.pallets_before !== request.pallets_after && (
-                  <span className="m2-num">
-                    {request.pallets_before} → {request.pallets_after}파렛트
-                  </span>
-                )}
-                {request.note && <span>메모 {plainWords(request.note, labels)}</span>}
-              </p>
-            </div>
-            {canAnswer ? (
-              <div className="flex shrink-0 gap-2">
-                <button
-                  type="button"
-                  className="m2-btn m2-btn-pri m2-btn-sm"
-                  disabled={isBusy}
-                  onClick={() => respond(item, true)}
-                >
-                  수락
-                </button>
-                <button
-                  type="button"
-                  className="m2-btn m2-btn-sec m2-btn-sm"
-                  disabled={isBusy}
-                  onClick={() => respond(item, false)}
-                >
-                  거절
-                </button>
-              </div>
-            ) : (
-              <span
-                className={cn('m2-chip flex-none', request.status === 'accepted' && 'm2-chip-ok')}
-              >
-                {statusLabel}
+  return (
+    <div className="flex flex-col gap-5">
+      {groups.map(group => (
+        <div key={`${group.planLabel ?? ''}:${group.items[0]?.request.request_id ?? ''}`}>
+          {group.planLabel && (
+            <p className="mb-2 flex items-start gap-2 text-[12.5px] font-semibold text-m2-ink-2">
+              <span className="m2-dot mt-[6px] bg-m2-brand" aria-hidden />
+              <span>
+                {group.planLabel}{' '}
+                <span className="m2-num font-normal text-m2-muted">· {group.items.length}건</span>
               </span>
+            </p>
+          )}
+          <ul className="flex flex-col gap-2.5">
+            {group.items.map(item => (
+              <RequestCard
+                key={`${item.order.order_id}:${item.request.request_id}`}
+                item={item}
+                labels={labels}
+                ownShipperIds={ownShipperIds}
+                isBusy={answer.isPending && answer.variables?.requestId === item.request.request_id}
+                onRespond={accepted => respond(item, accepted)}
+              />
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const kindTone = (kind: ShipperRequestT['kind']) => {
+  if (kind === 'booking_cancel' || kind === 'air_cancel') return 'm2-chip-berry';
+  if (kind === 'air_booking') return 'm2-chip-grape';
+  return 'm2-chip-brand';
+};
+
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-[11.5px] text-m2-muted">{label}</dt>
+      <dd className="m2-num text-[13.5px] font-semibold text-m2-ink">{children}</dd>
+    </div>
+  );
+}
+
+type RequestCardPropsT = {
+  item: RequestItemT;
+  labels: LotLabelMapT;
+  ownShipperIds: readonly string[];
+  isBusy: boolean;
+  onRespond: (accepted: boolean) => void;
+};
+
+function RequestCard({ item, labels, ownShipperIds, isBusy, onRespond }: RequestCardPropsT) {
+  const { order, request } = item;
+  const canAnswer = isRequestAnswerable(order, request);
+  const statusLabel = isRequestAwaitingForwarder(order, request)
+    ? awaitingForwarderLabel(order, ownShipperIds)
+    : requestStatusLabel(request);
+  const route = [
+    request.channel,
+    isRequestAddressedToShipper(request) ? null : '포워더가 회신 기록',
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const original = request.text.trim() ? plainWords(request.text, labels) : null;
+
+  return (
+    <li className={cn('m2-block flex flex-col gap-3', canAnswer && 'is-lit')}>
+      <div className="flex items-start gap-4 max-[767.98px]:flex-col max-[767.98px]:gap-2.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={cn('m2-chip', kindTone(request.kind))}>
+              {REQUEST_KIND_LABEL[request.kind]}
+            </span>
+            <span className="text-[12.5px] text-m2-muted">
+              받는 곳{' '}
+              <b className="font-semibold text-m2-ink-2">{plainWords(request.counterparty)}</b>
+            </span>
+          </div>
+          <p className="text-[14.5px] leading-snug font-semibold [overflow-wrap:anywhere]">
+            {requestTextOf(request, labels)}
+          </p>
+        </div>
+        {canAnswer ? (
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              className="m2-btn m2-btn-pri m2-btn-sm"
+              disabled={isBusy}
+              onClick={() => onRespond(true)}
+            >
+              수락
+            </button>
+            <button
+              type="button"
+              className="m2-btn m2-btn-sec m2-btn-sm"
+              disabled={isBusy}
+              onClick={() => onRespond(false)}
+            >
+              거절
+            </button>
+          </div>
+        ) : (
+          <span
+            className={cn(
+              'm2-chip flex-none',
+              request.status === 'accepted' ? 'm2-chip-ok' : 'm2-chip-warn'
             )}
-          </li>
-        );
-      })}
-    </ul>
+          >
+            {statusLabel}
+          </span>
+        )}
+      </div>
+
+      <dl className="flex flex-wrap gap-x-8 gap-y-2">
+        <Fact label="기한">{fmtMonthDayTime(request.deadline)}</Fact>
+        {request.pallets_before !== request.pallets_after && (
+          <Fact label="파렛트">
+            {request.pallets_before} → {request.pallets_after}
+          </Fact>
+        )}
+        {request.container_id && <Fact label="컨테이너">{request.container_id}</Fact>}
+        {request.note && <Fact label="메모">{plainWords(request.note, labels)}</Fact>}
+      </dl>
+
+      {original ? (
+        <details className="group border-t border-m2-line pt-2.5 text-[12px] text-m2-muted">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <span className="min-w-0 [overflow-wrap:anywhere]">{route}</span>
+            <span className="flex-none font-semibold text-m2-brand-ink">
+              <span className="group-open:hidden">원문 보기</span>
+              <span className="hidden group-open:inline">원문 접기</span>
+            </span>
+          </summary>
+          <p className="mt-2 rounded-lg bg-m2-brand-soft/50 px-3 py-2 [overflow-wrap:anywhere] text-m2-ink-2">
+            {original}
+          </p>
+        </details>
+      ) : (
+        <p className="border-t border-m2-line pt-2.5 text-[12px] [overflow-wrap:anywhere] text-m2-muted">
+          {route}
+        </p>
+      )}
+    </li>
   );
 }
