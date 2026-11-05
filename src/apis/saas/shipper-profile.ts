@@ -118,9 +118,9 @@ export const useCreateShipperPackhouse = () => {
     mutationFn: postShipperPackhouse,
     onSuccess: packhouse => {
       invalidate();
-      toast.success(`${packhouse.name} 선과장을 등록했습니다.`);
+      toast.success(`${packhouse.name} 출하 장소를 등록했습니다.`);
     },
-    onError: toastSaasError('선과장을 등록하지 못했습니다.'),
+    onError: toastSaasError('출하 장소를 등록하지 못했습니다.'),
   });
 };
 
@@ -132,9 +132,9 @@ export const useUpdateShipperPackhouse = () => {
       patchShipperPackhouse(packhouseId, patch),
     onSuccess: () => {
       invalidate();
-      toast.success('선과장 정보를 저장했습니다.');
+      toast.success('출하 장소 정보를 저장했습니다.');
     },
-    onError: toastSaasError('선과장 정보를 저장하지 못했습니다.'),
+    onError: toastSaasError('출하 장소 정보를 저장하지 못했습니다.'),
   });
 };
 
@@ -145,8 +145,8 @@ export const useDeleteShipperPackhouse = () => {
     mutationFn: deleteShipperPackhouse,
     onSuccess: () => {
       invalidate();
-      toast.success('선과장을 지웠습니다.');
+      toast.success('출하 장소를 지웠습니다.');
     },
-    onError: toastSaasError('선과장을 지우지 못했습니다.'),
+    onError: toastSaasError('출하 장소를 지우지 못했습니다.'),
   });
 };
