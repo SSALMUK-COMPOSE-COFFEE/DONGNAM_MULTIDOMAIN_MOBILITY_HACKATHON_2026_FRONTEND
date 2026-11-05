@@ -13,6 +13,7 @@ import {
   CARD_TABLE,
   MOBILE_BLOCK,
 } from '@/app/(saas)/app/shipper/_components/mobile';
+import { QuantityStatementSection } from '@/app/(saas)/app/shipper/_components/quantity-statement';
 import {
   CardSkeleton,
   EmptyState,
@@ -75,6 +76,14 @@ const AWAITING_TITLE = '화주 확인 대기 (합의 전 제안값)';
 const AWAITING_CHIP = '확인 대기';
 const AWAITING_HINT = '내가 아직 확인하지 않은 계획이라 금액은 합의 전 제안값입니다';
 const MANWON = 10_000;
+
+const planCostPath = (planId: string) => {
+  const [pathname, search = ''] = SHIPPER_PATHS.PLAN(planId).split('?');
+  const params = new URLSearchParams(search);
+  params.set('tab', 'cost');
+
+  return `${pathname}?${params.toString()}`;
+};
 
 const noVesselOf = (row: ShipperSettlementT) =>
   row.air_pallets > 0 && row.sea_pallets === 0 ? AIR_PLACEHOLDER : UNASSIGNED_PLACEHOLDER;
@@ -298,11 +307,11 @@ function SettlementRow({ row, awaiting }: { row: ShipperSettlementT; awaiting: b
       </td>
       <td className={cn('r', CARD_PUSH)}>
         <Link
-          href={SHIPPER_PATHS.PLAN(row.plan_id)}
+          href={planCostPath(row.plan_id)}
           className="m2-btn m2-btn-sec m2-btn-sm"
-          aria-label={`${row.vessel ?? noVesselOf(row)} 계획 보기`}
+          aria-label={`${row.vessel ?? noVesselOf(row)} 비용·정산 보기`}
         >
-          계획
+          비용·정산
           <ArrowRightIcon size={14} />
         </Link>
       </td>
@@ -372,6 +381,15 @@ function AwaitingGroup({ rows, planCount }: { rows: ShipperSettlementT[]; planCo
 }
 
 export function SettlementsView() {
+  return (
+    <div className="flex min-w-0 flex-col gap-4">
+      <TransportSettlements />
+      <QuantityStatementSection />
+    </div>
+  );
+}
+
+function TransportSettlements() {
   const settlements = useShipperSettlements();
   const plans = useShipperPlans();
 
