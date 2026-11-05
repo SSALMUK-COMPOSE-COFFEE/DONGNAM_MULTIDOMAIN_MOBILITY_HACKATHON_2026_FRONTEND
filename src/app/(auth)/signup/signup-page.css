@@ -1,0 +1,93 @@
+.fs-signup-heading h1 {
+  margin: 0;
+  color: #0d2a5e;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.3;
+}
+.fs-signup-heading p {
+  margin: 8px 0 24px;
+  color: #5b6577;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.fs-signup-form fieldset {
+  min-width: 0;
+  margin: 0 0 22px;
+  padding: 0;
+  border: 0;
+}
+.fs-signup-form legend {
+  width: 100%;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #e8ecf2;
+  padding: 0 0 10px;
+  color: #5b6577;
+  font-size: 12px;
+  font-weight: 600;
+}
+.fs-signup .m2-field {
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.fs-signup .m2-field:last-child {
+  margin-bottom: 0;
+}
+.fs-signup .m2-field > label {
+  color: #26354d;
+  font-size: 13px;
+  font-weight: 600;
+}
+.fs-signup .fs-signup-control {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #cdd5e0;
+  border-radius: 6px;
+  background: #fff;
+  padding-inline: 12px;
+  font-size: 14px;
+}
+.fs-signup .fs-signup-control[aria-invalid='true'] {
+  border-color: #b42318;
+}
+.fs-signup .fs-signup-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.fs-signup-form > .fs-signup-error {
+  margin-bottom: 12px;
+}
+.fs-signup .fs-signup-submit {
+  width: 100%;
+  height: 44px;
+  border-radius: 6px;
+  background: #0d2a5e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.fs-signup .fs-signup-submit:hover {
+  background: #13366f;
+}
+.fs-signup-login {
+  margin: 20px 0 0;
+  color: #5b6577;
+  font-size: 13px;
+  text-align: center;
+}
+.fs-signup-login a {
+  margin-left: 4px;
+  color: #0a5ad1;
+  font-weight: 600;
+}
+.fs-signup-login a:hover {
+  text-decoration: underline;
+}
+@media (max-width: 480px) {
+  .fs-signup .fs-signup-control {
+    font-size: 16px;
+  }
+}

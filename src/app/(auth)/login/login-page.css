@@ -1,92 +1,3 @@
-[data-ui='m2'].m2-page:has(.fs-login:not([style*='display: none'])) {
-  background: #f6f7f9;
-}
-[data-ui='m2'].m2-page:has(.fs-login:not([style*='display: none']))::before {
-  display: none;
-}
-[data-ui='m2']:has(.fs-login:not([style*='display: none'])) > .m2-main {
-  max-width: none;
-  padding: 0;
-}
-[data-ui='m2']:has(.fs-login:not([style*='display: none'])) > .m2-main > .m2-topline {
-  display: none;
-}
-[data-ui='m2']:has(.fs-login:not([style*='display: none'])) .m2-window {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  overflow: visible;
-}
-[data-ui='m2']:has(.fs-login:not([style*='display: none'])) .m2-content {
-  padding: 0;
-}
-.fs-login {
-  position: relative;
-  isolation: isolate;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 40px 32px;
-  color: #0f1b33;
-}
-.fs-login-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  min-height: 88px;
-  border: 1px solid #dce2ea;
-  border-radius: 8px;
-  background: #fff;
-  padding: 16px 20px;
-}
-.fs-login-wordmark {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #0d2a5e;
-  font-size: 19px;
-  font-weight: 750;
-  letter-spacing: -0.04em;
-}
-.fs-login-wordmark span {
-  color: #1a7bff;
-  font-size: 24px;
-}
-.fs-login-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #536074;
-  font-size: 13px;
-}
-.fs-login-back:hover {
-  color: #0d2a5e;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.fs-login-signup a:hover {
-  color: #0d2a5e;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.fs-login-columns {
-  display: flex;
-  min-height: calc(100svh - 88px - 32px);
-  align-items: center;
-  padding: 24px 0;
-}
-.fs-login-panel {
-  width: 420px;
-  max-width: 100%;
-  border: 1px solid #dce2ea;
-  border-radius: 8px;
-  background: #fff;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(15, 27, 51, 0.05);
-}
 .fs-login-form-section h1 {
   margin: 0;
   color: #0d2a5e;
@@ -147,45 +58,40 @@
   color: #0d2a5e;
   font-weight: 600;
 }
-.fs-login-form-section,
-.fs-login-demo-section {
+.fs-login-form-section {
   background: transparent;
   padding: 0;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-.fs-login-demo-section {
-  margin-top: 16px;
-  border-top: 1px solid #dfe3e9;
-  padding-top: 14px;
-}
-.fs-login-demo-section .m2-btn {
-  min-height: 36px;
-  font-size: 12px;
+@media (max-width: 760px) {
+  .fs-login .m2-inp {
+    font-size: 16px;
+  }
 }
 .fs-login-account-section {
-  margin-top: 10px;
+  margin-top: 18px;
   border-top: 1px solid #dfe3e9;
-  padding-top: 12px;
+  padding-top: 16px;
 }
 .fs-login-accounts {
   display: grid;
   gap: 6px;
 }
-.fs-login-account {
+.fs-login .fs-login-account {
   display: flex;
   min-width: 0;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   border: 1px solid #d7dde6;
   border-radius: 6px;
   background: #fff;
-  padding: 8px 10px;
+  padding: 10px;
   text-align: left;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
 }
 .fs-login-account:hover {
   border-color: #8a9bb5;
@@ -194,76 +100,33 @@
   border-color: #0d2a5e;
   background: #edf2fa;
 }
+.fs-login-account:focus-visible {
+  outline: 2px solid #1a7bff;
+  outline-offset: 2px;
+}
 .fs-login-account-role {
   color: #0f1b33;
-  font-size: 12px;
   font-weight: 650;
   white-space: nowrap;
 }
 .fs-login-account-email {
   color: #536074;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .fs-login-shared-password {
   margin: 10px 0 0;
   color: #536074;
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.6;
 }
 .fs-login-shared-password code {
   margin-left: 6px;
   color: #26354d;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
-@media (max-width: 760px) {
-  .fs-login {
-    max-width: 480px;
-    padding: 0 16px 40px;
-  }
-  .fs-login-header {
-    min-height: 76px;
-  }
-  .fs-login-wordmark {
-    font-size: 17px;
-  }
-  .fs-login-back {
-    font-size: 12px;
-  }
-  .fs-login-columns {
-    min-height: 0;
-    padding: 28px 0 0;
-  }
-  .fs-login-panel {
-    width: 100%;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .fs-login-account {
-    transition: none;
-  }
-}
 
-.fs-login-map {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0;
-}
-.fs-login-map[data-ready='true'] {
-  opacity: 1;
-}
-.fs-login-map-canvas {
-  width: 100%;
-  height: 100%;
-}
-.fs-login-map-canvas img[src*='/map_'],
-.fs-login-map-canvas img[src*='/api/v1/tile/'] {
-  filter: grayscale(0.55) saturate(0.65);
-}
-.fs-login-map-veil {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: rgba(246, 247, 249, 0.12);
+.fs-login-signup a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }

@@ -1,0 +1,161 @@
+.fs-auth-root {
+  min-height: 100svh;
+  background: #f6f7f9;
+}
+.fs-auth {
+  position: relative;
+  isolation: isolate;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 40px 40px;
+  color: #0f1b33;
+}
+.fs-auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 88px;
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+  background: #fff;
+  padding: 16px 20px;
+}
+.fs-auth-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #0d2a5e;
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+}
+.fs-auth-wordmark span {
+  color: #1a7bff;
+  font-size: 24px;
+}
+.fs-auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #536074;
+  font-size: 13px;
+}
+.fs-auth-back:hover {
+  color: #0d2a5e;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.fs-auth-body {
+  display: flex;
+  min-height: calc(100svh - 88px - 40px);
+  align-items: center;
+  padding-top: 24px;
+}
+.fs-auth-card-frame {
+  position: relative;
+  width: 480px;
+  max-width: 100%;
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+  background: #fff;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgb(15 27 51 / 5%);
+  overflow: hidden;
+  transition: height 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.fs-auth-card-content {
+  display: flow-root;
+}
+.fs-auth .fs-auth-switch {
+  position: absolute;
+  top: 21px;
+  right: 20px;
+  z-index: 1;
+  height: 44px;
+  min-width: 120px;
+  justify-content: flex-end;
+  border: 0;
+  gap: 6px;
+  border-radius: 6px;
+  background: transparent;
+  padding: 0 16px;
+  cursor: pointer;
+  color: #0d2a5e;
+  font-size: 14px;
+  font-weight: 600;
+}
+.fs-auth .fs-auth-switch:hover {
+  background: transparent;
+  color: #174a8a;
+}
+.fs-auth .fs-auth-switch:focus-visible {
+  outline: 2px solid #1a7bff;
+  outline-offset: 3px;
+}
+.fs-auth [data-auth-heading] {
+  padding-right: 128px;
+}
+.fs-auth [data-auth-heading] {
+  outline: none;
+}
+.fs-login-map {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+}
+.fs-login-map[data-ready='true'] {
+  opacity: 1;
+}
+.fs-login-map-canvas {
+  width: 100%;
+  height: 100%;
+}
+.fs-login-map-canvas img[src*='/map_'],
+.fs-login-map-canvas img[src*='/api/v1/tile/'] {
+  filter: grayscale(0.55) saturate(0.65);
+}
+.fs-login-map-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgb(246 247 249 / 12%);
+}
+@media (max-width: 760px) {
+  .fs-auth {
+    max-width: 480px;
+    padding: 0 16px 48px;
+  }
+  .fs-auth-header {
+    min-height: 76px;
+    gap: 16px;
+    padding: 16px;
+  }
+  .fs-auth-wordmark {
+    font-size: 17px;
+  }
+  .fs-auth-back {
+    font-size: 12px;
+  }
+  .fs-auth-body {
+    align-items: flex-start;
+    min-height: 0;
+    padding-top: 28px;
+  }
+  .fs-auth-card-frame {
+    width: 100%;
+  }
+  .fs-auth-card-frame {
+    max-height: max(120px, calc(100dvh - 136px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-auth[data-page] .fs-auth-card-frame {
+    transition: none;
+  }
+}
