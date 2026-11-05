@@ -1,6 +1,6 @@
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-export const SAAS_API_BASE = `${BASE_PATH}/api`;
+export const SAAS_API_BASE = process.env.NEXT_PUBLIC_SAAS_API_BASE || `${BASE_PATH}/api`;
 
 export const SAAS_LOGIN_PATH = '/login';
 export const SAAS_SIGNUP_PATH = '/signup';

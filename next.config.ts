@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+const assetPrefix = process.env.NEXT_PUBLIC_ASSET_PREFIX ?? '';
 const isDev = process.env.NODE_ENV === 'development';
 const mocking = process.env.NEXT_PUBLIC_API_MOCKING === 'enabled';
 const workerScope = basePath || '/';
@@ -9,6 +10,7 @@ const saasDevApiPrefix = process.env.SAAS_DEV_API_PREFIX ?? `${basePath}/api`;
 
 const nextConfig: NextConfig = {
   basePath,
+  assetPrefix,
   output: 'standalone',
   compress: !isDev,
   cacheComponents: true,

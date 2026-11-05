@@ -176,10 +176,10 @@ export const isActiveMenu = (pathname: string, href: string, home: string) =>
 export const safeNextPath = (next: string | null, basePath = BASE_PATH) => {
   if (!next) return null;
 
-  const path =
-    basePath && (next === basePath || next.startsWith(`${basePath}/`))
-      ? next.slice(basePath.length) || '/'
-      : next;
+  const prefix = [basePath, '/test'].find(
+    candidate => candidate && (next === candidate || next.startsWith(`${candidate}/`))
+  );
+  const path = prefix ? next.slice(prefix.length) || '/' : next;
 
   if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) return null;
   const pathname = pathnameOf(path);

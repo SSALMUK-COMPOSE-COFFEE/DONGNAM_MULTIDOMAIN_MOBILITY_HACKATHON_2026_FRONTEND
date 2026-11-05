@@ -1,11 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { BASE_PATH, SAAS_API_BASE } from '@/consts/api-saas';
 import { SAAS_PAGES, SESSION_COOKIE_NAME } from '@/consts/route-saas';
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (pathname === '/') return NextResponse.next();
+  if (!BASE_PATH && SAAS_API_BASE === '/test/api') return NextResponse.next();
   if (request.cookies.has(SESSION_COOKIE_NAME)) return NextResponse.next();
 
   const loginUrl = request.nextUrl.clone();

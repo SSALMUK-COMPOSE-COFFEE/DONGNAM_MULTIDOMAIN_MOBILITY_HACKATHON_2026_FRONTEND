@@ -33,6 +33,19 @@ pnpm dev                     # http://localhost:3000
 | `pnpm dev:mock`    | SaaS 화면을 MSW 목업만으로 띄움 (백엔드 없이)       |
 | `pnpm test:e2e`    | Playwright e2e (`e2e/`)                             |
 
+## SaaS 운영 경로
+
+운영 화면은 `/`, `/login`, `/signup`, `/app/...`를 사용한다. 기존 `/test` 화면 주소는 쿼리를 보존해 새 주소로 이동한다.
+시연 화면은 `/intake`이며 기존 main 웹·API에서 제공한다.
+
+`docker-compose.saas.yml`의 운영 빌드는 `NEXT_PUBLIC_BASE_PATH=''`, `NEXT_PUBLIC_ASSET_PREFIX=/saas-assets`, `NEXT_PUBLIC_SAAS_API_BASE=/test/api`를 사용한다.
+SaaS 정적 파일은 `/saas-assets/_next/static/`, API는 호환 경로 `/test/api`로 분리해 main의 `/_next/`·`/api`와 겹치지 않는다.
+nginx 설정은 `deploy/nginx/freshswitch.conf`이며 이전 SaaS 공개 정적 파일만 `/var/lib/freshswitch/saas-legacy-static/`에 보존한다.
+
+SaaS 쿠키는 `/` 범위로 발급하며 로그인·로그아웃 때 이전 `/test` 쿠키를 만료시킨다.
+이전 쿠키만 남은 사용자는 클라이언트 `AuthGuard`와 API가 세션을 확인한다. 화면 요청의 쿠키 존재 여부로 먼저 차단하지 않는다.
+`/test` 기반 이미지로 되돌릴 때는 해당 이미지와 함께 nginx 경로 설정도 복원해야 한다.
+
 ## SaaS 목업 모드 (백엔드 백업)
 
 SaaS 백엔드가 죽었을 때 화면을 MSW 목업만으로 띄운다. 목업 데이터는 브라우저 메모리에 있어서 새로고침하면 처음 상태로 돌아간다.
@@ -57,7 +70,7 @@ curl -fsS -o /dev/null http://127.0.0.1:18107/test/login && echo ok
 docker compose -f docker-compose.saas.yml stop web-mock
 ```
 
-포트는 `MOCK_HOST_PORT` 로 바꾼다. 공개 주소에서 백업으로 돌리려면 nginx `/etc/nginx/conf.d/upstreams.conf` 의 `~^freshswitch\.ssalhub\.xyz/test(/|$)` 줄 포트를 18105 → 18107 로 바꾸고 `sudo nginx -t && sudo systemctl reload nginx` 한다. 백엔드가 살아나면 18105 로 되돌린다.
+포트는 `MOCK_HOST_PORT` 로 바꾼다. 이 목업 컨테이너는 `/test` 기반이므로 운영 경로에 연결하려면 운영 빌드와 동일한 경로 설정이 필요하다.
 
 ### e2e
 
