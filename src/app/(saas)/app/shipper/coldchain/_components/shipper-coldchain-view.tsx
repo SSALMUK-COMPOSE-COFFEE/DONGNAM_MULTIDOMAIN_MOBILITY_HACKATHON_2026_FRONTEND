@@ -45,17 +45,10 @@ import {
   fmtWon,
 } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ColdchainPlanSelect } from '@/app/(saas)/app/shipper/coldchain/_components/coldchain-plan-select';
 import type { SettlementPreviewT } from '@/types/saas-analysis';
 import type { ShipperPlanItemT } from '@/types/saas-shipper';
-import { formatPercent } from '@/utils/format';
-import { planOptionLabel } from '@/utils/plan-label';
+import { formatPercent, withoutContainerPrefix } from '@/utils/format';
 
 const SHIPPER_COLDCHAIN = (planId: string, containerId?: string) => {
   const params = new URLSearchParams({ plan_id: planId });
@@ -111,21 +104,13 @@ export function ShipperColdchainView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="m2-card flex flex-wrap items-center gap-3 py-3.5">
+      <div className="m2-card grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 py-3.5 max-[600px]:grid-cols-1">
         <span className="m2-h3">계획</span>
-        <Select value={planId} onValueChange={next => router.replace(SHIPPER_COLDCHAIN(next))}>
-          <SelectTrigger aria-label="계획" className="w-96 max-w-full rounded-[12px] bg-white">
-            <SelectValue placeholder="계획 선택" />
-          </SelectTrigger>
-          <SelectContent>
-            {plans.map(plan => (
-              <SelectItem key={plan.plan_id} value={plan.plan_id}>
-                {planOptionLabel(plan)}
-              </SelectItem>
-            ))}
-            {!planItem && <SelectItem value={planId}>{planId}</SelectItem>}
-          </SelectContent>
-        </Select>
+        <ColdchainPlanSelect
+          plans={plans}
+          planId={planId}
+          onValueChange={next => router.replace(SHIPPER_COLDCHAIN(next))}
+        />
       </div>
 
       <PlanColdchain
@@ -252,10 +237,10 @@ function PlanColdchain({
         ))}
       </div>
 
-      <div className="@container">
-        <div className="grid grid-cols-1 gap-4 @min-[1000px]:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="@container min-w-0">
+        <div className="grid min-w-0 grid-cols-1 gap-4 @min-[1000px]:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
           <ContainerTwin planId={planId} containerId={containerId} ownLotIds={scope.lotIds} />
-          <div className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
             <section className="m2-card">
               <div className="m2-card-h flex-wrap gap-2">
                 <h2 className="m2-h2">실시간 알림</h2>
@@ -282,7 +267,7 @@ function PlanColdchain({
                             ALERT_LEVEL_CLASS[alert.level]
                           )}
                         >
-                          {alert.title.replace(/^CA-\d+\s*/, '')}
+                          {withoutContainerPrefix(alert.title)}
                         </p>
                         <p className="text-[12.5px] text-m2-ink-2">{alert.message}</p>
                       </div>
@@ -332,8 +317,10 @@ function ContainerTile({
         isActive && 'shadow-[0_0_0_2px_var(--m2-brand)]'
       )}
     >
-      <div className="flex items-center gap-2">
-        <span className="m2-h3 text-[15px]">{containerId}</span>
+      <div className="flex min-w-0 flex-wrap items-start gap-2">
+        <span className="m2-h3 min-w-0 flex-1 text-[15px]" style={{ overflowWrap: 'anywhere' }}>
+          {containerId}
+        </span>
         <span className={status.chip}>{status.label}</span>
       </div>
       <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[12.5px]">
@@ -386,12 +373,16 @@ function ContainerTwin({ planId, containerId, ownLotIds }: ContainerTwinPropsT) 
   if (twinQuery.isPending) return <CardSkeleton height={420} />;
 
   return (
-    <div className="flex flex-col gap-4">
-      <section className="m2-card">
-        <div className="m2-card-h flex-wrap gap-2">
-          <h2 className="m2-h2">{containerId} 품온 · 전원</h2>
-          <div className="flex flex-wrap items-center justify-end gap-1.5">
+    <div className="flex min-w-0 flex-col gap-4">
+      <section className="m2-card min-w-0">
+        <div className="m2-card-h flex-col items-stretch gap-3">
+          <h2 className="m2-h2 min-w-0" style={{ overflowWrap: 'anywhere' }}>
+            {containerId} 품온 · 전원
+          </h2>
+          <div className="flex max-w-full min-w-0 flex-wrap items-center gap-1.5">
             {twin ? <TwinChips twin={twin} /> : null}
+          </div>
+          <div className="flex min-w-0 flex-wrap">
             <ColdchainCsvButtons planId={planId} containerId={containerId} hasData={hasData} />
           </div>
         </div>

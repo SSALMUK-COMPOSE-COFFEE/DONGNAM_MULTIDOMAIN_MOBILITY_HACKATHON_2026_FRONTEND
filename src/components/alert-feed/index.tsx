@@ -3,7 +3,7 @@ import { cn } from 'cn';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { AlertT } from '@/types/api';
-import { formatMonthDayTime } from '@/utils/format';
+import { formatMonthDayTime, withoutContainerPrefix } from '@/utils/format';
 
 const LEVEL_STYLE: Record<AlertT['level'], string> = {
   critical: 'text-berry',
@@ -31,7 +31,7 @@ export function AlertFeed({ alerts }: { alerts: AlertT[] }) {
                   </span>
                   <div>
                     <p className={cn('font-bold', LEVEL_STYLE[level])}>
-                      {title.replace(/^CA-\d+\s*/, '')}
+                      {withoutContainerPrefix(title)}
                     </p>
                     <p className="mt-0.5 text-sm text-muted-foreground">{message}</p>
                   </div>

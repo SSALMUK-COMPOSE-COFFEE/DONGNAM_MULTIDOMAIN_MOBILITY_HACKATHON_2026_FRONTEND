@@ -40,7 +40,7 @@ import type {
   ForwarderStreamStateT,
   ForwarderTwinSummaryT,
 } from '@/types/saas-forwarder';
-import { formatPercent } from '@/utils/format';
+import { formatPercent, withoutContainerPrefix } from '@/utils/format';
 import { NO_VESSEL_LABEL } from '@/utils/plan-label';
 
 const STREAM_LABEL: Record<ForwarderStreamStateT, { label: string; chip: string }> = {
@@ -100,7 +100,7 @@ export function ColdchainView() {
         {header}
         <EmptyState
           title="콜드체인을 볼 항차가 없습니다"
-          description="플랫폼이 항차를 배정하면 컨테이너 품온과 알림을 여기서 봅니다."
+          description="공동적재 계획의 컨테이너 품온과 알림을 여기서 확인합니다."
         />
       </>
     );
@@ -218,7 +218,7 @@ function PlanColdchain({ planId, containerParam }: PlanColdchainPropsT) {
                   </time>
                   <div className="min-w-0">
                     <p className={cn('text-[13px] font-semibold', ALERT_COLOR[level])}>
-                      {title.replace(/^CA-\d+\s*/, '')}
+                      {withoutContainerPrefix(title)}
                     </p>
                     <p className="text-[12px] text-m2-muted">{message}</p>
                   </div>

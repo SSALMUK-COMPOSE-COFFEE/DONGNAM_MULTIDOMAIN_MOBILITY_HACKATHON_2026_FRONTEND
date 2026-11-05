@@ -15,6 +15,7 @@ import {
 } from '@/apis/saas/coldchain';
 import { kstDayTime } from '@/app/(saas)/app/platform/_components/m2-format';
 import type { ColdchainActionHandlerT } from '@/types/saas-platform';
+import { withoutContainerPrefix } from '@/utils/format';
 
 const NOTE_MAX_LENGTH = 500;
 
@@ -49,8 +50,6 @@ const HANDLER_LABEL: Record<ColdchainActionHandlerT['org_type'], string> = {
   platform: '플랫폼',
   forwarder: '포워더',
 };
-
-const actionTitle = (title: string) => title.replace(/^CA-\d+\s*/, '');
 
 const copyText = async (text: string) => {
   try {
@@ -131,7 +130,7 @@ function ActionRow({ action, canAct, isPending, onAccept, onComplete }: ActionRo
   const [note, setNote] = useState('');
   const status = STATUS_CHIP[action.status];
   const severity = SEVERITY_CHIP[action.severity];
-  const title = actionTitle(action.title);
+  const title = withoutContainerPrefix(action.title);
   const request = action.request ?? null;
   const trimmedNote = note.trim();
 

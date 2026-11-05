@@ -11,7 +11,7 @@ import {
 import { formatMinutes, hourMinute } from '@/app/(saas)/app/forwarder/_components/format';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import type { ForwarderTwinStateT, ForwarderTwinSummaryT } from '@/types/saas-forwarder';
-import { formatPercent } from '@/utils/format';
+import { formatPercent, withoutContainerPrefix } from '@/utils/format';
 
 const MARKER_COLOR: Record<ColdchainEventLevelT, string> = {
   info: 'var(--color-m2-ok-ink)',
@@ -39,7 +39,7 @@ export const twinEvents = (twin: ForwarderTwinStateT): ColdchainEventT[] => {
     key: `alert:${alert.key}`,
     at: alert.at,
     level: alert.level,
-    title: alert.title.replace(/^CA-\d+\s*/, ''),
+    title: withoutContainerPrefix(alert.title),
   }));
   const fromActions = twin.actions
     .filter(({ key }) => !alertActionKeys.has(key))
@@ -66,7 +66,12 @@ export function TwinChips({ twin }: { twin: ForwarderTwinStateT }) {
         </span>
       ) : null}
       {twin.device_ids.map(deviceId => (
-        <span key={deviceId} className="m2-chip m2-mono">
+        <span
+          key={deviceId}
+          className="m2-chip m2-mono max-w-full min-w-0"
+          title={deviceId}
+          style={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+        >
           {deviceId}
         </span>
       ))}
@@ -102,10 +107,11 @@ export function TwinBody({
     typeof maxTemp === 'number' && Math.abs(peak.temp_c - maxTemp) < 0.005 ? peak.ts : null;
   const planned = twin.loss.planned_loss_rate;
   const predicted = twin.loss.predicted_loss_rate;
+  const hasPlanLoss = typeof planned === 'number' && typeof predicted === 'number';
 
   return (
     <>
-      <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-5 max-[1180px]:grid-cols-1">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,220px)] gap-5 max-[1180px]:grid-cols-1">
         <SectionErrorBoundary message="품온 그래프를 그리지 못했습니다." className="h-[200px]">
           <ColdchainChart
             containerId={containerId}
@@ -145,16 +151,16 @@ export function TwinBody({
           />
           <div className="col-span-full">
             <div className="m2-lbl">
-              {typeof planned === 'number' ? '예상 손실률 (계획 → 센서)' : '센서 기준 손실률'}
+              {hasPlanLoss ? '손실률 (계획 → 예상)' : '센서 기준 손실률'}
             </div>
             <div className="m2-num text-[20px] font-bold tracking-[-0.02em]">
-              {typeof planned === 'number'
-                ? `${formatPercent(planned)} → ${formatPercent(twin.loss.sensor_loss_rate)}`
+              {hasPlanLoss
+                ? `${formatPercent(planned)} → ${formatPercent(predicted)}`
                 : formatPercent(twin.loss.sensor_loss_rate)}
             </div>
             <div className="m2-num text-[11.5px] text-m2-muted">
+              {hasPlanLoss ? `센서 기준 ${formatPercent(twin.loss.sensor_loss_rate)} · ` : ''}
               단전이 없으면 {formatPercent(twin.loss.no_outage_loss_rate)}
-              {typeof predicted === 'number' ? ` · 예측 ${formatPercent(predicted)}` : ''}
             </div>
           </div>
         </div>

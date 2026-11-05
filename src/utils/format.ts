@@ -25,3 +25,6 @@ export const formatMonthDay = (date: string | null | undefined) =>
 /** '2026-11-18T18:00:00+09:00' → '11/18 18:00' (백엔드는 한국 시각 오프셋으로 보낸다) */
 export const formatMonthDayTime = (dateTime: string | null | undefined) =>
   dateTime ? `${formatMonthDay(dateTime)} ${dateTime.slice(11, 16)}` : EMPTY;
+
+export const withoutContainerPrefix = (title: string) =>
+  title.replace(/^(?:CA-\d+|[A-Z]{3}[UJZ]\d{7})\s*/, '');
