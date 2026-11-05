@@ -2,7 +2,7 @@
 
 import { type MouseEvent, useEffect, useId, useRef, useState } from 'react';
 
-import { hourMinute, monthDay } from '@/app/(saas)/app/forwarder/_components/format';
+import { hourMinute, monthDay, monthDayTime } from '@/app/(saas)/app/forwarder/_components/format';
 import { M2_COLORS } from '@/components/map-hero/scene';
 import type { ForwarderTwinStateT } from '@/types/saas-forwarder';
 
@@ -134,173 +134,216 @@ export function ColdchainChart({
     : `${containerId} 품온`;
 
   return (
-    <div
-      ref={ref}
-      className="relative h-[200px] min-w-0"
-      onMouseMove={onMove}
-      onMouseLeave={() => setHoverIndex(null)}
-    >
-      {width > 0 && points.length > 0 ? (
-        <svg width={width} height={HEIGHT} role="img" aria-label={label} className="block">
-          <defs>
-            <clipPath id={clipId}>
-              <rect x={0} y={0} width={width} height={Math.max(y(bandMax), 0)} />
-            </clipPath>
-          </defs>
-          {outages.map(({ start, end }) => {
-            const x0 = x(start);
-            const x1 = Math.max(x(end), x0 + 1);
-            const minutes = Math.round((end - start) / 60000);
-            return (
-              <g key={start}>
-                <rect x={x0} y={MT} width={x1 - x0} height={h} fill="#f2f3f5" />
-                {x1 - x0 > 76 ? (
-                  <text
-                    x={(x0 + x1) / 2}
-                    y={MT + 12}
-                    fontSize={10.5}
-                    textAnchor="middle"
-                    fill={M2_COLORS.muted}
-                  >
-                    전원 꺼짐 {minutes}분
-                  </text>
-                ) : null}
-              </g>
-            );
-          })}
-          <rect
-            x={ML}
-            y={y(bandMax)}
-            width={w}
-            height={Math.max(y(bandMin) - y(bandMax), 0)}
-            fill="rgba(15,138,102,.10)"
-          />
-          <text
-            x={ML + w - 4}
-            y={y(bandMin) - 4}
-            fontSize={10.5}
-            textAnchor="end"
-            fill="#0b6b4f"
-            fontWeight={600}
-          >
-            적정 {bandMin}~{bandMax}°C
-          </text>
-          {yTicks.map(value => (
-            <g key={value}>
-              <line x1={ML} x2={ML + w} y1={y(value)} y2={y(value)} stroke="rgba(15,27,51,.06)" />
-              <text x={ML - 6} y={y(value) + 3.5} fontSize={10} textAnchor="end" fill="#7d8696">
-                {value}°
-              </text>
-            </g>
-          ))}
-          {xTicks.map(ms => (
+    <div className="min-w-0">
+      <div
+        ref={ref}
+        className="relative h-[200px] min-w-0"
+        onMouseMove={onMove}
+        onMouseLeave={() => setHoverIndex(null)}
+      >
+        {width > 0 && points.length > 0 ? (
+          <svg width={width} height={HEIGHT} role="img" aria-label={label} className="block">
+            <defs>
+              <clipPath id={clipId}>
+                <rect x={0} y={0} width={width} height={Math.max(y(bandMax), 0)} />
+              </clipPath>
+            </defs>
+            {outages.map(({ start, end }) => {
+              const x0 = x(start);
+              const x1 = Math.max(x(end), x0 + 1);
+              const minutes = Math.round((end - start) / 60000);
+              return (
+                <g key={start}>
+                  <rect x={x0} y={MT} width={x1 - x0} height={h} fill="#f2f3f5" />
+                  {x1 - x0 > 76 ? (
+                    <text
+                      x={(x0 + x1) / 2}
+                      y={MT + 12}
+                      fontSize={10.5}
+                      textAnchor="middle"
+                      fill={M2_COLORS.muted}
+                    >
+                      전원 꺼짐 {minutes}분
+                    </text>
+                  ) : null}
+                </g>
+              );
+            })}
+            <rect
+              x={ML}
+              y={y(bandMax)}
+              width={w}
+              height={Math.max(y(bandMin) - y(bandMax), 0)}
+              fill="rgba(15,138,102,.10)"
+            />
             <text
-              key={ms}
-              x={x(ms)}
-              y={HEIGHT - 4}
-              fontSize={10}
-              textAnchor="middle"
-              fill="#7d8696"
+              x={ML + w - 4}
+              y={y(bandMin) - 4}
+              fontSize={10.5}
+              textAnchor="end"
+              fill="#0b6b4f"
+              fontWeight={600}
             >
-              {multiDay && new Date(ms + KST_OFFSET_MS).getUTCHours() === 0
-                ? monthDay(new Date(ms).toISOString())
-                : hourMinute(new Date(ms).toISOString())}
+              적정 {bandMin}~{bandMax}°C
             </text>
-          ))}
-          <path
-            d={`${linePath}L${x(t1)} ${y(bandMax)}L${x(t0)} ${y(bandMax)}Z`}
-            fill="rgba(217,58,64,.10)"
-            clipPath={`url(#${clipId})`}
-          />
-          <path
-            d={linePath}
-            fill="none"
-            stroke={M2_COLORS.ink}
-            strokeWidth={1.8}
-            strokeLinejoin="round"
-          />
-          {inRange.map(event => {
-            const ex = x(event.ms);
-            return (
-              <g key={event.key}>
-                <title>{`${event.order}. ${hourMinute(event.at)} ${event.title}`}</title>
-                <line
-                  x1={ex}
-                  x2={ex}
-                  y1={MT}
-                  y2={MT + h}
-                  stroke={EVENT_COLOR[event.level]}
-                  strokeDasharray="2 3"
-                  opacity={0.55}
-                />
-                <rect
-                  x={ex - 7}
-                  y={MT}
-                  width={14}
-                  height={14}
-                  rx={4}
-                  fill={EVENT_COLOR[event.level]}
-                />
-                <text
-                  x={ex}
-                  y={MT + 10.5}
-                  fontSize={10}
-                  fontWeight={700}
-                  textAnchor="middle"
-                  fill="#fff"
-                >
-                  {event.order}
+            {yTicks.map(value => (
+              <g key={value}>
+                <line x1={ML} x2={ML + w} y1={y(value)} y2={y(value)} stroke="rgba(15,27,51,.06)" />
+                <text x={ML - 6} y={y(value) + 3.5} fontSize={10} textAnchor="end" fill="#7d8696">
+                  {value}°
                 </text>
               </g>
-            );
-          })}
-          {maxPoint && maxPoint.temp_c > bandMax ? (
-            <g>
-              <circle cx={x(maxPoint.ms)} cy={y(maxPoint.temp_c)} r={3.5} fill={M2_COLORS.crit} />
+            ))}
+            {xTicks.map(ms => (
               <text
-                x={x(maxPoint.ms) + 6}
-                y={y(maxPoint.temp_c) + 2}
-                fontSize={11}
-                fontWeight={700}
-                fill={M2_COLORS.crit}
+                key={ms}
+                x={x(ms)}
+                y={HEIGHT - 4}
+                fontSize={10}
+                textAnchor="middle"
+                fill="#7d8696"
               >
-                {formatTemp(maxPoint.temp_c)}°
+                {multiDay && new Date(ms + KST_OFFSET_MS).getUTCHours() === 0
+                  ? monthDay(new Date(ms).toISOString())
+                  : hourMinute(new Date(ms).toISOString())}
               </text>
-            </g>
-          ) : null}
-          {hover ? (
-            <g>
-              <line
-                x1={x(hover.ms)}
-                x2={x(hover.ms)}
-                y1={MT}
-                y2={MT + h}
-                stroke={M2_COLORS.brand}
-                opacity={0.6}
-              />
-              <circle
-                cx={x(hover.ms)}
-                cy={y(hover.temp_c)}
-                r={4}
-                fill={M2_COLORS.brand}
-                stroke="#fff"
-                strokeWidth={2}
-              />
-            </g>
-          ) : null}
-        </svg>
-      ) : null}
-      {hover ? (
-        <div
-          aria-hidden
-          className="m2-num pointer-events-none absolute top-1 rounded-[7px] bg-white px-2 py-[3px] text-[11.5px] whitespace-nowrap shadow-[0_0_0_.5px_var(--m2-line-2)]"
-          style={{ left: Math.min(width - 170, Math.max(0, x(hover.ms) + 8)) }}
-        >
-          {hourMinute(hover.ts)} · {formatTemp(hover.temp_c)}°C
-          {hover.temp_c > bandMax ? ' · 적정 초과' : ''}
-          {hover.power_on ? '' : ' · 전원 꺼짐'}
-        </div>
-      ) : null}
+            ))}
+            <path
+              d={`${linePath}L${x(t1)} ${y(bandMax)}L${x(t0)} ${y(bandMax)}Z`}
+              fill="rgba(217,58,64,.10)"
+              clipPath={`url(#${clipId})`}
+            />
+            <path
+              d={linePath}
+              fill="none"
+              stroke={M2_COLORS.ink}
+              strokeWidth={1.8}
+              strokeLinejoin="round"
+            />
+            {inRange.map(event => {
+              const ex = x(event.ms);
+              return (
+                <g key={event.key}>
+                  <title>{`${event.order}. ${hourMinute(event.at)} ${event.title}`}</title>
+                  <line
+                    x1={ex}
+                    x2={ex}
+                    y1={MT}
+                    y2={MT + h}
+                    stroke={EVENT_COLOR[event.level]}
+                    strokeDasharray="2 3"
+                    opacity={0.55}
+                  />
+                  <rect
+                    x={ex - 7}
+                    y={MT}
+                    width={14}
+                    height={14}
+                    rx={4}
+                    fill={EVENT_COLOR[event.level]}
+                  />
+                  <text
+                    x={ex}
+                    y={MT + 10.5}
+                    fontSize={10}
+                    fontWeight={700}
+                    textAnchor="middle"
+                    fill="#fff"
+                  >
+                    {event.order}
+                  </text>
+                </g>
+              );
+            })}
+            {maxPoint && maxPoint.temp_c > bandMax ? (
+              <g>
+                <circle cx={x(maxPoint.ms)} cy={y(maxPoint.temp_c)} r={3.5} fill={M2_COLORS.crit} />
+                <text
+                  x={x(maxPoint.ms) + 6}
+                  y={y(maxPoint.temp_c) + 2}
+                  fontSize={11}
+                  fontWeight={700}
+                  fill={M2_COLORS.crit}
+                >
+                  {formatTemp(maxPoint.temp_c)}°
+                </text>
+              </g>
+            ) : null}
+            {hover ? (
+              <g>
+                <line
+                  x1={x(hover.ms)}
+                  x2={x(hover.ms)}
+                  y1={MT}
+                  y2={MT + h}
+                  stroke={M2_COLORS.brand}
+                  opacity={0.6}
+                />
+                <circle
+                  cx={x(hover.ms)}
+                  cy={y(hover.temp_c)}
+                  r={4}
+                  fill={M2_COLORS.brand}
+                  stroke="#fff"
+                  strokeWidth={2}
+                />
+              </g>
+            ) : null}
+          </svg>
+        ) : null}
+        {hover ? (
+          <div
+            aria-hidden
+            className="m2-num pointer-events-none absolute top-1 rounded-[7px] bg-white px-2 py-[3px] text-[11.5px] whitespace-nowrap shadow-[0_0_0_.5px_var(--m2-line-2)]"
+            style={{ left: Math.min(width - 170, Math.max(0, x(hover.ms) + 8)) }}
+          >
+            {hourMinute(hover.ts)} · {formatTemp(hover.temp_c)}°C
+            {hover.temp_c > bandMax ? ' · 적정 초과' : ''}
+            {hover.power_on ? '' : ' · 전원 꺼짐'}
+          </div>
+        ) : null}
+      </div>
+      {points.length > 0 && (
+        <details className="mt-3 min-w-0">
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-m2-brand-ink">
+            시각별 품온·전원 표 보기 ({points.length}건)
+          </summary>
+          <div
+            className="max-h-72 overflow-auto rounded-xl border border-m2-line"
+            tabIndex={0}
+            role="region"
+            aria-label={`${containerId} 시각별 측정값`}
+          >
+            <table className="w-full text-left text-xs">
+              <caption className="sr-only">{containerId} 시각별 품온·전원 측정값 (KST)</caption>
+              <thead className="sticky top-0 bg-white">
+                <tr>
+                  <th scope="col" className="px-3 py-2">
+                    시각 (KST)
+                  </th>
+                  <th scope="col" className="px-3 py-2">
+                    품온
+                  </th>
+                  <th scope="col" className="px-3 py-2">
+                    전원
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {points.map((point, index) => (
+                  <tr key={`${point.ts}-${index}`} className="border-t border-m2-line">
+                    <th scope="row" className="px-3 py-2 font-normal">
+                      {monthDayTime(point.ts)}
+                    </th>
+                    <td className="px-3 py-2">{formatTemp(point.temp_c)}°C</td>
+                    <td className="px-3 py-2">{point.power_on ? '켜짐' : '꺼짐'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      )}
     </div>
   );
 }

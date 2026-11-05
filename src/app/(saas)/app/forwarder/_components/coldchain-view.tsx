@@ -3,6 +3,7 @@
 import { cn } from 'cn';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useId } from 'react';
 
 import { useColdchainTwin } from '@/apis/saas/coldchain';
 import {
@@ -57,6 +58,7 @@ const ALERT_COLOR: Record<ForwarderAlertT['level'], string> = {
 };
 
 export function ColdchainView() {
+  const selectId = useId();
   const router = useRouter();
   const searchParams = useSearchParams();
   const orgName = useForwarderOrgName();
@@ -74,7 +76,7 @@ export function ColdchainView() {
       <>
         {header}
         <div aria-busy className="flex flex-col gap-4">
-          <Skeleton className="h-12 w-96 rounded-xl" />
+          <Skeleton className="h-12 w-96 max-w-full rounded-xl" />
           <Skeleton className="h-96 rounded-[18px]" />
         </div>
       </>
@@ -94,6 +96,20 @@ export function ColdchainView() {
     );
   }
 
+  const requested = searchParams.get('plan_id');
+  if (requested !== null && !plans.data.some(({ plan_id }) => plan_id === requested)) {
+    return (
+      <>
+        {header}
+        <EmptyState
+          title="요청한 항차를 확인할 수 없습니다"
+          description="항차가 삭제되었거나 현재 회사에서 조회할 수 없습니다. 공동적재 계획에서 항차를 다시 선택하세요."
+          action={{ href: FORWARDER_PATHS.HOME, label: '공동적재 계획으로 돌아가기' }}
+        />
+      </>
+    );
+  }
+
   if (plans.data.length === 0) {
     return (
       <>
@@ -106,22 +122,21 @@ export function ColdchainView() {
     );
   }
 
-  const requested = searchParams.get('plan_id');
-  const planId = plans.data.some(({ plan_id }) => plan_id === requested)
-    ? (requested as string)
-    : plans.data[0].plan_id;
+  const planId = requested ?? plans.data[0].plan_id;
 
   return (
     <>
       {header}
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="m2-lbl">항차</span>
+          <label htmlFor={selectId} className="m2-lbl">
+            항차
+          </label>
           <Select
             value={planId}
             onValueChange={next => router.replace(FORWARDER_PATHS.COLDCHAIN(next))}
           >
-            <SelectTrigger className="w-96 max-w-full rounded-xl bg-white">
+            <SelectTrigger id={selectId} className="w-96 max-w-full rounded-xl bg-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
