@@ -46,6 +46,7 @@ import {
 } from '@/app/(saas)/app/shipper/_components/shipper-format';
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import { ColdchainPlanSelect } from '@/app/(saas)/app/shipper/coldchain/_components/coldchain-plan-select';
+import { TemperatureProvenance } from '@/app/(saas)/app/shipper/coldchain/_components/temperature-provenance';
 import type { SettlementPreviewT } from '@/types/saas-analysis';
 import type { ShipperPlanItemT } from '@/types/saas-shipper';
 import { formatPercent, withoutContainerPrefix } from '@/utils/format';
@@ -323,6 +324,7 @@ function ContainerTile({
         </span>
         <span className={status.chip}>{status.label}</span>
       </div>
+      <TemperatureProvenance twin={twinQuery.data ?? null} compact />
       <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[12.5px]">
         <dt className="text-m2-muted">품온</dt>
         <dd className="m2-num text-right font-semibold">
@@ -386,6 +388,7 @@ function ContainerTwin({ planId, containerId, ownLotIds }: ContainerTwinPropsT) 
             <ColdchainCsvButtons planId={planId} containerId={containerId} hasData={hasData} />
           </div>
         </div>
+        <TemperatureProvenance twin={twin} />
         {twin && hasData ? (
           <TwinBody twin={twin} containerId={containerId} />
         ) : (
