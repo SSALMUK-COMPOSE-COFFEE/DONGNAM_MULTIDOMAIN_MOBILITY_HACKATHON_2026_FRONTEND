@@ -21,7 +21,7 @@ import type { RegisteredDeviceT } from '@/types/saas-platform';
 const registerErrorMessage = (error: unknown) => {
   const status = saasErrorStatus(error);
   if (status === 409)
-    return saasErrorDetail(error) ?? '이미 등록됐거나 다른 조직에 연결된 기기 ID 입니다.';
+    return saasErrorDetail(error) ?? '이미 등록됐거나 다른 업체에 연결된 기기 ID 입니다.';
   if (status === 422) return saasErrorDetail(error) ?? '기기 ID를 확인하세요.';
 
   return saasErrorReason(error) ?? '기기를 등록하지 못했습니다.';

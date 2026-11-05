@@ -20,6 +20,7 @@ import { saasRetry } from '@/apis/saas/retry';
 import { SAAS_API_BASE } from '@/consts/api-saas';
 import type { UseConfirmOrderOptionsT } from '@/hooks/useConfirmOrder';
 import { mockingReady } from '@/mocks/ready';
+import type { SaasSchemaT } from '@/types/api-saas';
 import type {
   ForwarderAlertT,
   ForwarderDecisionT,
@@ -39,6 +40,7 @@ export const FORWARDER_ENDPOINTS = {
   PLANS: '/saas/forwarder/plans',
   PLAN: (planId: string) => `/saas/forwarder/plans/${segment(planId)}`,
   PLAN_ORDERS: (planId: string) => `/saas/forwarder/plans/${segment(planId)}/orders`,
+  PLAN_CONFIRMATION: (planId: string) => `/saas/forwarder/plans/${segment(planId)}/confirmation`,
   ORDER_CONFIRM: (planId: string, orderId: string) =>
     `/saas/forwarder/plans/${segment(planId)}/orders/${segment(orderId)}/confirm`,
   ORDER_REQUEST: (planId: string, orderId: string, requestId: string) =>
@@ -164,6 +166,23 @@ export const forwarderPlanOrdersQueryOptions = (orgId: string, planId: string) =
     refetchInterval: openOrdersRefetchInterval,
     enabled: !!orgId && !!planId,
   });
+
+export const forwarderConfirmationQueryOptions = (orgId: string, planId: string) =>
+  queryOptions({
+    queryKey: [...forwarderKeys.plan(orgId, planId), 'confirmation'],
+    queryFn: async () => {
+      const { data } = await saasApi.get<SaasSchemaT<'PlanConfirmationState'>>(
+        FORWARDER_ENDPOINTS.PLAN_CONFIRMATION(planId)
+      );
+      return data;
+    },
+    retry: saasRetry,
+    staleTime: 0,
+    enabled: !!orgId && !!planId,
+  });
+
+export const useForwarderConfirmation = (planId: string) =>
+  useQuery(forwarderConfirmationQueryOptions(useForwarderOrgId(), planId));
 
 export const forwarderContainersQueryOptions = (orgId: string, planId: string) =>
   queryOptions({

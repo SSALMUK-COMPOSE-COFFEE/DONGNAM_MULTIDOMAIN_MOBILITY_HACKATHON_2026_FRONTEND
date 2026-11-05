@@ -2,6 +2,7 @@
 
 import {
   BadgeCheck,
+  Building2,
   ClipboardList,
   FileText,
   House,
@@ -9,22 +10,24 @@ import {
   type LucideIcon,
   MessageSquareReply,
   Package,
+  PanelLeftClose,
+  PanelLeftOpen,
   Rows3,
+  Settings,
   Ship,
   Smartphone,
   Thermometer,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Fragment, useSyncExternalStore } from 'react';
+import { Fragment, useState, useSyncExternalStore } from 'react';
 
 import { useMe } from '@/apis/saas/auth';
 import { useForwarderPlans } from '@/apis/saas/forwarder';
-import { usePlatformLots, usePlatformPlans } from '@/apis/saas/platform';
+import { usePlatformPlans } from '@/apis/saas/platform';
 import { useShipperLots } from '@/apis/saas/shipper';
 import { useShipperPlanConfirmations } from '@/apis/saas/shipper-confirm';
-import { LogoutButton } from '@/app/(saas)/app/_components/logout-button';
-import { OrgSwitcher } from '@/app/(saas)/app/_components/org-switcher';
 import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shipper-tasks';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -34,6 +37,7 @@ import {
   type SaasMenuItemT,
   type SaasRoleRouteT,
   isActiveMenu,
+  roleCompanySettings,
 } from '@/consts/route-saas';
 import type { OrgType } from '@/types/saas';
 
@@ -49,6 +53,8 @@ const MENU_ICONS: Record<SaasMenuIconT, LucideIcon> = {
   requests: MessageSquareReply,
   voyages: Ship,
   orders: ClipboardList,
+  companies: Building2,
+  users: Users,
 };
 
 const ROLE_FOOT_NOTES: Record<OrgType, string | null> = {
@@ -79,9 +85,33 @@ const countOf = (query: { data?: readonly unknown[] | null; isSuccess: boolean }
   query.isSuccess && query.data ? query.data.length : null;
 
 export function SaasSidebar() {
+  const isRail = useIsRail();
+  const [preference, setPreference] = useState<boolean | null>(null);
+  const collapsed = preference ?? isRail;
+
   return (
-    <aside className="m2-side" aria-label="주 메뉴">
-      <SaasSidebarBody railTips />
+    <aside className="m2-side" aria-label="주 메뉴" data-collapsed={collapsed}>
+      <div className="m2-side-toggle-row">
+        <button
+          type="button"
+          className="m2-side-toggle"
+          aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+          title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+          aria-expanded={!collapsed}
+          aria-controls="desktop-navigation"
+          onClick={() => setPreference(!collapsed)}
+        >
+          {collapsed ? (
+            <PanelLeftOpen size={19} aria-hidden />
+          ) : (
+            <PanelLeftClose size={19} aria-hidden />
+          )}
+          <span>메뉴 접기</span>
+        </button>
+      </div>
+      <div id="desktop-navigation" className="m2-side-navigation">
+        <SaasSidebarBody railTips={collapsed} />
+      </div>
     </aside>
   );
 }
@@ -96,21 +126,14 @@ export function SaasSidebarBody({ railTips = false }: { railTips?: boolean }) {
 
   return (
     <div className="m2-side-in">
-      <OrgSwitcher me={me} />
-
       {orgType === 'platform' ? <PlatformNav railTips={railTips} /> : null}
       {orgType === 'shipper' ? <ShipperNav railTips={railTips} /> : null}
       {orgType === 'forwarder' ? <ForwarderNav railTips={railTips} /> : null}
-
-      <div className="m2-foot">
-        {footNote ? <p className="m2-foot-note">{footNote}</p> : null}
-        <div className="m2-user">
-          <div className="m2-user-text min-w-0">
-            <p className="m2-user-nm">{me.user.name}</p>
-            <p className="m2-user-em">{me.user.email}</p>
-          </div>
-          <LogoutButton />
-        </div>
+      <div className="m2-foot" style={{ paddingInline: 0 }}>
+        {me.active_org.role === 'owner' || me.active_org.role === 'admin' ? (
+          <SidebarCompanySettings orgType={orgType} railTips={railTips} />
+        ) : null}
+        {footNote ? <p className="m2-foot-note px-3">{footNote}</p> : null}
       </div>
     </div>
   );
@@ -119,7 +142,6 @@ export function SaasSidebarBody({ railTips = false }: { railTips?: boolean }) {
 type RailTipsPropsT = { railTips: boolean };
 
 function PlatformNav({ railTips }: RailTipsPropsT) {
-  const registeredLots = usePlatformLots('registered');
   const plans = usePlatformPlans();
 
   return (
@@ -127,7 +149,6 @@ function PlatformNav({ railTips }: RailTipsPropsT) {
       route={SAAS_ROUTES.platform}
       railTips={railTips}
       counts={{
-        platformRegisteredLots: countOf(registeredLots),
         platformPlans: countOf(plans),
       }}
     />
@@ -188,8 +209,7 @@ type SidebarNavPropsT = { route: SaasRoleRouteT; counts: MenuCountsT; railTips: 
 
 function SidebarNav({ route, counts, railTips }: SidebarNavPropsT) {
   const pathname = usePathname();
-  const isRail = useIsRail();
-  const showTips = railTips && isRail;
+  const showTips = railTips;
 
   return (
     <>
@@ -225,10 +245,8 @@ function SidebarNav({ route, counts, railTips }: SidebarNavPropsT) {
 
               return (
                 <Tooltip key={item.href}>
-                  <TooltipTrigger asChild>
-                    <span>{link}</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={8} aria-hidden>
+                  <TooltipTrigger asChild>{link}</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>
                     {fullLabel}
                   </TooltipContent>
                 </Tooltip>
@@ -238,5 +256,31 @@ function SidebarNav({ route, counts, railTips }: SidebarNavPropsT) {
         </div>
       ))}
     </>
+  );
+}
+
+function SidebarCompanySettings({ orgType, railTips }: { orgType: OrgType; railTips: boolean }) {
+  const pathname = usePathname();
+  const href = roleCompanySettings(orgType);
+  const link = (
+    <Link href={href} aria-label="업체 설정" aria-current={pathname === href ? 'page' : false}>
+      <Settings size={18} strokeWidth={1.6} aria-hidden />
+      <span className="m2-nav-t">업체 설정</span>
+    </Link>
+  );
+
+  return (
+    <nav className="m2-nav" aria-label="업체 관리">
+      {railTips ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{link}</TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            업체 설정
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        link
+      )}
+    </nav>
   );
 }

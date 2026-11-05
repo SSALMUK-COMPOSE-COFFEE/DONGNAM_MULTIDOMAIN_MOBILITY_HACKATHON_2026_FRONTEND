@@ -1,8 +1,7 @@
-import { PlatformKpiStrip } from '@/app/(saas)/app/platform/_components/kpi/kpi-strip';
-import { NewPlanView } from '@/app/(saas)/app/platform/_components/new-plan-view';
+import { AdminOverviewView } from '@/app/(saas)/app/platform/_components/admin/admin-directory';
 
 export const instant = false;
 
 export default function PlatformHomePage() {
-  return <NewPlanView afterHeader={<PlatformKpiStrip />} />;
+  return <AdminOverviewView />;
 }

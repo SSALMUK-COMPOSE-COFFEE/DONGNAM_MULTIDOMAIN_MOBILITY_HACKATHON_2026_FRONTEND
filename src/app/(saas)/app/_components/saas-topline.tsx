@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { useMe } from '@/apis/saas/auth';
+import { AccountMenu } from '@/app/(saas)/app/_components/account-menu';
 import { MobileNav } from '@/app/(saas)/app/_components/mobile-nav';
 import { SandboxBanner } from '@/app/(saas)/app/_components/sandbox-banner';
 import { SAAS_PAGES, roleHome } from '@/consts/route-saas';
@@ -20,7 +21,10 @@ export function SaasTopline() {
           <span aria-hidden>≈</span>
         </Link>
       </div>
-      <SandboxBanner />
+      <div className="m2-topline-actions">
+        <SandboxBanner />
+        <AccountMenu />
+      </div>
     </div>
   );
 }

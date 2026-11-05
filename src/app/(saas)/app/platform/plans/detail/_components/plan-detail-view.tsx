@@ -68,7 +68,7 @@ export function PlanDetailView() {
         <PlatformHeader eyebrow={EYEBROW} title="계획을 찾을 수 없습니다" />
         <EmptyState
           title="계획을 찾을 수 없습니다"
-          description="지워졌거나 다른 조직의 계획입니다."
+          description="지워졌거나 다른 업체의 계획입니다."
         >
           <Link href={PLATFORM_PATHS.PLANS} className="m2-btn m2-btn-sec">
             계획 목록으로

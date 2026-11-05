@@ -3,13 +3,14 @@
 import { MinusIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 
-import { usePlatformReplanFlow } from '@/apis/saas/platform';
-import { usePlatformAirSeaCompare } from '@/apis/saas/platform-analysis';
+import { useMe } from '@/apis/saas/auth';
 import {
-  useApplyChangeRequest,
-  useChangeRequestReplan,
-  usePlatformChangeRequests,
-} from '@/apis/saas/platform-change-requests';
+  useForwarderAirSeaCompare,
+  useForwarderApplyChangeRequest,
+  useForwarderChangeRequestReplan,
+  useForwarderChangeRequests,
+  useForwarderReplanFlow,
+} from '@/apis/saas/forwarder-operations';
 import { ContainerBlock } from '@/app/(saas)/app/platform/_components/container-plan-card';
 import { so2Text } from '@/app/(saas)/app/platform/_components/m2-format';
 import { containerViews } from '@/app/(saas)/app/platform/_components/plan-model';
@@ -20,7 +21,7 @@ import {
   openRequestParams,
 } from '@/app/(saas)/app/platform/plans/detail/_components/change-request-inbox';
 import { DelayForecastCard } from '@/app/(saas)/app/platform/plans/detail/_components/delay-forecast-card';
-import { PlatformOrderCard } from '@/app/(saas)/app/platform/plans/detail/_components/platform-order-card';
+import { PlanConfirmationCard } from '@/app/(saas)/app/platform/plans/detail/_components/plan-confirmation-card';
 import { ReplanAddLotTab } from '@/app/(saas)/app/platform/plans/detail/_components/replan-add-lot-tab';
 import { ReplanCandidatesCard } from '@/app/(saas)/app/platform/plans/detail/_components/replan-candidates-card';
 import { ReplanDelayTab } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
@@ -68,6 +69,12 @@ const kindOptions = (openCount: number): { value: ChangeKindT; label: string }[]
 ];
 
 export function ReplanSection({ session }: { session: SaasPlanSessionT }) {
+  const me = useMe();
+  if (me.data?.active_org.org_type !== 'forwarder') return null;
+  return <ForwarderReplanSection session={session} />;
+}
+
+function ForwarderReplanSection({ session }: { session: SaasPlanSessionT }) {
   const { plan_id: planId, plan, scenario } = session;
   const seaLots = plan.assignments.filter(
     ({ mode, container_id }) => mode === 'sea' && container_id
@@ -91,15 +98,15 @@ export function ReplanSection({ session }: { session: SaasPlanSessionT }) {
   const isShortSellWindow =
     scenario.lots.find(({ id }) => id === lot?.lot_id)?.sell_window === 'short';
 
-  const flow = usePlatformReplanFlow(planId);
+  const flow = useForwarderReplanFlow(planId);
   const gate = useReplanGate(session);
-  const requestReplan = useChangeRequestReplan();
-  const applyRequest = useApplyChangeRequest();
-  const openRequests = usePlatformChangeRequests(openRequestParams(planId));
+  const requestReplan = useForwarderChangeRequestReplan();
+  const applyRequest = useForwarderApplyChangeRequest();
+  const openRequests = useForwarderChangeRequests(openRequestParams(planId));
   const [trigger, setTrigger] = useState<TriggerT | null>(null);
   const [requestResult, setRequestResult] = useState<RequestResultT | null>(null);
   const isBusy = flow.isReplanning || requestReplan.isPending;
-  const airCompare = usePlatformAirSeaCompare(
+  const airCompare = useForwarderAirSeaCompare(
     planId,
     kind === 'air_switch' && lot ? lot.lot_id : ''
   );
@@ -212,8 +219,19 @@ export function ReplanSection({ session }: { session: SaasPlanSessionT }) {
   const isLotKind = kind === 'reduce' || kind === 'air_switch';
   const sideViews = isLotKind ? [] : views;
 
+  if (!gate.canOperate) {
+    return (
+      <p className="m2-note m2-note-warn">
+        {gate.isUnknown
+          ? '계획 권한을 확인하고 있습니다.'
+          : '담당 포워더만 이 계획을 변경할 수 있습니다.'}
+      </p>
+    );
+  }
+
   return (
     <div className="@container flex flex-col gap-4">
+      <PlanConfirmationCard session={session} />
       <ReplanCandidatesCard session={session} isReplanning={isBusy} onRun={runEvent} />
 
       <div className="grid grid-cols-1 items-start gap-4 @min-[900px]:grid-cols-2">
@@ -264,13 +282,7 @@ export function ReplanSection({ session }: { session: SaasPlanSessionT }) {
               <ReplanDelayTab session={session} isReplanning={isBusy} onRun={runEvent} />
             )}
             {kind === 'add_lot' && (
-              <ReplanAddLotTab
-                session={session}
-                isReplanning={isBusy}
-                onAddLot={runAddLot}
-                addLotBlock={gate.addLotBlock}
-                forwarderName={gate.forwarderName}
-              />
+              <ReplanAddLotTab session={session} isReplanning={isBusy} onAddLot={runAddLot} />
             )}
             {isLotKind && seaLots.length === 0 && (
               <p className="m2-sub mt-0">해상으로 가는 로트가 없어 바꿀 대상이 없습니다.</p>
@@ -398,8 +410,6 @@ export function ReplanSection({ session }: { session: SaasPlanSessionT }) {
           />
         </div>
       )}
-
-      {flow.latestOrder && <PlatformOrderCard order={flow.latestOrder} />}
     </div>
   );
 }

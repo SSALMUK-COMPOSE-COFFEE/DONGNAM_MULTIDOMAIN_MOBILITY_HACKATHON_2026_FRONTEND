@@ -1,6 +1,6 @@
 'use client';
 
-import { usePlatformAirSeaCompare } from '@/apis/saas/platform-analysis';
+import { useForwarderAirSeaCompare } from '@/apis/saas/forwarder-operations';
 import { won } from '@/app/(saas)/app/platform/_components/m2-format';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { CompareBars, type CompareRowT } from '@/components/map-hero/parts';
@@ -28,7 +28,7 @@ type AirCompareCardPropsT = {
 const valueOf = (cost: CostT | null, key: CostKeyT) => (cost ? cost[key] : null);
 
 export function AirCompareCard({ planId, lotId, isShortSellWindow }: AirCompareCardPropsT) {
-  const query = usePlatformAirSeaCompare(planId, lotId);
+  const query = useForwarderAirSeaCompare(planId, lotId);
 
   if (query.isPending) return <Skeleton className="h-64 w-full rounded-[14px]" />;
   if (query.isError) {

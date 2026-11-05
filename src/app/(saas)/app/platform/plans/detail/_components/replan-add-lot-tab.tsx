@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { usePlatformLots } from '@/apis/saas/platform';
+import { useAllocationLots } from '@/apis/saas/planning';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import {
   monthDay,
@@ -11,7 +11,6 @@ import {
   productShortName,
 } from '@/app/(saas)/app/platform/_components/m2-format';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
-import type { AddLotBlockT } from '@/app/(saas)/app/platform/plans/detail/_components/replan-gate';
 import {
   Select,
   SelectContent,
@@ -27,26 +26,11 @@ type ReplanAddLotTabPropsT = {
   session: SaasPlanSessionT;
   isReplanning: boolean;
   onAddLot: (lotId: string, label: string) => void;
-  addLotBlock: (shipperId: string) => AddLotBlockT;
-  forwarderName: string | null;
 };
 
-const BLOCK_CAUSE: Record<NonNullable<AddLotBlockT>, string> = {
-  unaccepted: '이 화주가 지금 계획을 아직 수락하지 않아',
-  new: '이 화주가 계획에 처음 들어오는 화주라',
-};
-
-const WORKAROUND_STEPS = ['포워더 배정 해제', '이 출하 넣고 적용', '화주 수락', '포워더 재배정'];
-
-export function ReplanAddLotTab({
-  session,
-  isReplanning,
-  onAddLot,
-  addLotBlock,
-  forwarderName,
-}: ReplanAddLotTabPropsT) {
+export function ReplanAddLotTab({ session, isReplanning, onAddLot }: ReplanAddLotTabPropsT) {
   const { scenario } = session;
-  const lotsQuery = usePlatformLots('registered');
+  const lotsQuery = useAllocationLots('forwarder', 'registered');
   const [pickedId, setPickedId] = useState('');
 
   if (lotsQuery.isPending) return <Skeleton className="h-40 w-full rounded-[14px]" />;
@@ -96,7 +80,6 @@ export function ReplanAddLotTab({
   }
 
   const run = () => onAddLot(lot.id, `출하 추가 · ${lotLabel(lot)}`);
-  const block = addLotBlock(lot.shipper_id);
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -145,28 +128,6 @@ export function ReplanAddLotTab({
         <p className="m2-sub mt-0">
           등록 출하 {blockedCount}건은 이 계획 시나리오에 없는 화주·품목·항구라 목록에서 뺐습니다.
         </p>
-      )}
-
-      {block && (
-        <div className="m2-note m2-note-warn mt-0 flex-col items-start gap-1.5 text-[12.5px]">
-          <p className="font-semibold">
-            포워더{forwarderName ? ` ${forwarderName}` : ''}에게 배정된 계획이라{' '}
-            {BLOCK_CAUSE[block]} 이 출하를 넣어 적용할 수 없습니다.
-          </p>
-          <p>
-            세 가지 안은 계산해 볼 수 있지만 적용 버튼은 막힙니다. 넣으려면 아래 순서로 진행하세요.
-          </p>
-          <ol className="flex flex-wrap items-center gap-1.5">
-            {WORKAROUND_STEPS.map((step, index) => (
-              <li key={step} className="flex items-center gap-1.5">
-                {index > 0 && <span aria-hidden>→</span>}
-                <span className="m2-chip">
-                  <span className="m2-num">{index + 1}</span> {step}
-                </span>
-              </li>
-            ))}
-          </ol>
-        </div>
       )}
 
       <button

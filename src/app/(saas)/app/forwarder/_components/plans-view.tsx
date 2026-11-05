@@ -35,12 +35,12 @@ export function PlansView() {
   const plans = useForwarderPlans();
   const planIds = (plans.data ?? []).map(({ plan_id }) => plan_id);
   const orderQueries = useForwarderOrdersByPlans(planIds);
-  const eyebrow = orgName ? `배정 항차 · ${orgName}` : '배정 항차';
+  const eyebrow = orgName ? `공동적재 계획 · ${orgName}` : '공동적재 계획';
 
   if (plans.isPending) {
     return (
       <>
-        <ForwarderPageHeader eyebrow={eyebrow} title="배정된 항차" />
+        <ForwarderPageHeader eyebrow={eyebrow} title="공동적재 계획" />
         <PlansSkeleton />
       </>
     );
@@ -49,7 +49,7 @@ export function PlansView() {
   if (plans.isError) {
     return (
       <>
-        <ForwarderPageHeader eyebrow={eyebrow} title="배정된 항차" />
+        <ForwarderPageHeader eyebrow={eyebrow} title="공동적재 계획" />
         <QueryError
           message="배정된 항차를 불러오지 못했습니다. 서버 연결을 확인하세요."
           onRetry={() => plans.refetch()}
@@ -62,10 +62,17 @@ export function PlansView() {
   if (plans.data.length === 0) {
     return (
       <>
-        <ForwarderPageHeader eyebrow={eyebrow} title="배정된 항차" />
+        <ForwarderPageHeader eyebrow={eyebrow} title="공동적재 계획">
+          <Link href={FORWARDER_PATHS.POOL} className="m2-btn m2-btn-pri">
+            출하 풀에서 계획 만들기
+          </Link>
+          <Link href={FORWARDER_PATHS.CONTAINERS} className="m2-btn m2-btn-sec">
+            컨테이너 등록
+          </Link>
+        </ForwarderPageHeader>
         <EmptyState
-          title="아직 배정된 항차가 없습니다"
-          description="플랫폼이 공동적재 계획을 만들고 포워더를 배정하면 여기에 나타납니다."
+          title="아직 공동적재 계획이 없습니다"
+          description="컨테이너 공간과 항차를 등록하고 출하 풀에서 계획을 만드세요. 기존에 배정받은 계획도 함께 표시됩니다."
         />
       </>
     );
@@ -86,13 +93,16 @@ export function PlansView() {
     <>
       <ForwarderPageHeader
         eyebrow={eyebrow}
-        title="배정된 항차"
+        title="공동적재 계획"
         sub={
           nextDeparture
             ? `${plans.data.length}항차 · 가장 이른 출항 ${dayTime(nextDeparture)}`
             : `${plans.data.length}항차`
         }
       >
+        <Link href={FORWARDER_PATHS.POOL} className="m2-btn m2-btn-pri">
+          출하 풀에서 계획 만들기
+        </Link>
         {plans.isCapped ? (
           <span className="m2-chip m2-chip-warn">
             최근 {plans.limit.toLocaleString('ko-KR')}건 기준

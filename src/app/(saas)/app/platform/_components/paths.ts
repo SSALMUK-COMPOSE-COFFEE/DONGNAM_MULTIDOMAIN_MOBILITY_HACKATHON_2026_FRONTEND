@@ -19,6 +19,7 @@ export const withPlanQuery = (params: URLSearchParams, planId: string) => {
 export const PLATFORM_PATHS = {
   HOME,
   PLANS: `${HOME}/plans`,
+  RESOURCES: `${HOME}/resources`,
   PLAN: (planId: string) => `${HOME}/plans/detail?${PLAN_QUERY}=${encodeURIComponent(planId)}`,
   COLDCHAIN: `${HOME}/coldchain`,
   COLDCHAIN_OF: (planId: string) => `${HOME}/coldchain?${PLAN_QUERY}=${encodeURIComponent(planId)}`,

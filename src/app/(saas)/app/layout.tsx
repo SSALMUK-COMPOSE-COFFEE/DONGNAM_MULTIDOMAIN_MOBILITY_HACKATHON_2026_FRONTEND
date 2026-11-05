@@ -7,7 +7,7 @@ import '@/app/m2.css';
 
 export default function SaasAppLayout({ children }: { children: ReactNode }) {
   return (
-    <div data-ui="m2" className="m2-page flex flex-col">
+    <div data-ui="m2" className="m2-page m2-app flex flex-col">
       <AuthGuard>
         <div className="m2-main">
           <SaasTopline />

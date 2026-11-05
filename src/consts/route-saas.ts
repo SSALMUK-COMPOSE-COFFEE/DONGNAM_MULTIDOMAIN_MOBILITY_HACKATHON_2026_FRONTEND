@@ -21,7 +21,9 @@ export type SaasMenuIconT =
   | 'confirm'
   | 'requests'
   | 'voyages'
-  | 'orders';
+  | 'orders'
+  | 'companies'
+  | 'users';
 
 export type SaasMenuCountKeyT =
   | 'platformPlans'
@@ -50,31 +52,36 @@ export const ORG_TYPES = ['platform', 'shipper', 'forwarder'] as const satisfies
 
 export const SAAS_ROUTES = {
   platform: {
-    label: '플랫폼 운영',
+    label: '서비스 관리자',
     home: '/app/platform',
     menu: [
+      { href: '/app/platform', label: '서비스 현황', icon: 'home', section: '서비스 관리' },
+      {
+        href: '/app/platform/companies',
+        label: '업체 현황',
+        icon: 'companies',
+        section: '서비스 관리',
+      },
+      { href: '/app/platform/users', label: '계정 현황', icon: 'users', section: '서비스 관리' },
       {
         href: '/app/platform/plans',
-        label: '공동적재 계획',
+        label: '운송계획 조회',
         icon: 'plans',
-        section: '운영',
+        section: '이용 현황',
         countKey: 'platformPlans',
       },
       {
-        href: '/app/platform',
-        label: '출하 풀',
-        icon: 'pool',
-        section: '운영',
-        countKey: 'platformRegisteredLots',
+        href: '/app/platform/resources',
+        label: '컨테이너 현황',
+        icon: 'voyages',
+        section: '이용 현황',
       },
       {
-        href: '/app/platform/coldchain',
-        label: '콜드체인 관제',
-        icon: 'coldchain',
-        section: '운영',
+        href: '/app/platform/settlements',
+        label: '서비스 정산',
+        icon: 'settlement',
+        section: '이용 현황',
       },
-      { href: '/app/platform/settlements', label: '정산', icon: 'settlement', section: '운영' },
-      { href: '/app/platform/devices', label: '온도 기기', icon: 'device', section: '설정' },
     ],
   },
   shipper: {
@@ -103,7 +110,8 @@ export const SAAS_ROUTES = {
         countStrong: true,
       },
       { href: '/app/shipper/coldchain', label: '내 화물 상태', icon: 'coldchain' },
-      { href: '/app/shipper/onboarding', label: '선과장 등록', icon: 'home' },
+      { href: '/app/shipper/onboarding', label: '출하 장소 관리', icon: 'home' },
+      { href: '/app/shipper/products', label: '품목 관리', icon: 'lots' },
       { href: '/app/shipper/settlements', label: '정산', icon: 'settlement' },
     ],
   },
@@ -111,7 +119,14 @@ export const SAAS_ROUTES = {
     label: '포워더',
     home: '/app/forwarder',
     menu: [
-      { href: '/app/forwarder', label: '배정 항차', icon: 'voyages', countKey: 'forwarderPlans' },
+      { href: '/app/forwarder/containers', label: '컨테이너 관리', icon: 'lots' },
+      { href: '/app/forwarder/lots', label: '출하 풀 · 계획 생성', icon: 'pool' },
+      {
+        href: '/app/forwarder',
+        label: '공동적재 계획',
+        icon: 'voyages',
+        countKey: 'forwarderPlans',
+      },
       { href: '/app/forwarder/orders', label: '실행 지시', icon: 'orders' },
       { href: '/app/forwarder/coldchain', label: '콜드체인', icon: 'coldchain' },
     ],
@@ -127,9 +142,9 @@ export type SandboxStepT = {
 
 export const SANDBOX_SCENARIO_STEPS = [
   { step: '①', label: '출하 등록', orgType: 'shipper', href: '/app/shipper/lots' },
-  { step: '②', label: '계획 생성', orgType: 'platform', href: '/app/platform' },
+  { step: '②', label: '계획 생성', orgType: 'forwarder', href: '/app/forwarder/lots' },
   { step: '③', label: '화주 확정', orgType: 'shipper', href: '/app/shipper/plans' },
-  { step: '④', label: '포워더 확정', orgType: 'forwarder', href: '/app/forwarder' },
+  { step: '④', label: '실행 지시', orgType: 'forwarder', href: '/app/forwarder/orders' },
 ] as const satisfies readonly SandboxStepT[];
 
 export const SIGNUP_ORG_TYPES = ['shipper', 'forwarder'] as const satisfies readonly OrgType[];

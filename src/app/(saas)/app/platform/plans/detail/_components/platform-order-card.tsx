@@ -43,7 +43,7 @@ export function PlatformOrderCard({ order }: { order: ExecutionOrderT }) {
       <div className="m2-card-h">
         <div>
           <h2 className="m2-h2">실행 지시</h2>
-          <div className="m2-sub">화주 확인과 포워더 확정은 각 조직 화면에서 진행됩니다.</div>
+          <div className="m2-sub">화주 확인과 포워더 확정은 각 업체 화면에서 진행됩니다.</div>
         </div>
         <span className={cn('m2-chip', STATUS_CHIP[order.status])}>
           {STATUS_LABEL[order.status]}

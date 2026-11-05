@@ -3,9 +3,9 @@
 import { useState } from 'react';
 
 import {
-  usePlatformChangeRequests,
-  useRejectChangeRequest,
-} from '@/apis/saas/platform-change-requests';
+  useForwarderChangeRequests,
+  useForwarderRejectChangeRequest,
+} from '@/apis/saas/forwarder-operations';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import {
   kstDayTime,
@@ -44,8 +44,8 @@ export function ChangeRequestInbox({
   onRejected,
 }: ChangeRequestInboxPropsT) {
   const { scenario } = session;
-  const query = usePlatformChangeRequests(openRequestParams(session.plan_id));
-  const reject = useRejectChangeRequest();
+  const query = useForwarderChangeRequests(openRequestParams(session.plan_id));
+  const reject = useForwarderRejectChangeRequest();
   const [rejecting, setRejecting] = useState<{ requestId: string; note: string } | null>(null);
 
   if (query.isPending) return <Skeleton className="h-32 w-full rounded-[14px]" />;

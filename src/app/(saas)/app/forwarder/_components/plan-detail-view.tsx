@@ -64,7 +64,7 @@ export function PlanDetailView() {
         {status === 404 || status === 403 ? (
           <EmptyState
             title="배정되지 않았거나 없는 항차입니다"
-            description="플랫폼이 배정을 해제했을 수 있습니다. 목록에서 다시 고르세요."
+            description="이 계획을 조회할 수 없거나 계획이 삭제되었습니다. 목록에서 다시 고르세요."
             action={{ href: FORWARDER_PATHS.HOME, label: '항차 목록으로' }}
           />
         ) : (

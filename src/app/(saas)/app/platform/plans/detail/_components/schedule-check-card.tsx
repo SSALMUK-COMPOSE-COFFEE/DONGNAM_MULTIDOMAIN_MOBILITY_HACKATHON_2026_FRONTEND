@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { useIsSandbox } from '@/apis/saas/auth';
-import { usePlatformScheduleCheck } from '@/apis/saas/platform-analysis';
+import { useForwarderScheduleCheck } from '@/apis/saas/forwarder-operations';
 import { kstDayTime } from '@/app/(saas)/app/platform/_components/m2-format';
 import { hoursText } from '@/app/(saas)/app/platform/plans/detail/_components/replan-delay-tab';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,7 +28,7 @@ export function ScheduleCheckCard({ session, isReplanning, onRun }: ScheduleChec
   const { plan_id: planId, plan } = session;
   const isSandbox = useIsSandbox();
   const [mixDemo, setMixDemo] = useState(true);
-  const check = usePlatformScheduleCheck(planId);
+  const check = useForwarderScheduleCheck(planId);
   const result = check.data ?? null;
   const usedDemo = !!check.variables?.demo;
   const containerOf = (voyageId: string) =>

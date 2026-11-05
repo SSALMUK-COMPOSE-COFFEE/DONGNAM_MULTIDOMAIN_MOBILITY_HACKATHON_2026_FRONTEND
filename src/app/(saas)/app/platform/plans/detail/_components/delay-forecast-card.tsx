@@ -2,11 +2,8 @@
 
 import { useState } from 'react';
 
-import {
-  TYPHOON_PRESET,
-  forecastReplan,
-  usePlatformDelayForecast,
-} from '@/apis/saas/platform-analysis';
+import { useForwarderDelayForecast } from '@/apis/saas/forwarder-operations';
+import { TYPHOON_PRESET, forecastReplan } from '@/apis/saas/platform-analysis';
 import {
   kstDayTime,
   monthDay,
@@ -75,7 +72,7 @@ type DelayForecastCardPropsT = {
 
 export function DelayForecastCard({ session, isReplanning, onLoad }: DelayForecastCardPropsT) {
   const [mode, setMode] = useState<ModeT>('typhoon');
-  const forecast = usePlatformDelayForecast(session.plan_id);
+  const forecast = useForwarderDelayForecast(session.plan_id);
   const data = forecast.data ?? null;
 
   return (

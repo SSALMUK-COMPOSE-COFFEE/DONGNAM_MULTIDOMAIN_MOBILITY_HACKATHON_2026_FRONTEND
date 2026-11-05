@@ -99,7 +99,7 @@ export function ForwarderAssignCard({ planId, planStatus }: ForwarderAssignCardP
         )}
         {forwardersQuery.isPending && <Skeleton className="h-10 w-full rounded-[12px]" />}
         {forwardersQuery.data?.length === 0 && (
-          <p className="m2-sub mt-0">가입한 포워더 조직이 없습니다.</p>
+          <p className="m2-sub mt-0">가입한 포워더 업체이 없습니다.</p>
         )}
         {!!forwardersQuery.data?.length && plansQuery.isSuccess && (
           <Select value={forwarderId} onValueChange={setPicked}>

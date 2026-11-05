@@ -1,10 +1,7 @@
 'use client';
 
-import {
-  type ReplanCandidateEventT,
-  type ReplanCandidateT,
-  usePlatformConfirmation,
-} from '@/apis/saas/platform-confirm';
+import { useForwarderConfirmation } from '@/apis/saas/forwarder';
+import { type ReplanCandidateEventT, type ReplanCandidateT } from '@/apis/saas/platform-confirm';
 import {
   kstDayTime,
   productOf,
@@ -90,7 +87,7 @@ const candidateTitle = (session: SaasPlanSessionT, candidate: ReplanCandidateT) 
 };
 
 export function ReplanCandidatesCard({ session, isReplanning, onRun }: ReplanCandidatesCardPropsT) {
-  const query = usePlatformConfirmation(session.plan_id);
+  const query = useForwarderConfirmation(session.plan_id);
 
   if (query.isError) {
     return (

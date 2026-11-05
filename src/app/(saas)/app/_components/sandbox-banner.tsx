@@ -14,6 +14,10 @@ import {
   useSwitchTargetStore,
   writeLastOrg,
 } from '@/apis/saas/auth';
+import {
+  forwarderConfirmationQueryOptions,
+  forwarderPlanOrdersQueryOptions,
+} from '@/apis/saas/forwarder';
 import { platformPlanOrdersQueryOptions, platformPlansQueryOptions } from '@/apis/saas/platform';
 import {
   type PlanConfirmationStateT,
@@ -25,12 +29,13 @@ import { PLATFORM_PATHS, readPlanQuery } from '@/app/(saas)/app/platform/_compon
 import { SANDBOX_SCENARIO_STEPS, type SandboxStepT, roleHome } from '@/consts/route-saas';
 import type { ExecutionOrderT } from '@/types/api';
 import type { Membership, OrgType } from '@/types/saas';
+import type { ForwarderOrderT } from '@/types/saas-forwarder';
 
-const SANDBOX_NOTE = '예시 조직 데이터로 둘러보는 중입니다. 실제 거래 데이터와 섞이지 않습니다.';
+const SANDBOX_NOTE = '예시 업체 데이터로 둘러보는 중입니다. 실제 거래 데이터와 섞이지 않습니다.';
 const SANDBOX_NOTE_SHORT = '예시 데이터 · 실제 거래와 분리';
 
 const ROLE_SHORT: Record<OrgType, string> = {
-  platform: '플랫폼',
+  platform: '서비스 관리자',
   shipper: '화주',
   forwarder: '포워더',
 };
@@ -38,6 +43,8 @@ const ROLE_SHORT: Record<OrgType, string> = {
 const PLAN_SCOPED_PATHS: readonly string[] = [
   `${PLATFORM_PATHS.PLANS}/detail`,
   PLATFORM_PATHS.COLDCHAIN,
+  '/app/forwarder/plans/detail',
+  '/app/forwarder/coldchain',
 ];
 
 const shipperSlug = (shipperId: string) => {
@@ -57,7 +64,7 @@ const matchesShipperOrg = (orgId: string, shipperId: string) => {
 const pendingShipperOrgId = (
   memberships: readonly Membership[],
   confirmation: PlanConfirmationStateT | null,
-  orders: readonly ExecutionOrderT[] | null
+  orders: readonly (ExecutionOrderT | ForwarderOrderT)[] | null
 ) => {
   const pending = new Set<string>();
 
@@ -197,6 +204,7 @@ function SandboxBannerBody() {
   const [switchError, setSwitchError] = useState<unknown>(null);
   const orgId = me?.active_org.org_id ?? '';
   const isPlatform = !!me?.active_org.sandbox && me.active_org.org_type === 'platform';
+  const isForwarder = !!me?.active_org.sandbox && me.active_org.org_type === 'forwarder';
   const planPath = pathname.replace(/\/$/, '');
   const planId = PLAN_SCOPED_PATHS.includes(planPath) ? readPlanQuery(searchParams) : null;
   const plansQuery = useQuery({
@@ -210,6 +218,14 @@ function SandboxBannerBody() {
   const ordersQuery = useQuery({
     ...platformPlanOrdersQueryOptions(orgId, planId ?? ''),
     enabled: isPlatform && !!planId,
+  });
+  const forwarderConfirmationQuery = useQuery({
+    ...forwarderConfirmationQueryOptions(orgId, planId ?? ''),
+    enabled: isForwarder && !!planId,
+  });
+  const forwarderOrdersQuery = useQuery({
+    ...forwarderPlanOrdersQueryOptions(orgId, planId ?? ''),
+    enabled: isForwarder && !!planId,
   });
   const assignedForwarderId =
     planId && plansQuery.data
@@ -237,8 +253,8 @@ function SandboxBannerBody() {
     if (planId) {
       const pending = pendingShipperOrgId(
         shippers,
-        confirmationQuery.data ?? null,
-        ordersQuery.data ?? null
+        (isForwarder ? forwarderConfirmationQuery.data : confirmationQuery.data) ?? null,
+        (isForwarder ? forwarderOrdersQuery.data : ordersQuery.data) ?? null
       );
       if (pending) return pending;
     }
@@ -329,7 +345,7 @@ function SandboxBannerBody() {
               title={platform.org_name}
               onClick={() => activate(platform.org_id, roleHome('platform'))}
             >
-              {pendingOrgId === platform.org_id ? '바꾸는 중' : '플랫폼'}
+              {pendingOrgId === platform.org_id ? '바꾸는 중' : ROLE_SHORT.platform}
             </button>
           ) : null}
           <RolePick

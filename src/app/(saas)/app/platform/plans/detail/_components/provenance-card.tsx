@@ -86,7 +86,7 @@ const FIELD_LABEL: Record<string, string> = {
 const COLLECTION_LABEL: Record<string, string> = {
   containers: '컨테이너',
   lots: '출하',
-  packhouses: '선과장',
+  packhouses: '출하 장소',
   ports: '항구',
   products: '품목',
   shippers: '화주',

@@ -2,15 +2,17 @@
 
 import { cn } from 'cn';
 
-import { useIsSandbox } from '@/apis/saas/auth';
+import { useIsSandbox, useMe } from '@/apis/saas/auth';
 import { saasErrorDetail, saasErrorStatus } from '@/apis/saas/errors';
+import { useForwarderConfirmation } from '@/apis/saas/forwarder';
+import {
+  useForwarderAutoAcceptConfirmation,
+  useForwarderRecomputeWithoutRejected,
+} from '@/apis/saas/forwarder-operations';
 import {
   AWAITING_SHIPPERS_STATUS,
   type PlanConfirmationStatusT,
   confirmationCounts,
-  useAutoAcceptConfirmation,
-  usePlatformConfirmation,
-  useRecomputeWithoutRejected,
 } from '@/apis/saas/platform-confirm';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import { scrollToReplanCandidates } from '@/app/(saas)/app/platform/plans/detail/_components/replan-gate';
@@ -37,11 +39,17 @@ const STATUS_CHIP: Record<PlanConfirmationStatusT, { label: string; className: s
 };
 
 export function PlanConfirmationCard({ session }: { session: SaasPlanSessionT }) {
+  const me = useMe();
+  if (me.data?.active_org.org_type !== 'forwarder') return null;
+  return <ForwarderPlanConfirmationCard session={session} />;
+}
+
+function ForwarderPlanConfirmationCard({ session }: { session: SaasPlanSessionT }) {
   const planId = session.plan_id;
-  const query = usePlatformConfirmation(planId);
+  const query = useForwarderConfirmation(planId);
   const isSandbox = useIsSandbox();
-  const autoAccept = useAutoAcceptConfirmation(planId);
-  const recompute = useRecomputeWithoutRejected(planId);
+  const autoAccept = useForwarderAutoAcceptConfirmation(planId);
+  const recompute = useForwarderRecomputeWithoutRejected(planId);
   const state = query.data ?? null;
   const counts = confirmationCounts(state);
   const planStatus = state?.status ?? session.status;
@@ -64,7 +72,7 @@ export function PlanConfirmationCard({ session }: { session: SaasPlanSessionT })
         : '이 계획은 화주 확인 단계가 없습니다. 실행 지시 확정을 기다립니다.';
     }
     if (isAwaiting) {
-      return `참여 화주 ${counts.total}곳 중 ${counts.accepted}곳이 수락했습니다. 전원이 수락하면 확정되고 포워더에게 넘길 수 있습니다.`;
+      return `참여 화주 ${counts.total}곳 중 ${counts.accepted}곳이 수락했습니다. 전원이 수락하면 계획이 확정되어 실행을 준비할 수 있습니다.`;
     }
     if (counts.rejected > 0) return `화주 ${counts.rejected}곳이 거절했습니다. 다시 짜야 합니다.`;
 

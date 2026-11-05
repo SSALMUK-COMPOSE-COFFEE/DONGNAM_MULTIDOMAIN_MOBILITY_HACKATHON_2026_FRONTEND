@@ -10,15 +10,18 @@ import { toast } from 'sonner';
 
 import { saasErrorDetail, saasErrorStatus } from '@/apis/saas/errors';
 import {
-  PLATFORM_LOTS_LIMIT,
-  platformKeys,
-  useCreatePlatformPlan,
-  usePlatformCatalog,
-  usePlatformLots,
-  usePlatformOrgId,
-  usePlatformPlanPreview,
-  usePlatformPlans,
-} from '@/apis/saas/platform';
+  ALLOCATION_LOTS_LIMIT as PLATFORM_LOTS_LIMIT,
+  type PlanningRoleT,
+  allocationKeys,
+  useAllocationCatalog,
+  useAllocationLots,
+  useAllocationOrgId,
+  useAllocationPlans,
+  useAllocationPreview,
+  useCreateAllocationPlan,
+} from '@/apis/saas/planning';
+import { useResources } from '@/apis/saas/resources';
+import { FORWARDER_PATHS } from '@/app/(saas)/app/forwarder/_components/forwarder-paths';
 import { ContainerPlanCard } from '@/app/(saas)/app/platform/_components/container-plan-card';
 import { EmptyState } from '@/app/(saas)/app/platform/_components/empty-state';
 import {
@@ -45,6 +48,7 @@ import {
   verdictLinkKeys,
   verdictOf,
 } from '@/app/(saas)/app/platform/_components/plan-model';
+import { PlanningResources } from '@/app/(saas)/app/platform/_components/planning-resources';
 import { PlatformHeader } from '@/app/(saas)/app/platform/_components/platform-header';
 import { QueryError } from '@/app/(saas)/app/platform/_components/query-error';
 import {
@@ -98,28 +102,39 @@ const sceneWithFullBounds = (scene: MapSceneT): MapSceneT => {
   return points.length > 0 ? { ...scene, bounds: points } : scene;
 };
 
-export function NewPlanView({ afterHeader = null }: { afterHeader?: ReactNode }) {
-  const orgId = usePlatformOrgId();
+export function NewPlanView({
+  afterHeader = null,
+  role = 'platform',
+}: {
+  afterHeader?: ReactNode;
+  role?: PlanningRoleT;
+}) {
+  const orgId = useAllocationOrgId();
 
   return (
     <MapLinkProvider key={orgId}>
-      <NewPlanScreen afterHeader={afterHeader} />
+      <NewPlanScreen afterHeader={afterHeader} role={role} />
     </MapLinkProvider>
   );
 }
 
-function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
+function NewPlanScreen({ afterHeader, role }: { afterHeader: ReactNode; role: PlanningRoleT }) {
   const [filter, setFilter] = useState<FilterT>('registered');
-  const lotsQuery = usePlatformLots();
-  const registeredQuery = usePlatformLots('registered');
-  const tabQuery = usePlatformLots(filter === 'all' ? null : filter);
-  const plansQuery = usePlatformPlans();
-  const catalogQuery = usePlatformCatalog();
+  const lotsQuery = useAllocationLots(role);
+  const registeredQuery = useAllocationLots(role, 'registered');
+  const tabQuery = useAllocationLots(role, filter === 'all' ? null : filter);
+  const plansQuery = useAllocationPlans(role);
+  const resourcesQuery = useResources(role);
+  const resourcesKey = JSON.stringify(resourcesQuery.data ?? []);
+  const catalogQuery = useAllocationCatalog(role, resourcesKey);
+  const hasAvailableResources =
+    resourcesQuery.isSuccess &&
+    resourcesQuery.data.some(item => item.status === 'available' && item.available_pallets > 0);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const router = useRouter();
-  const createPlan = useCreatePlatformPlan();
+  const createPlan = useCreateAllocationPlan(role);
   const queryClient = useQueryClient();
-  const orgId = usePlatformOrgId();
+  const orgId = useAllocationOrgId();
 
   const catalog = catalogQuery.data ?? null;
   const registered = registeredQuery.data ?? EMPTY_LOTS;
@@ -131,10 +146,13 @@ function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
     () => (debouncedKey ? debouncedKey.split(ID_SEPARATOR) : []),
     [debouncedKey]
   );
-  const previewQuery = usePlatformPlanPreview(previewIds);
+  const previewQuery = useAllocationPreview(role, previewIds, hasAvailableResources, resourcesKey);
   const previewData = previewQuery.data ?? null;
   const isPreviewForSelection =
-    !!previewData && previewLotIds(previewData).some(id => selectedIds.includes(id));
+    hasAvailableResources &&
+    !previewQuery.isPlaceholderData &&
+    !!previewData &&
+    previewLotIds(previewData).some(id => selectedIds.includes(id));
   const preview: PlanSourceT | null =
     selectedIds.length > 0 && isPreviewForSelection ? previewData : null;
   const isRecalculating =
@@ -142,7 +160,7 @@ function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
     (previewQuery.isFetching || previewQuery.isPlaceholderData || debouncedKey !== selectionKey);
 
   const heroState = ((): PlanHeroStateT => {
-    if (selectedIds.length === 0) return 'idle';
+    if (selectedIds.length === 0 || !hasAvailableResources) return 'idle';
     if (preview) return 'ready';
     if (previewQuery.isError && debouncedKey === selectionKey) return 'error';
     return 'loading';
@@ -236,23 +254,28 @@ function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
 
   const retryPreview = () => {
     if (STALE_LOT_STATUSES.includes(saasErrorStatus(previewQuery.error) ?? 0)) {
-      queryClient.invalidateQueries({ queryKey: platformKeys.lots(orgId) });
+      queryClient.invalidateQueries({ queryKey: allocationKeys.lots(orgId, role) });
     }
     previewQuery.refetch();
   };
 
-  const submit = () =>
+  const submit = () => {
+    if (role !== 'forwarder' || !hasAvailableResources) {
+      toast.error('제공 가능한 컨테이너 공간을 먼저 등록하세요.');
+      return;
+    }
     createPlan.mutate(
       { lot_ids: selectedIds },
       {
         onSuccess: session => {
           setSelected(new Set());
           toast.success('공동적재 계획을 만들었습니다.');
-          router.push(PLATFORM_PATHS.PLAN(session.plan_id));
+          router.push(FORWARDER_PATHS.PLAN(session.plan_id));
         },
         onError: error => toast.error(errorDetailOf(error) ?? '계획을 만들지 못했습니다.'),
       }
     );
+  };
 
   const lane = preview ? (scene?.seaLane ?? null) : null;
   const shipperCount = new Set(selectedLots.map(({ shipper_org_id }) => shipper_org_id)).size;
@@ -261,13 +284,11 @@ function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
     <>
       <PlatformHeader
         eyebrow="공동적재 계획 · 새 계획"
-        title={
-          lane ? `${lane.vesselName} 항차에 묶을 화물 고르기` : '출하를 골라 공동적재 계획 만들기'
-        }
+        title={lane ? `${lane.vesselName} 항차에 묶을 화물 고르기` : '공동적재 계획 생성'}
         sub={
           lane
             ? `${lane.key} · ${lane.terminal ?? scene?.port?.name ?? ''} → ${lane.destinationName} · ETD ${kstDayTime(lane.etd)} · CY 마감 ${kstDayTime(lane.cyCutoff)}`
-            : '등록된 출하를 고르면 항차·컨테이너·집하 경로·정산을 저장하지 않고 미리 계산합니다.'
+            : '출하를 선택해 적재안과 예상 비용을 확인한 뒤 계획을 생성하세요.'
         }
       >
         <button
@@ -281,42 +302,25 @@ function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
         <button
           type="button"
           className="m2-btn m2-btn-pri"
-          disabled={selectedIds.length === 0 || createPlan.isPending}
+          disabled={
+            role !== 'forwarder' ||
+            selectedIds.length === 0 ||
+            !hasAvailableResources ||
+            createPlan.isPending
+          }
           onClick={submit}
         >
           {createPlan.isPending ? '계획 짜는 중' : '계획 생성'}
         </button>
       </PlatformHeader>
 
-      {afterHeader}
-
-      <Steps
-        items={planSteps({
-          count: selectedIds.length,
-          pallets: sumPallets(selectedLots),
-          shipperCount,
-          heroState,
-          isRecalculating,
-          isCreating: createPlan.isPending,
-          preview,
-        })}
-      />
-
-      <SceneVoyageTabs scene={scene} onPick={setPickedVoyageId} />
-
-      <PlanHero
-        source={preview}
-        sceneSource={sceneSource}
-        scene={scene}
-        state={heroState}
-        label={HERO_LABEL}
-        hint="지점을 누르면 아래 출하 행으로 이동합니다"
-        idleText="출하 풀에서 화물을 고르면 절감액을 바로 계산합니다."
-        isRecalculating={isRecalculating}
-        onRetry={retryPreview}
-        isRetrying={previewQuery.isFetching}
-        errorText={heroState === 'error' ? saasErrorDetail(previewQuery.error) : null}
-        placeSublabel={placeSublabel}
+      <PlanningResources
+        resources={resourcesQuery.data ?? []}
+        isLoading={resourcesQuery.isPending}
+        isError={resourcesQuery.isError}
+        onRetry={() => {
+          void resourcesQuery.refetch();
+        }}
       />
 
       {catalogQuery.isError ? (
@@ -330,16 +334,28 @@ function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
         </div>
       ) : null}
 
-      <div className="m2-grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
+      <div
+        className={cn(
+          'm2-grid',
+          selectedIds.length > 0 &&
+            'grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] max-[1599px]:grid-cols-1'
+        )}
+      >
         <section className="m2-card">
           <PoolHeader lots={tabLots} catalog={catalog} />
-          <SegTabs
-            label="출하 상태"
-            value={filter}
-            options={FILTER_OPTIONS}
-            onChange={setFilter}
-            className="mb-3"
-          />
+          {role === 'forwarder' ? (
+            <p className="m2-sub mt-0 mb-3">
+              아직 배정되지 않은 등록 출하만 표시합니다. 배정된 출하는 공동적재 계획에서 확인하세요.
+            </p>
+          ) : (
+            <SegTabs
+              label="출하 상태"
+              value={filter}
+              options={FILTER_OPTIONS}
+              onChange={setFilter}
+              className="mb-3"
+            />
+          )}
           <PoolBody
             isPending={tabQuery.isPending}
             error={tabQuery.isError ? tabQuery.error : null}
@@ -407,37 +423,74 @@ function NewPlanScreen({ afterHeader }: { afterHeader: ReactNode }) {
             planCount={plansQuery.isSuccess ? plansQuery.data.length : null}
             unassignedCount={
               plansQuery.isSuccess
-                ? plansQuery.data.filter(({ forwarder }) => !forwarder).length
+                ? plansQuery.data.filter(({ status }) => status === 'pending_shipper_confirmation')
+                    .length
                 : null
             }
+            plansHref={role === 'forwarder' ? FORWARDER_PATHS.HOME : PLATFORM_PATHS.PLANS}
           />
         </section>
 
-        <div className="m2-col">
-          <ContainerPlanCard
-            source={preview}
-            isPending={heroState === 'loading'}
-            isStale={isRecalculating}
-            emptyText={
-              heroState === 'error'
-                ? '미리 계산하지 못했습니다. 지도 패널에서 다시 계산하세요.'
-                : '출하를 고르면 컨테이너별 적재안과 이용률을 보여줍니다.'
-            }
-          />
-          <SettlementPreviewCard
-            title="정산 미리보기"
-            source={preview}
-            isPending={heroState === 'loading'}
-            isStale={isRecalculating}
-            emptyText="출하를 고르면 단독 발송 대비 공동적재 비용을 비교합니다."
-            footer={
-              <p className="m2-sub mt-3 text-[12px]">
-                계획을 만든 뒤 상세 화면에서 포워더를 배정합니다.
-              </p>
-            }
-          />
-        </div>
+        {selectedIds.length > 0 && (
+          <div className="grid content-start gap-4 min-[1000px]:max-[1599px]:grid-cols-2">
+            <ContainerPlanCard
+              source={preview}
+              isPending={heroState === 'loading'}
+              isStale={isRecalculating}
+              emptyText={
+                heroState === 'error'
+                  ? '미리 계산하지 못했습니다. 지도 패널에서 다시 계산하세요.'
+                  : '출하를 고르면 컨테이너별 적재안과 이용률을 보여줍니다.'
+              }
+            />
+            <SettlementPreviewCard
+              title="정산 미리보기"
+              source={preview}
+              isPending={heroState === 'loading'}
+              isStale={isRecalculating}
+              emptyText="출하를 고르면 단독 발송 대비 공동적재 비용을 비교합니다."
+              footer={
+                <p className="m2-sub mt-3 text-[12px]">
+                  내 제공 공간으로 계획을 만듭니다. 화주 수락 후 운송 실행을 진행하세요.
+                </p>
+              }
+            />
+          </div>
+        )}
       </div>
+      {selectedIds.length > 0 && (
+        <>
+          <Steps
+            items={planSteps({
+              count: selectedIds.length,
+              pallets: sumPallets(selectedLots),
+              shipperCount,
+              heroState,
+              isRecalculating,
+              isCreating: createPlan.isPending,
+              preview,
+            })}
+          />
+
+          <SceneVoyageTabs scene={scene} onPick={setPickedVoyageId} />
+
+          <PlanHero
+            source={preview}
+            sceneSource={sceneSource}
+            scene={scene}
+            state={heroState}
+            label={HERO_LABEL}
+            hint="지점을 누르면 해당 출하로 이동합니다"
+            idleText="선택한 출하의 집하 경로와 예상 절감액"
+            isRecalculating={isRecalculating}
+            onRetry={retryPreview}
+            isRetrying={previewQuery.isFetching}
+            errorText={heroState === 'error' ? saasErrorDetail(previewQuery.error) : null}
+            placeSublabel={placeSublabel}
+          />
+        </>
+      )}
+      <div className="mt-6">{afterHeader}</div>
     </>
   );
 }
@@ -486,7 +539,7 @@ const planSteps = (input: PlanStepsInputT): StepItemT[] => {
       sub: '계획 확정 · 상세에서 재최적화',
       state: input.isCreating ? 'cur' : 'todo',
     },
-    { title: '포워더 배정', sub: '상세에서 배정', state: 'todo' },
+    { title: '운송 실행', sub: '화주 수락 후 진행', state: 'todo' },
   ];
 };
 
@@ -689,11 +742,13 @@ function PoolStats({
   lots,
   planCount,
   unassignedCount,
+  plansHref,
 }: {
   registered: PlatformLotT[] | null;
   lots: PlatformLotT[] | null;
   planCount: number | null;
   unassignedCount: number | null;
+  plansHref: string;
 }) {
   const totalLabel =
     lots && lots.length >= PLATFORM_LOTS_LIMIT ? `${lots.length}+` : (lots?.length ?? '–');
@@ -710,11 +765,11 @@ function PoolStats({
     },
     { k: '공동적재 계획', v: planCount === null ? '–' : `${planCount}개`, d: '' },
     {
-      k: '포워더 미배정 계획',
+      k: '화주 확인 대기 계획',
       v: unassignedCount === null ? '–' : `${unassignedCount}개`,
       d: (
-        <Link href={PLATFORM_PATHS.PLANS} className="text-m2-brand-ink hover:underline">
-          계획 목록에서 배정
+        <Link href={plansHref} className="text-m2-brand-ink hover:underline">
+          계획 목록 보기
         </Link>
       ),
     },
@@ -762,7 +817,7 @@ function PoolBody({
     return (
       <EmptyState
         title="아직 등록된 출하가 없습니다"
-        description="화주가 출하 5개 항목을 등록하면 여기에 모입니다."
+        description="화주가 출하를 등록하면 공동적재 계획을 생성할 수 있습니다."
       />
     );
   }
