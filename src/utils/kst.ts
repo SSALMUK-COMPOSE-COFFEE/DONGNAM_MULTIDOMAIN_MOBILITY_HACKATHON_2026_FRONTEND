@@ -19,3 +19,18 @@ export const formatKstMonthDayTime = (dateTime: string | null | undefined) => {
 
   return `${part('month')}/${part('day')} ${part('hour')}:${part('minute')}`;
 };
+
+const KST_DATE_PARTS = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Seoul',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+export const todayKstIso = (now = new Date()) => {
+  const parts = KST_DATE_PARTS.formatToParts(now);
+
+  return ['year', 'month', 'day']
+    .map(type => parts.find(part => part.type === type)?.value ?? '')
+    .join('-');
+};
