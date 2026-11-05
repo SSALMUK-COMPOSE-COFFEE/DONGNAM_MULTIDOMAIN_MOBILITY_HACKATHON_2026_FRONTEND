@@ -33,7 +33,12 @@ import { useShipperTasks } from '@/app/(saas)/app/shipper/_components/use-shippe
 import { MapLinkProvider } from '@/components/map-link';
 import type { ShipperLotT, ShipperPlanItemT } from '@/types/saas-shipper';
 
-const CHANGE_TYPE = { reduce: '수량 감축', cancel: '출하 취소', air_switch: '항공 전환' };
+const CHANGE_TYPE = {
+  reduce: '수량 감축',
+  increase: '수량 증가',
+  cancel: '출하 취소',
+  air_switch: '항공 전환',
+};
 const CHANGE_STATUS = { open: '검토 중', applied: '반영됨', rejected: '반려됨' };
 
 function ActionRow({

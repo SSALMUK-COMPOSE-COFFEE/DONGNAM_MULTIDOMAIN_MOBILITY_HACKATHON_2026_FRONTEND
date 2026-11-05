@@ -55,6 +55,8 @@ const eventLabel = (session: SaasPlanSessionT, event: ReplanCandidateEventT) => 
   if (event.type === 'reduce') {
     return `${lotText(session, event.lot_id)} → ${event.new_pallets}파렛트로 감축`;
   }
+  if (event.type === 'increase')
+    return `${lotText(session, event.lot_id)} → ${event.new_pallets}파렛트로 증량`;
   if (event.type === 'air_switch') return `${lotText(session, event.lot_id)} 항공 전환`;
   if (event.type === 'delay') {
     return `${vesselText(session, event.voyage_id)} 출항 ${kstDayTime(event.new_etd)}로 변경`;

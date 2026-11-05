@@ -30,7 +30,7 @@ export function ScheduleCheckCard({ session, isReplanning, onRun }: ScheduleChec
   const [mixDemo, setMixDemo] = useState(true);
   const check = useForwarderScheduleCheck(planId);
   const result = check.data ?? null;
-  const usedDemo = !!check.variables?.demo;
+  const usedDemo = result?.demo_mixed ?? false;
   const containerOf = (voyageId: string) =>
     plan.containers.find(({ used, voyage_id }) => used && voyage_id === voyageId)?.container_id ??
     null;

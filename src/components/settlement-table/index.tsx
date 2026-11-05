@@ -25,7 +25,10 @@ type SettlementTablePropsT = {
   feeLabel?: string;
 };
 
-type AirSettlementRowT = Omit<SettlementT, 'sea_pallets' | 'air_pallets' | 'basis'> & {
+type AirSettlementRowT = Pick<
+  SettlementT,
+  'shipper_id' | 'baseline_cost' | 'shared_cost' | 'savings' | 'fee' | 'shipper_gain'
+> & {
   pallets: number;
 };
 

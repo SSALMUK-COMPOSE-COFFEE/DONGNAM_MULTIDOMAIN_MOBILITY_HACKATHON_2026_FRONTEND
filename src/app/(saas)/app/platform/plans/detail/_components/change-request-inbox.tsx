@@ -20,6 +20,7 @@ import type { PlatformChangeRequestT } from '@/types/saas-platform';
 
 const TYPE_LABEL: Record<PlatformChangeRequestT['type'], string> = {
   reduce: '감축',
+  increase: '증량',
   cancel: '취소',
   air_switch: '항공 전환',
 };

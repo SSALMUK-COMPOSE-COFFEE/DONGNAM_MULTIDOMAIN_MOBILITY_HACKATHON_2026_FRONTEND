@@ -62,6 +62,7 @@ const shipperLink = (planId: string, orderId: string | null = null) => {
 };
 
 const changePhrase = (type: ChangeRequestTypeT, lotId: string, newPallets: number | null) => {
+  if (type === 'increase') return `출하 ${lotId} ${newPallets ?? 0}파렛트로 증량`;
   if (type === 'reduce') return `출하 ${lotId} ${newPallets ?? 0}파렛트로 감량`;
   if (type === 'cancel') return `출하 ${lotId} 취소`;
 
@@ -73,7 +74,8 @@ const toEvent = (
   lotId: string,
   newPallets: number | null
 ): PlatformChangeRequestT['event'] => {
-  if (type === 'reduce') return { type, lot_id: lotId, new_pallets: newPallets ?? 0 };
+  if (type === 'reduce' || type === 'increase')
+    return { type, lot_id: lotId, new_pallets: newPallets ?? 0 };
 
   return { type, lot_id: lotId };
 };
@@ -83,7 +85,7 @@ const estimateOf = (
   pallets: number,
   newPallets: number | null
 ): CancellationEstimateT | null => {
-  if (type === 'air_switch') return null;
+  if (type === 'air_switch' || type === 'increase') return null;
 
   const cancelled = type === 'cancel' ? pallets : pallets - (newPallets ?? pallets);
   const rateBase = reduceReplan.alternatives
