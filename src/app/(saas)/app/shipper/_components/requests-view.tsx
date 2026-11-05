@@ -121,7 +121,7 @@ export function RequestsView() {
         }
       >
         {isOrdersLoading && <Skeleton className="h-24" />}
-        {!isOrdersLoading && confirmations.length === 0 && (
+        {!isOrdersLoading && !isOrdersError && confirmations.length === 0 && (
           <p className="m2-sub mt-0">수락을 기다리는 실행 지시가 없습니다.</p>
         )}
         {confirmations.map(({ plan, order }) => {
@@ -188,9 +188,8 @@ export function RequestsView() {
           </>
         }
       >
-        {isOrdersLoading ? (
-          <Skeleton className="h-24" />
-        ) : (
+        {isOrdersLoading && <Skeleton className="h-24" />}
+        {!isOrdersLoading && (!isOrdersError || pending.length > 0) && (
           <RequestList
             items={pending}
             labels={labels}

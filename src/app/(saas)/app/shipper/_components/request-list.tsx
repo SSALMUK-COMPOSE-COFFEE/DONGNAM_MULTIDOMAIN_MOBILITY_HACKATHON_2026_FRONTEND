@@ -100,7 +100,8 @@ export function RequestList({
 
   if (items.length === 0) return <p className="m2-sub mt-0">{emptyText}</p>;
 
-  const respond = ({ planId, order, request }: RequestItemT, accepted: boolean) =>
+  const respond = ({ planId, order, request }: RequestItemT, accepted: boolean) => {
+    if (answer.isPending) return;
     answer.mutate(
       { planId, orderId: order.order_id, requestId: request.request_id, answer: { accepted } },
       {
@@ -108,6 +109,7 @@ export function RequestList({
         onError: error => toast.error(errorDetail(error, '요청에 응답하지 못했습니다.')),
       }
     );
+  };
 
   const groups = items.reduce<{ planLabel: string | null; items: RequestItemT[] }[]>(
     (acc, item) => {
@@ -141,6 +143,7 @@ export function RequestList({
                 labels={labels}
                 ownShipperIds={ownShipperIds}
                 isBusy={answer.isPending && answer.variables?.requestId === item.request.request_id}
+                responsePending={answer.isPending}
                 onRespond={accepted => respond(item, accepted)}
               />
             ))}
@@ -171,10 +174,18 @@ type RequestCardPropsT = {
   labels: LotLabelMapT;
   ownShipperIds: readonly string[];
   isBusy: boolean;
+  responsePending: boolean;
   onRespond: (accepted: boolean) => void;
 };
 
-function RequestCard({ item, labels, ownShipperIds, isBusy, onRespond }: RequestCardPropsT) {
+function RequestCard({
+  item,
+  labels,
+  ownShipperIds,
+  isBusy,
+  responsePending,
+  onRespond,
+}: RequestCardPropsT) {
   const { order, request } = item;
   const canAnswer = isRequestAnswerable(order, request);
   const statusLabel = isRequestAwaitingForwarder(order, request)
@@ -206,19 +217,19 @@ function RequestCard({ item, labels, ownShipperIds, isBusy, onRespond }: Request
           </p>
         </div>
         {canAnswer ? (
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 gap-2" aria-busy={isBusy}>
             <button
               type="button"
               className="m2-btn m2-btn-pri m2-btn-sm"
-              disabled={isBusy}
+              disabled={responsePending}
               onClick={() => onRespond(true)}
             >
-              수락
+              {isBusy ? '처리 중' : '수락'}
             </button>
             <button
               type="button"
               className="m2-btn m2-btn-sec m2-btn-sm"
-              disabled={isBusy}
+              disabled={responsePending}
               onClick={() => onRespond(false)}
             >
               거절

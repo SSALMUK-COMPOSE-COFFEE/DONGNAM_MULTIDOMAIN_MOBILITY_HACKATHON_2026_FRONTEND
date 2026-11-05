@@ -154,7 +154,7 @@ export function RejectForm({ decision }: { decision: OrderDecisionT }) {
       </label>
       <textarea
         id={inputId}
-        className="m2-inp h-auto min-h-[72px] w-full resize-y py-2.5 text-[13.5px]"
+        className="m2-inp h-auto min-h-[72px] w-full resize-y py-2.5 text-[16px] md:text-[13.5px]"
         placeholder="예: 그날 출하 장소 작업이 어려워요"
         value={decision.reason}
         onChange={event => decision.setReason(event.target.value)}
