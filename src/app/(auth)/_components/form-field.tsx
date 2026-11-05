@@ -12,7 +12,11 @@ export function FormField({ id, label, hint, children }: FormFieldPropsT) {
     <div className="m2-field">
       <label htmlFor={id}>{label}</label>
       {children}
-      {hint ? <p className="m2-sub mt-0 text-xs">{hint}</p> : null}
+      {hint ? (
+        <p id={`${id}-hint`} className="m2-sub mt-0 text-xs">
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }

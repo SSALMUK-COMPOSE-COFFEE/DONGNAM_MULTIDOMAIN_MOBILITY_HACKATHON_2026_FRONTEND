@@ -2,12 +2,12 @@
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { type ReactNode, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { LoginMapBackground } from '@/app/(auth)/_components/login-map-background';
 import { Button } from '@/components/ui/button';
-import { SAAS_PAGES } from '@/consts/route-saas';
+import { SAAS_PAGES, safeNextPath } from '@/consts/route-saas';
 
 import './auth-shell.css';
 
@@ -59,17 +59,36 @@ export function AuthShell({ children }: { children: ReactNode }) {
           className="fs-auth-card-frame"
           style={cardHeight === null ? {} : { height: cardHeight }}
         >
-          <Button asChild variant="ghost" size="sm" className="fs-auth-switch">
-            <Link href={page === 'login' ? SAAS_PAGES.SIGNUP : SAAS_PAGES.LOGIN}>
-              {page === 'login' ? '업체 가입' : '로그인'}
-              <span aria-hidden>→</span>
-            </Link>
-          </Button>
+          <Suspense
+            fallback={
+              <Button variant="ghost" size="sm" className="fs-auth-switch" disabled>
+                {page === 'login' ? '업체 가입' : '로그인'}
+                <span aria-hidden>→</span>
+              </Button>
+            }
+          >
+            <AuthSwitch page={page} />
+          </Suspense>
           <div className="fs-auth-card-content" ref={contentRef}>
             {children}
           </div>
         </div>
       </main>
     </div>
+  );
+}
+
+function AuthSwitch({ page }: { page: 'login' | 'signup' }) {
+  const next = safeNextPath(useSearchParams().get('next'));
+  const destination = page === 'login' ? SAAS_PAGES.SIGNUP : SAAS_PAGES.LOGIN;
+  const href = next ? `${destination}?${new URLSearchParams({ next })}` : destination;
+
+  return (
+    <Button asChild variant="ghost" size="sm" className="fs-auth-switch">
+      <Link href={href}>
+        {page === 'login' ? '업체 가입' : '로그인'}
+        <span aria-hidden>→</span>
+      </Link>
+    </Button>
   );
 }

@@ -40,7 +40,10 @@ export function LoginForm() {
           placeholder="name@company.kr"
           required
           value={email}
-          onChange={event => setEmail(event.target.value)}
+          onChange={event => {
+            setEmail(event.target.value);
+            if (login.isError && !login.isPending) login.reset();
+          }}
         />
       </FormField>
 
@@ -51,7 +54,10 @@ export function LoginForm() {
           autoComplete="current-password"
           required
           value={password}
-          onChange={event => setPassword(event.target.value)}
+          onChange={event => {
+            setPassword(event.target.value);
+            if (login.isError && !login.isPending) login.reset();
+          }}
         />
       </FormField>
 
@@ -76,6 +82,7 @@ export function LoginForm() {
               type="button"
               aria-pressed={selected?.email === account.email}
               onClick={() => {
+                if (login.isError && !login.isPending) login.reset();
                 setEmail(account.email);
                 setPassword(ACCOUNT_PASSWORD);
               }}

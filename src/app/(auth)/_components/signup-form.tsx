@@ -58,10 +58,19 @@ export function SignupForm() {
     }
     if (signup.isError) signup.reset();
   };
-  const errorProps = (key: keyof SignupFormT) => ({
-    'aria-invalid': !!errors[key],
-    ...(errors[key] ? { 'aria-describedby': `signup-${key}-error` } : {}),
-  });
+  const errorProps = (key: keyof SignupFormT) => {
+    const describedBy = [
+      key === 'password' ? 'signup-password-hint' : null,
+      errors[key] ? `signup-${key}-error` : null,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return {
+      'aria-invalid': !!errors[key],
+      ...(describedBy ? { 'aria-describedby': describedBy } : {}),
+    };
+  };
   const errorMessage = (key: keyof SignupFormT) =>
     errors[key] ? (
       <p id={`signup-${key}-error`} role="alert" className="fs-signup-error">
