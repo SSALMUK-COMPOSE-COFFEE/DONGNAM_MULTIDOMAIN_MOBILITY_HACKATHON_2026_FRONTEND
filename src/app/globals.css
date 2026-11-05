@@ -13,8 +13,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-noto-sans-kr);
-  --font-heading: var(--font-noto-sans-kr);
+  --font-sans: var(--font-pretendard);
+  --font-heading: var(--font-pretendard);
 
   --color-navy: var(--navy);
   --color-brand: var(--brand);
@@ -105,6 +105,8 @@
 }
 
 :root {
+  --font-pretendard:
+    'Pretendard Variable', Arial, Helvetica, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   /* 발표 자료 팔레트 */
   --ink: #0f1b33;
   --navy: #0d2a5e;
