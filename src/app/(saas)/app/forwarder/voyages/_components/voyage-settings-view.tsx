@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Select as SelectPrimitive } from 'radix-ui';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 
 import { useForwarderPlan, useForwarderPlans } from '@/apis/saas/forwarder';
 import { useForwarderQuantityPolicies } from '@/apis/saas/quantity-reservations';
@@ -28,6 +28,8 @@ import type { VoyageQuantityStateT } from '@/types/saas-quantity';
 const stateKey = (state: VoyageQuantityStateT) => `${state.plan_id}:${state.voyage_id}`;
 
 export function VoyageSettingsView() {
+  const policyOpener = useRef<HTMLButtonElement | null>(null);
+  const voyageSelect = useRef<HTMLButtonElement>(null);
   const query = useForwarderQuantityPolicies();
   const plans = useForwarderPlans();
   const [selectedKey, setSelectedKey] = useState('');
@@ -72,6 +74,7 @@ export function VoyageSettingsView() {
             </label>
             <Select value={stateKey(selected)} onValueChange={setSelectedKey}>
               <SelectTrigger
+                ref={voyageSelect}
                 aria-labelledby="quantity-voyage-label"
                 className="w-full max-w-full min-w-0"
                 style={{ height: 'auto', minHeight: 44, width: '100%', whiteSpace: 'normal' }}
@@ -108,7 +111,10 @@ export function VoyageSettingsView() {
           <VoyageSummary
             key={stateKey(selected)}
             state={selected}
-            onEdit={() => setEditing(selected)}
+            onEdit={button => {
+              policyOpener.current = button;
+              setEditing(selected);
+            }}
           />
           <VoyageOfferLog
             key={`offers:${stateKey(selected)}`}
@@ -125,6 +131,12 @@ export function VoyageSettingsView() {
         }}
       >
         <DialogContent
+          onCloseAutoFocus={event => {
+            event.preventDefault();
+            const opener = policyOpener.current;
+            if (opener?.isConnected && !opener.disabled) opener.focus();
+            else voyageSelect.current?.focus();
+          }}
           data-ui="m2"
           className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-[760px]"
         >
@@ -141,7 +153,13 @@ export function VoyageSettingsView() {
   );
 }
 
-function VoyageSummary({ state, onEdit }: { state: VoyageQuantityStateT; onEdit: () => void }) {
+function VoyageSummary({
+  state,
+  onEdit,
+}: {
+  state: VoyageQuantityStateT;
+  onEdit: (button: HTMLButtonElement) => void;
+}) {
   const plan = useForwarderPlan(state.plan_id);
   const voyage = plan.data?.scenario.voyages.find(item => item.id === state.voyage_id);
 
@@ -173,7 +191,7 @@ function VoyageSummary({ state, onEdit }: { state: VoyageQuantityStateT; onEdit:
           <button
             type="button"
             className="m2-btn m2-btn-sec"
-            onClick={onEdit}
+            onClick={event => onEdit(event.currentTarget)}
             disabled={state.policy_locked}
           >
             {state.policy_locked ? '수량 확정 · 설정 잠김' : '항차 정책 수정'}

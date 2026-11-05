@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { saasErrorReason } from '@/apis/saas/errors';
 import { useConfirmQuantityDeparture } from '@/apis/saas/quantity-reservations';
@@ -10,6 +10,8 @@ import type { VoyageQuantityStateT } from '@/types/saas-quantity';
 
 export function VoyageDepartureConfirmation({ state }: { state: VoyageQuantityStateT }) {
   const id = useId();
+  const opener = useRef<HTMLButtonElement>(null);
+  const section = useRef<HTMLElement>(null);
   const [open, setOpen] = useState(false);
   const [observed, setObserved] = useState(false);
   const [requestKey, setRequestKey] = useState('');
@@ -17,7 +19,7 @@ export function VoyageDepartureConfirmation({ state }: { state: VoyageQuantitySt
 
   if (state.departure_confirmed_at)
     return (
-      <section className="m2-card">
+      <section ref={section} tabIndex={-1} className="m2-card">
         <div className="m2-card-h">
           <h2 className="m2-h2">출항 확인·정산 계산</h2>
           <span className="m2-chip m2-chip-ok">계산 확정</span>
@@ -30,7 +32,7 @@ export function VoyageDepartureConfirmation({ state }: { state: VoyageQuantitySt
     );
 
   return (
-    <section className="m2-card">
+    <section ref={section} tabIndex={-1} className="m2-card">
       <div className="m2-card-h">
         <div>
           <h2 className="m2-h2">출항 확인·정산 계산 확정</h2>
@@ -45,6 +47,7 @@ export function VoyageDepartureConfirmation({ state }: { state: VoyageQuantitySt
         </p>
       ) : null}
       <button
+        ref={opener}
         type="button"
         className="m2-btn m2-btn-pri"
         disabled={!state.can_confirm_departure || confirm.isPending}
@@ -63,7 +66,15 @@ export function VoyageDepartureConfirmation({ state }: { state: VoyageQuantitySt
           if (!confirm.isPending) setOpen(next);
         }}
       >
-        <DialogContent data-ui="m2" className="w-[calc(100%-2rem)] sm:max-w-md">
+        <DialogContent
+          onCloseAutoFocus={event => {
+            event.preventDefault();
+            if (opener.current?.isConnected && !opener.current.disabled) opener.current.focus();
+            else section.current?.focus();
+          }}
+          data-ui="m2"
+          className="w-[calc(100%-2rem)] sm:max-w-md"
+        >
           <DialogTitle>실제 출항 확인</DialogTitle>
           <DialogDescription>
             실제 출항을 확인하고 취소 부담금과 보충·보상 운임 조정 계산을 확정합니다. 계산 내역은

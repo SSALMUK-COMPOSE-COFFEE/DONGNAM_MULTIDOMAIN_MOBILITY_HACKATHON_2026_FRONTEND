@@ -2,7 +2,7 @@
 
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useMe } from '@/apis/saas/auth';
 import { saasErrorReason } from '@/apis/saas/errors';
@@ -26,6 +26,18 @@ export function ForwarderResourcesView() {
 }
 
 function ResourceManager() {
+  const registerRef = useRef<HTMLButtonElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLButtonElement | null>(null);
+  const restoreFocus = (event: Event) => {
+    event.preventDefault();
+    const opener = openerRef.current;
+    if (opener?.isConnected && !opener.disabled) opener.focus();
+    else {
+      const search = filtersRef.current?.querySelector<HTMLInputElement>('input[type="search"]');
+      (search ?? registerRef.current)?.focus();
+    }
+  };
   const resources = useResources('forwarder');
   const options = useResourceOptions();
   const remove = useDeleteResource();
@@ -45,10 +57,14 @@ function ResourceManager() {
           항차 설정
         </Link>
         <button
+          ref={registerRef}
           type="button"
           className="m2-btn m2-btn-pri"
           disabled={!options.isSuccess}
-          onClick={() => setEditor('new')}
+          onClick={event => {
+            openerRef.current = event.currentTarget;
+            setEditor('new');
+          }}
         >
           <Plus size={16} aria-hidden />
           컨테이너 등록
@@ -78,23 +94,37 @@ function ResourceManager() {
         <>
           <ResourcesSummary resources={resources.data} />
           <p className="m2-note mt-0 mb-4">{options.data.allocation_notice}</p>
-          <ResourceFilters
-            query={query}
-            status={status}
-            onQueryChange={setQuery}
-            onStatusChange={setStatus}
-          />
-          {filtered.length > 0 ? (
-            <ResourceList
-              resources={filtered}
-              ports={options.data.ports}
-              role="forwarder"
-              onEdit={setEditor}
-              onDelete={item => {
-                remove.reset();
-                setDeleting(item);
-              }}
+          <div ref={filtersRef}>
+            <ResourceFilters
+              query={query}
+              status={status}
+              onQueryChange={setQuery}
+              onStatusChange={setStatus}
             />
+          </div>
+          <p role="status" aria-live="polite" aria-atomic="true" className="m2-sub mb-3">
+            검색 결과 {filtered.length}개 / 전체 {resources.data.length}개
+          </p>
+          {filtered.length > 0 ? (
+            <div
+              onClickCapture={event => {
+                if (event.target instanceof Element) {
+                  const button = event.target.closest<HTMLButtonElement>('button');
+                  if (button) openerRef.current = button;
+                }
+              }}
+            >
+              <ResourceList
+                resources={filtered}
+                ports={options.data.ports}
+                role="forwarder"
+                onEdit={setEditor}
+                onDelete={item => {
+                  remove.reset();
+                  setDeleting(item);
+                }}
+              />
+            </div>
           ) : (
             <EmptyState
               title={resources.data.length ? '검색 결과가 없습니다' : '등록한 컨테이너가 없습니다'}
@@ -114,6 +144,7 @@ function ResourceManager() {
         }}
       >
         <DialogContent
+          onCloseAutoFocus={restoreFocus}
           data-ui="m2"
           className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-[760px]"
         >
@@ -133,7 +164,11 @@ function ResourceManager() {
           if (!open && !remove.isPending) setDeleting(null);
         }}
       >
-        <DialogContent data-ui="m2" className="w-[calc(100%-2rem)] sm:max-w-md">
+        <DialogContent
+          onCloseAutoFocus={restoreFocus}
+          data-ui="m2"
+          className="w-[calc(100%-2rem)] sm:max-w-md"
+        >
           <DialogTitle>컨테이너 제공 정보 삭제</DialogTitle>
           <DialogDescription>
             {deleting?.name} 제공 정보를 삭제하시겠습니까? 플랫폼은 이 자원을 새 계획에 사용할 수
@@ -158,7 +193,14 @@ function ResourceManager() {
               className="m2-btn m2-btn-pri"
               disabled={remove.isPending}
               onClick={() => {
-                if (deleting) remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) });
+                if (deleting) {
+                  remove.mutate(deleting.id, {
+                    onSuccess: () => {
+                      openerRef.current = null;
+                      setDeleting(null);
+                    },
+                  });
+                }
               }}
             >
               {remove.isPending ? '삭제 중' : '삭제'}
