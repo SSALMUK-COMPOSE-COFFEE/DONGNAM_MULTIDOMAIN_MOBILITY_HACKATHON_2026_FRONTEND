@@ -46,6 +46,7 @@ import { ShipperPageHeader } from '@/app/(saas)/app/shipper/_components/shipper-
 import { SHIPPER_PATHS } from '@/app/(saas)/app/shipper/_components/shipper-paths';
 import { ShipperPlanCard } from '@/app/(saas)/app/shipper/_components/shipper-plan-card';
 import { useNowMinute } from '@/app/(saas)/app/shipper/_components/use-now';
+import { ContainerAllocationPreview } from '@/components/container-allocation-preview';
 import { MapLinkProvider } from '@/components/map-link';
 import { AirLots } from '@/components/plan-detail/air-lots';
 import { ContainerCard } from '@/components/plan-detail/container-card';
@@ -190,6 +191,14 @@ export function PlanDetailView() {
 
             <SectionErrorBoundary message="컨테이너 번호를 그리지 못했습니다." className="h-40">
               <ContainerNumbersCard session={plan.data} />
+            </SectionErrorBoundary>
+
+            <SectionErrorBoundary message="배치 미리보기를 그리지 못했습니다." className="h-40">
+              <ContainerAllocationPreview
+                plan={session.plan}
+                scenario={session.scenario}
+                viewerShipperId={viewerShipperId}
+              />
             </SectionErrorBoundary>
 
             <SectionErrorBoundary message="운송계획을 그리지 못했습니다." className="h-96">

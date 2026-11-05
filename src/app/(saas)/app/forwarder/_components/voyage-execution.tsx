@@ -37,6 +37,8 @@ import {
   productName,
   usedContainers,
 } from '@/app/(saas)/app/forwarder/_components/voyage-model';
+import { ReplanSection } from '@/app/(saas)/app/platform/plans/detail/_components/replan-section';
+import { ContainerAllocationPreview } from '@/components/container-allocation-preview';
 import {
   HeroPanel,
   M2_COLORS,
@@ -171,7 +173,7 @@ export function VoyageExecution({ session, eyebrow }: VoyageExecutionPropsT) {
   })();
 
   return (
-    <MapLinkProvider key={voyage?.id ?? ''}>
+    <MapLinkProvider key={session.plan_id}>
       <ForwarderPageHeader
         eyebrow={eyebrow}
         title={
@@ -247,6 +249,7 @@ export function VoyageExecution({ session, eyebrow }: VoyageExecutionPropsT) {
           ) : null}
           {orders.isSuccess && !order ? <PlanChecklist session={slice} scene={scene} /> : null}
           <ContainerLoadsCard session={slice} />
+          <ContainerAllocationPreview plan={slice.plan} scenario={slice.scenario} />
         </div>
       </div>
 
@@ -256,6 +259,12 @@ export function VoyageExecution({ session, eyebrow }: VoyageExecutionPropsT) {
         planId={session.plan_id}
         planContainerIds={usedContainers(session).map(({ container_id }) => container_id)}
       />
+
+      <div className="mt-4">
+        <SectionErrorBoundary message="재최적화 화면을 불러오지 못했습니다." className="h-40">
+          <ReplanSection key={`replan:${session.plan_id}`} session={session} />
+        </SectionErrorBoundary>
+      </div>
 
       <div className="mt-4">
         <SectionErrorBoundary message="집하 순서를 그리지 못했습니다." className="h-40">
