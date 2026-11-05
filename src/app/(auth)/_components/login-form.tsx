@@ -1,11 +1,11 @@
 'use client';
 
 import { isAxiosError } from 'axios';
-import { useState } from 'react';
 
 import { useLogin } from '@/apis/saas/auth';
 import { authErrorMessage } from '@/app/(auth)/_components/auth-error';
 import { FormField } from '@/app/(auth)/_components/form-field';
+import { useLoginCredentials } from '@/app/(auth)/_components/login-credentials';
 import { useEnterApp } from '@/app/(auth)/_components/use-enter-app';
 import { isDemoEmail } from '@/consts/sandbox-saas';
 
@@ -20,8 +20,7 @@ const loginErrorMessage = (error: unknown, email: string) => {
 };
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { email, password, setEmail, setPassword } = useLoginCredentials();
   const login = useLogin();
   const enterApp = useEnterApp();
 

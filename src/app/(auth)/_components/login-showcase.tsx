@@ -35,7 +35,7 @@ const nameOf = (showcase: ShowcaseT, packhouseId: string) =>
 
 const panelRows = (showcase: ShowcaseT) => [
   {
-    k: '선과장',
+    k: '출하 장소',
     v: `${showcase.packhouse_count.toLocaleString('ko-KR')}곳 · ${showcase.total_pallets.toLocaleString('ko-KR')}팔레트`,
   },
   ...(showcase.containers.length > 0

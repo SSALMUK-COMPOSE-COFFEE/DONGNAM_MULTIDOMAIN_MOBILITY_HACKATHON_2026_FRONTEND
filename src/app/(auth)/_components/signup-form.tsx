@@ -31,7 +31,7 @@ export function SignupForm() {
         signup.mutate(form, { onSuccess: enterApp });
       }}
     >
-      <FormField id="signup-org-type" label="회사 종류">
+      <FormField id="signup-org-type" label="업체 종류">
         <select
           id="signup-org-type"
           className="m2-inp w-full"
@@ -46,7 +46,7 @@ export function SignupForm() {
         </select>
       </FormField>
 
-      <FormField id="signup-org-name" label="회사 이름">
+      <FormField id="signup-org-name" label="업체 이름">
         <input
           className="m2-inp"
           id="signup-org-name"
