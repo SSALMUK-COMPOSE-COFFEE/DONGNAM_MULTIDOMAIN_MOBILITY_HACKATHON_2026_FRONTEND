@@ -665,6 +665,14 @@ const authHandlers = [
 ];
 
 const catalogHandlers = [
+  http.get(api('/saas/shipper/products'), async ({ request }) => {
+    const principal = authorize(request, 'shipper');
+    if (principal instanceof Response) return principal;
+    const catalog = catalogFor(await demoPlan(planIds()[0]), principal.org);
+    return HttpResponse.json(
+      catalog.products.map(product => ({ ...product, writable: false, replaces_id: null }))
+    );
+  }),
   http.get(api('/saas/catalog'), async ({ request }) => {
     const principal = authorize(request, 'platform', 'shipper');
     if (principal instanceof Response) return principal;
