@@ -45,6 +45,7 @@ function ProfileForm({ me }: { me: Me }) {
         <label htmlFor="profile-name">이름</label>
         <input
           id="profile-name"
+          disabled={update.isPending}
           name="name"
           autoComplete="name"
           required
@@ -53,7 +54,7 @@ function ProfileForm({ me }: { me: Me }) {
           onChange={event => {
             setName(event.target.value);
             setSaved(false);
-            update.reset();
+            if (update.isError && !update.isPending) update.reset();
           }}
         />
         <label htmlFor="profile-email">이메일</label>

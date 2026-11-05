@@ -66,6 +66,7 @@ function CompanyForm({ me }: { me: Me }) {
       <label htmlFor="company-name">업체 이름</label>
       <input
         id="company-name"
+        disabled={update.isPending}
         name="company-name"
         autoComplete="organization"
         required
@@ -74,7 +75,7 @@ function CompanyForm({ me }: { me: Me }) {
         onChange={event => {
           setName(event.target.value);
           setSaved(false);
-          update.reset();
+          if (update.isError && !update.isPending) update.reset();
         }}
       />
       <label htmlFor="company-type">업체 종류</label>
