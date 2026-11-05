@@ -141,7 +141,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
           </span>
         ) : null}
         <div
-          role="tablist"
+          role="group"
           aria-label="출하 상태"
           className="flex flex-wrap gap-1 rounded-[12px] bg-[rgba(15,27,51,.05)] p-1"
         >
@@ -149,10 +149,9 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
             <button
               key={value}
               type="button"
-              role="tab"
-              aria-selected={filter === value}
+              aria-pressed={filter === value}
               onClick={() => setFilter(value)}
-              className="h-8 rounded-[9px] border-0 bg-transparent px-3 text-[12.5px] font-semibold text-m2-muted transition-colors duration-200 ease-[cubic-bezier(.2,.8,.2,1)] aria-selected:bg-white aria-selected:text-m2-ink aria-selected:shadow-[0_1px_2px_rgba(15,27,51,.08)] motion-reduce:transition-none"
+              className="h-8 rounded-[9px] border-0 bg-transparent px-3 text-[12.5px] font-semibold text-m2-muted transition-colors duration-200 ease-[cubic-bezier(.2,.8,.2,1)] aria-pressed:bg-white aria-pressed:text-m2-ink aria-pressed:shadow-[0_1px_2px_rgba(15,27,51,.08)] motion-reduce:transition-none"
             >
               {label}
             </button>
@@ -286,7 +285,7 @@ export function LotTable({ catalog }: { catalog: ShipperCatalogT | null }) {
                                 plan.my_lot_ids.includes(lot.id)
                               );
                               return matching.length === 1
-                                ? SHIPPER_PATHS.QUANTITY(matching[0].plan_id, lot.id)
+                                ? `${SHIPPER_PATHS.QUANTITY(matching[0].plan_id, lot.id)}&returnTo=${encodeURIComponent(SHIPPER_PATHS.LOT_LIST(filter))}`
                                 : SHIPPER_PATHS.PLANS;
                             })()}
                           >

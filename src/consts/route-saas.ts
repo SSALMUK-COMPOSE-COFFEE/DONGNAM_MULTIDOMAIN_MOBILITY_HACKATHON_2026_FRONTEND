@@ -158,8 +158,17 @@ export const orgTypeOfPath = (path: string): OrgType | null => {
   );
 };
 
-export const isActiveMenu = (pathname: string, href: string, home: string) =>
-  href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+export const isActiveMenu = (pathname: string, href: string, home: string) => {
+  if (href === home) {
+    return (
+      pathname === href ||
+      (home === '/app/forwarder' &&
+        (pathname === `${home}/plans` || pathname.startsWith(`${home}/plans/`)))
+    );
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+};
 
 export const safeNextPath = (next: string | null, basePath = BASE_PATH) => {
   if (!next) return null;
