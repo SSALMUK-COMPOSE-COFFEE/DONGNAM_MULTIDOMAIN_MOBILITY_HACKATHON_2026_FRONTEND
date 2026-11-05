@@ -1847,3 +1847,41 @@
     }
   }
 }
+
+@layer components {
+  [data-ui='m2'] .m2-profile-settings {
+    max-width: 640px;
+  }
+  [data-ui='m2'] .m2-profile-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 28px;
+    border: 1px solid var(--m2-line);
+    border-radius: 18px;
+    background: white;
+  }
+  [data-ui='m2'] .m2-profile-card label {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  [data-ui='m2'] .m2-profile-card input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--m2-line);
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  [data-ui='m2'] .m2-profile-card input[readonly] {
+    background: #f1f5f9;
+    color: var(--m2-muted);
+  }
+  [data-ui='m2'] .m2-profile-card button {
+    align-self: flex-start;
+  }
+  @media (max-width: 767.98px) {
+    [data-ui='m2'] .m2-profile-card {
+      padding: 20px;
+    }
+  }
+}

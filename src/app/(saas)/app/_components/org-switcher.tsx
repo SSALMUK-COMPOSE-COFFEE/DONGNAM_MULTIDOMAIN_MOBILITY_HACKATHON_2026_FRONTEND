@@ -82,7 +82,7 @@ export function OrgSwitcher({ me }: { me: Me }) {
       }}
     >
       <SelectTrigger
-        aria-label={`조직 전환 · 현재 ${active.org_name}`}
+        aria-label={`업체 전환 · 현재 ${active.org_name}`}
         title={active.org_name}
         className="m2-org w-full rounded-xl border-0 bg-transparent px-2.5 shadow-none"
         style={{ height: 'auto', paddingTop: 8, paddingBottom: 12 }}

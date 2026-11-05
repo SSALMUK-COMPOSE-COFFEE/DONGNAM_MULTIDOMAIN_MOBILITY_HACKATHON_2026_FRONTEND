@@ -134,6 +134,11 @@ export const SANDBOX_SCENARIO_STEPS = [
 
 export const SIGNUP_ORG_TYPES = ['shipper', 'forwarder'] as const satisfies readonly OrgType[];
 
+export const roleCompanySettings = (orgType: OrgType) =>
+  `${SAAS_ROUTES[orgType].home}/company-settings`;
+
+export const roleSettings = (orgType: OrgType) => `${SAAS_ROUTES[orgType].home}/settings`;
+
 export const roleHome = (orgType: OrgType) => SAAS_ROUTES[orgType].home;
 
 export const pathnameOf = (path: string) => path.split(/[?#]/)[0];

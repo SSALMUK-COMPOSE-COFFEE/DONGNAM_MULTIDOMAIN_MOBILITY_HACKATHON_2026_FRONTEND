@@ -20,6 +20,7 @@ import type {
   DemoLoginRequest,
   LoginRequest,
   Me,
+  MeUser,
   Membership,
   OrgType,
   SignupRequest,
@@ -255,7 +256,7 @@ export const useSessionSync = () => {
   );
 };
 
-const toastSwitchOrgError = toastSaasError('조직을 전환하지 못했습니다.');
+const toastSwitchOrgError = toastSaasError('업체을 전환하지 못했습니다.');
 
 export const useSwitchOrg = (boundOrgId: string | null = null) => {
   const queryClient = useQueryClient();
@@ -278,4 +279,20 @@ export const useSwitchOrg = (boundOrgId: string | null = null) => {
     },
     [queryClient, boundOrgId]
   );
+};
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: Pick<MeUser, 'name'>) => {
+      const { data } = await saasApi.patch<MeUser>(SAAS_ENDPOINTS.ME, request);
+
+      return data;
+    },
+    onSuccess: user => {
+      queryClient.setQueryData<Me>(orgKeys.me, me => (me ? { ...me, user } : me));
+      broadcastSessionChange('switch');
+    },
+  });
 };
