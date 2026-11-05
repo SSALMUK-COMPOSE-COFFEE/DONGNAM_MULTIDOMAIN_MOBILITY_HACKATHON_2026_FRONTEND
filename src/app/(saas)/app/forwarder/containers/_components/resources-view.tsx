@@ -1,12 +1,14 @@
 'use client';
 
 import { Plus } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { useMe } from '@/apis/saas/auth';
 import { saasErrorReason } from '@/apis/saas/errors';
 import { useDeleteResource, useResourceOptions, useResources } from '@/apis/saas/resources';
 import { ForwarderPageHeader } from '@/app/(saas)/app/forwarder/_components/forwarder-page-header';
+import { FORWARDER_PATHS } from '@/app/(saas)/app/forwarder/_components/forwarder-paths';
 import { ResourceEditor } from '@/app/(saas)/app/forwarder/containers/_components/resource-editor';
 import {
   CardSkeleton,
@@ -39,6 +41,9 @@ function ResourceManager() {
         title="컨테이너 관리"
         sub="공동적재에 제공할 컨테이너 공간과 항차 일정을 관리하세요."
       >
+        <Link href={FORWARDER_PATHS.VOYAGES} className="m2-btn m2-btn-sec">
+          항차 설정
+        </Link>
         <button
           type="button"
           className="m2-btn m2-btn-pri"

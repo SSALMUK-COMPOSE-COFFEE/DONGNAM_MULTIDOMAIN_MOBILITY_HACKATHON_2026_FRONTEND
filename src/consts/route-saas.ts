@@ -121,6 +121,7 @@ export const SAAS_ROUTES = {
     home: '/app/forwarder',
     menu: [
       { href: '/app/forwarder/containers', label: '컨테이너 관리', icon: 'lots' },
+      { href: '/app/forwarder/voyages', label: '항차 설정', icon: 'voyages' },
       { href: '/app/forwarder/lots', label: '출하 풀 · 계획 생성', icon: 'pool' },
       {
         href: '/app/forwarder',
