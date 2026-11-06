@@ -1,0 +1,2755 @@
+{
+  "plan_id": "mock-plan",
+  "options": {
+    "weather": "typhoon",
+    "congestion": "high",
+    "quantile": "p90",
+    "min_sell_days": 0,
+    "preset": "typhoon"
+  },
+  "history": {
+    "record_count": 3514,
+    "start": "2026-08-31",
+    "end": "2026-10-30",
+    "source": "해수부 선박입출항 출항 신고(부산항): 출항예정일시 대비 출항일시"
+  },
+  "port_congestion": {
+    "mode": "preset",
+    "level": "high",
+    "indicator": null,
+    "unavailable_reason": null,
+    "effects": [
+      {
+        "voyage_id": "V-2611A",
+        "scope": "manual",
+        "level": "high",
+        "factor": 1.5,
+        "p50_added_hours": 1.4,
+        "p90_added_hours": 7.0
+      }
+    ],
+    "note": "혼잡도를 시연 프리셋으로 고정(배율 1.5, 가정). 울산항 선박위치는 조회하지 않음"
+  },
+  "voyages": [
+    {
+      "voyage_id": "V-2611A",
+      "vessel_name": "MV FRESH HARMONY",
+      "terminal": "부산신항 2부두",
+      "planned_etd": "2026-11-18T18:00:00+09:00",
+      "quantile": "p90",
+      "delay_hours": 93.0,
+      "predicted_etd": "2026-11-22T15:00:00+09:00",
+      "congestion_scope": "manual",
+      "forecast": {
+        "p50_hours": 40.2,
+        "p90_hours": 93.0,
+        "base_p50_hours": 2.8,
+        "base_p90_hours": 14.0,
+        "confidence": "low",
+        "sample_size": 33,
+        "basis": [
+          {
+            "level": "prior",
+            "label": "기본 사전값",
+            "key": null,
+            "sample_size": 0,
+            "p50_hours": 1.0,
+            "p90_hours": 8.0,
+            "weight": 1.0
+          },
+          {
+            "level": "global",
+            "label": "부산항 전체",
+            "key": null,
+            "sample_size": 3514,
+            "p50_hours": 0.0,
+            "p90_hours": 7.61,
+            "weight": 0.997
+          },
+          {
+            "level": "container",
+            "label": "컨테이너선",
+            "key": null,
+            "sample_size": 1926,
+            "p50_hours": 0.92,
+            "p90_hours": 8.83,
+            "weight": 0.995
+          },
+          {
+            "level": "terminal",
+            "label": "터미널",
+            "key": "신항 2부두",
+            "sample_size": 211,
+            "p50_hours": 2.0,
+            "p90_hours": 8.25,
+            "weight": 0.955
+          },
+          {
+            "level": "terminal_weekday",
+            "label": "터미널·요일",
+            "key": "신항 2부두 수요일",
+            "sample_size": 33,
+            "p50_hours": 3.02,
+            "p90_hours": 15.73,
+            "weight": 0.767
+          }
+        ],
+        "assumptions": [
+          {
+            "name": "기본 사전값 p50·p90 (표본이 전혀 없을 때)",
+            "value": 1.0,
+            "unit": "시간 (p90 8시간)",
+            "source": "가정"
+          },
+          {
+            "name": "혼잡 배율 (high)",
+            "value": 1.5,
+            "unit": "배 (양의 지연에만)",
+            "source": "가정: 선석 혼잡 시 대기가 늘어난다고 봄(elevated 1.25배, high 1.5배)"
+          },
+          {
+            "name": "태풍 가산 p50",
+            "value": 36.0,
+            "unit": "시간 (p90 +72시간)",
+            "source": "가정: 태풍 시 부산항 하역 중단 1~2일 + 체선 해소, 풍랑주의보는 반나절"
+          }
+        ],
+        "weather": "typhoon",
+        "congestion": "high",
+        "congestion_factor": 1.5,
+        "congestion_added_p50_hours": 1.4,
+        "congestion_added_p90_hours": 7.0,
+        "method": "해수부 출항 신고의 출항예정일시 대비 실제 출항일시 차이(시간)를 표본으로, 부산항 전체 → 컨테이너선 → 선사 → 터미널 → 터미널·요일 → 선박 순으로 분위수(p50·p90)를 표본 수 가중 n/(n+10)로 섞는다. 표본이 3건 미만인 단계는 건너뛴다. 그 뒤 혼잡 배율과 기상 가산(가정)을 적용한다.",
+        "summary": "터미널·요일(신항 2부두 수요일) 표본 33건 기준 지연 p50 40.2시간, p90 93.0시간"
+      },
+      "lots": [
+        {
+          "lot_id": "lot-jinju-sb-1",
+          "shipper_id": "sh-jinju",
+          "product_id": "strawberry",
+          "pallets": 8,
+          "container_id": "CA-01",
+          "ready_date": "2026-11-16",
+          "sell_by_date": "2026-11-23",
+          "shelf_life_days": 7,
+          "planned_arrival": "2026-11-21",
+          "predicted_arrival": "2026-11-25",
+          "sell_days_left_planned": 2,
+          "sell_days_left_predicted": -2,
+          "at_risk": true,
+          "reason": "예측 도착일이 판매기한 초과"
+        },
+        {
+          "lot_id": "lot-sancheong-sb-1",
+          "shipper_id": "sh-sancheong",
+          "product_id": "strawberry",
+          "pallets": 5,
+          "container_id": "CA-01",
+          "ready_date": "2026-11-16",
+          "sell_by_date": "2026-11-23",
+          "shelf_life_days": 7,
+          "planned_arrival": "2026-11-21",
+          "predicted_arrival": "2026-11-25",
+          "sell_days_left_planned": 2,
+          "sell_days_left_predicted": -2,
+          "at_risk": true,
+          "reason": "예측 도착일이 판매기한 초과"
+        },
+        {
+          "lot_id": "lot-miryang-sb-1",
+          "shipper_id": "sh-miryang",
+          "product_id": "strawberry",
+          "pallets": 4,
+          "container_id": "CA-01",
+          "ready_date": "2026-11-16",
+          "sell_by_date": "2026-11-23",
+          "shelf_life_days": 7,
+          "planned_arrival": "2026-11-21",
+          "predicted_arrival": "2026-11-25",
+          "sell_days_left_planned": 2,
+          "sell_days_left_predicted": -2,
+          "at_risk": true,
+          "reason": "예측 도착일이 판매기한 초과"
+        },
+        {
+          "lot_id": "lot-sangju-gr-1",
+          "shipper_id": "sh-sangju",
+          "product_id": "grape_so2",
+          "pallets": 13,
+          "container_id": "CA-02",
+          "ready_date": "2026-11-15",
+          "sell_by_date": "2026-12-30",
+          "shelf_life_days": 45,
+          "planned_arrival": "2026-11-21",
+          "predicted_arrival": "2026-11-25",
+          "sell_days_left_planned": 39,
+          "sell_days_left_predicted": 35,
+          "at_risk": false,
+          "reason": null
+        },
+        {
+          "lot_id": "lot-pohang-gr-1",
+          "shipper_id": "sh-pohang",
+          "product_id": "grape_so2",
+          "pallets": 5,
+          "container_id": "CA-02",
+          "ready_date": "2026-11-15",
+          "sell_by_date": "2026-12-30",
+          "shelf_life_days": 45,
+          "planned_arrival": "2026-11-21",
+          "predicted_arrival": "2026-11-25",
+          "sell_days_left_planned": 39,
+          "sell_days_left_predicted": 35,
+          "at_risk": false,
+          "reason": null
+        }
+      ]
+    }
+  ],
+  "at_risk_lot_ids": ["lot-jinju-sb-1", "lot-sancheong-sb-1", "lot-miryang-sb-1"],
+  "triggered": true,
+  "event": {
+    "type": "delay",
+    "voyage_id": "V-2611A",
+    "new_etd": "2026-11-22T15:00:00+09:00",
+    "new_cy_cutoff": null,
+    "source": "예측"
+  },
+  "air_switch": [
+    {
+      "lot_id": "lot-jinju-sb-1",
+      "shipper_id": "sh-jinju",
+      "pallets": 8,
+      "from_container_id": "CA-01",
+      "reason": "MV FRESH HARMONY p90 지연 93시간: 예측 도착일이 판매기한 초과",
+      "sea_value_at_risk": 59760000,
+      "options": [
+        {
+          "airport": "PUS",
+          "name": "김해공항",
+          "trucking_km": 97.9,
+          "storage_days": 0.5,
+          "transit_days": 0.5,
+          "arrival_date": "2026-11-17",
+          "sell_days_left": 6,
+          "feasible": false,
+          "reason": "김해 항공 여유 하루 6파렛트(가정) 초과",
+          "freight": 7141320,
+          "collection": 195800,
+          "storage": 12000,
+          "loss_risk": 597600,
+          "total": 7946720,
+          "source": "가정: 김해 딸기 취급 항공사 1곳·냉장창고 없음(KNN 2023) → 당일 탑재, 하루 6파렛트까지. 운임은 인천과 같은 kg당 단가"
+        },
+        {
+          "airport": "ICN",
+          "name": "인천공항",
+          "trucking_km": 350.0,
+          "storage_days": 1.5,
+          "transit_days": 0.5,
+          "arrival_date": "2026-11-18",
+          "sell_days_left": 5,
+          "feasible": true,
+          "reason": null,
+          "freight": 7141320,
+          "collection": 700000,
+          "storage": 36000,
+          "loss_risk": 597600,
+          "total": 8474920,
+          "source": "비용 파라미터: 산지→인천 트럭 km·인천 보관일·항공 운송일"
+        }
+      ],
+      "recommended_airport": "ICN",
+      "replan_location": "AIR"
+    },
+    {
+      "lot_id": "lot-sancheong-sb-1",
+      "shipper_id": "sh-sancheong",
+      "pallets": 5,
+      "from_container_id": "CA-01",
+      "reason": "MV FRESH HARMONY p90 지연 93시간: 예측 도착일이 판매기한 초과",
+      "sea_value_at_risk": 37350000,
+      "options": [
+        {
+          "airport": "PUS",
+          "name": "김해공항",
+          "trucking_km": 130.7,
+          "storage_days": 0.5,
+          "transit_days": 0.5,
+          "arrival_date": "2026-11-17",
+          "sell_days_left": 6,
+          "feasible": true,
+          "reason": null,
+          "freight": 4463325,
+          "collection": 163375,
+          "storage": 7500,
+          "loss_risk": 373500,
+          "total": 5007700,
+          "source": "가정: 김해 딸기 취급 항공사 1곳·냉장창고 없음(KNN 2023) → 당일 탑재, 하루 6파렛트까지. 운임은 인천과 같은 kg당 단가"
+        },
+        {
+          "airport": "ICN",
+          "name": "인천공항",
+          "trucking_km": 350.0,
+          "storage_days": 1.5,
+          "transit_days": 0.5,
+          "arrival_date": "2026-11-18",
+          "sell_days_left": 5,
+          "feasible": true,
+          "reason": null,
+          "freight": 4463325,
+          "collection": 437500,
+          "storage": 22500,
+          "loss_risk": 373500,
+          "total": 5296825,
+          "source": "비용 파라미터: 산지→인천 트럭 km·인천 보관일·항공 운송일"
+        }
+      ],
+      "recommended_airport": "PUS",
+      "replan_location": "AIR"
+    },
+    {
+      "lot_id": "lot-miryang-sb-1",
+      "shipper_id": "sh-miryang",
+      "pallets": 4,
+      "from_container_id": "CA-01",
+      "reason": "MV FRESH HARMONY p90 지연 93시간: 예측 도착일이 판매기한 초과",
+      "sea_value_at_risk": 29880000,
+      "options": [
+        {
+          "airport": "PUS",
+          "name": "김해공항",
+          "trucking_km": 51.4,
+          "storage_days": 0.5,
+          "transit_days": 0.5,
+          "arrival_date": "2026-11-17",
+          "sell_days_left": 6,
+          "feasible": false,
+          "reason": "김해 항공 여유 하루 6파렛트(가정) 중 1파렛트 남음",
+          "freight": 3570660,
+          "collection": 51400,
+          "storage": 6000,
+          "loss_risk": 298800,
+          "total": 3926860,
+          "source": "가정: 김해 딸기 취급 항공사 1곳·냉장창고 없음(KNN 2023) → 당일 탑재, 하루 6파렛트까지. 운임은 인천과 같은 kg당 단가"
+        },
+        {
+          "airport": "ICN",
+          "name": "인천공항",
+          "trucking_km": 350.0,
+          "storage_days": 1.5,
+          "transit_days": 0.5,
+          "arrival_date": "2026-11-18",
+          "sell_days_left": 5,
+          "feasible": true,
+          "reason": null,
+          "freight": 3570660,
+          "collection": 350000,
+          "storage": 18000,
+          "loss_risk": 298800,
+          "total": 4237460,
+          "source": "비용 파라미터: 산지→인천 트럭 km·인천 보관일·항공 운송일"
+        }
+      ],
+      "recommended_airport": "ICN",
+      "replan_location": "AIR"
+    }
+  ],
+  "air_lot_ids": ["lot-jinju-sb-1", "lot-miryang-sb-1", "lot-sancheong-sb-1"],
+  "replan": {
+    "event": {
+      "type": "delay",
+      "voyage_id": "V-2611A",
+      "new_etd": "2026-11-22T15:00:00+09:00",
+      "new_cy_cutoff": null,
+      "source": "예측"
+    },
+    "scope": "container",
+    "free_lot_ids": [
+      "lot-jinju-sb-1",
+      "lot-miryang-sb-1",
+      "lot-miryang-sb-2",
+      "lot-pohang-gr-1",
+      "lot-sancheong-sb-1",
+      "lot-sangju-gr-1"
+    ],
+    "fixed_lot_ids": [],
+    "alternatives": [
+      {
+        "id": "pull_forward",
+        "label": "재배정",
+        "summary": "이동: lot-jinju-sb-1 8파렛트 CA-01→항공, lot-sancheong-sb-1 5파렛트 CA-01→항공, lot-miryang-sb-1 4파렛트 CA-01→항공, lot-sangju-gr-1 13파렛트 CA-02→CA-03, lot-pohang-gr-1 5파렛트 CA-02→CA-03 / 적재: CA-03 18/20",
+        "feasible": true,
+        "infeasible_reasons": [],
+        "total_cost": 32919792,
+        "cost_delta": 4604281,
+        "plan": {
+          "scenario_id": "default",
+          "status": "OPTIMAL",
+          "objective": 32355558,
+          "solve_ms": 2,
+          "assignments": [
+            {
+              "lot_id": "lot-jinju-sb-1",
+              "shipper_id": "sh-jinju",
+              "product_id": "strawberry",
+              "pallets": 8,
+              "mode": "air",
+              "container_id": null,
+              "voyage_id": null,
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sancheong-sb-1",
+              "shipper_id": "sh-sancheong",
+              "product_id": "strawberry",
+              "pallets": 5,
+              "mode": "air",
+              "container_id": null,
+              "voyage_id": null,
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-miryang-sb-1",
+              "shipper_id": "sh-miryang",
+              "product_id": "strawberry",
+              "pallets": 4,
+              "mode": "air",
+              "container_id": null,
+              "voyage_id": null,
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-miryang-sb-2",
+              "shipper_id": "sh-miryang",
+              "product_id": "strawberry",
+              "pallets": 2,
+              "mode": "air",
+              "container_id": null,
+              "voyage_id": null,
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sangju-gr-1",
+              "shipper_id": "sh-sangju",
+              "product_id": "grape_so2",
+              "pallets": 13,
+              "mode": "sea",
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-pohang-gr-1",
+              "shipper_id": "sh-pohang",
+              "product_id": "grape_so2",
+              "pallets": 5,
+              "mode": "sea",
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "pull_forward_days": 0
+            }
+          ],
+          "unassigned": [],
+          "containers": [
+            {
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "used": false,
+              "pallets": 0,
+              "capacity_pallets": 20,
+              "utilization": 0.0,
+              "lot_ids": [],
+              "product_ids": [],
+              "shipper_ids": [],
+              "container_cost": 0,
+              "terminal_extra_days": 3.88,
+              "terminal_plug_cost": 0
+            },
+            {
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "used": false,
+              "pallets": 0,
+              "capacity_pallets": 20,
+              "utilization": 0.0,
+              "lot_ids": [],
+              "product_ids": [],
+              "shipper_ids": [],
+              "container_cost": 0,
+              "terminal_extra_days": 3.88,
+              "terminal_plug_cost": 0
+            },
+            {
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "used": true,
+              "pallets": 18,
+              "capacity_pallets": 20,
+              "utilization": 0.9,
+              "lot_ids": ["lot-sangju-gr-1", "lot-pohang-gr-1"],
+              "product_ids": ["grape_so2"],
+              "shipper_ids": ["sh-pohang", "sh-sangju"],
+              "container_cost": 9060000,
+              "terminal_extra_days": 0.0,
+              "terminal_plug_cost": 0
+            }
+          ],
+          "shipper_costs": [
+            {
+              "shipper_id": "sh-jinju",
+              "pallets": 8,
+              "sea_pallets": 0,
+              "air_pallets": 8,
+              "plan": {
+                "freight": 6640000,
+                "inland": 160000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 952000,
+                "total": 7752000,
+                "collection_estimate": 700000,
+                "collection_route": 700000
+              },
+              "baseline": {
+                "freight": 6640000,
+                "inland": 160000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 952000,
+                "total": 7752000,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 7141320,
+                "inland": 0,
+                "handling": 0,
+                "collection": 700000,
+                "storage": 36000,
+                "loss_risk": 597600,
+                "total": 8474920,
+                "collection_estimate": 700000,
+                "collection_route": 700000
+              },
+              "operational_baseline": {
+                "freight": 7141320,
+                "inland": 0,
+                "handling": 0,
+                "collection": 700000,
+                "storage": 36000,
+                "loss_risk": 597600,
+                "total": 8474920,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-sancheong",
+              "pallets": 5,
+              "sea_pallets": 0,
+              "air_pallets": 5,
+              "plan": {
+                "freight": 4150000,
+                "inland": 100000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 595000,
+                "total": 4845000,
+                "collection_estimate": 437500,
+                "collection_route": 437500
+              },
+              "baseline": {
+                "freight": 4150000,
+                "inland": 100000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 595000,
+                "total": 4845000,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 4463325,
+                "inland": 0,
+                "handling": 0,
+                "collection": 437500,
+                "storage": 22500,
+                "loss_risk": 373500,
+                "total": 5296825,
+                "collection_estimate": 437500,
+                "collection_route": 437500
+              },
+              "operational_baseline": {
+                "freight": 4463325,
+                "inland": 0,
+                "handling": 0,
+                "collection": 437500,
+                "storage": 22500,
+                "loss_risk": 373500,
+                "total": 5296825,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-miryang",
+              "pallets": 6,
+              "sea_pallets": 0,
+              "air_pallets": 6,
+              "plan": {
+                "freight": 4980000,
+                "inland": 120000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 714000,
+                "total": 5814000,
+                "collection_estimate": 525000,
+                "collection_route": 525000
+              },
+              "baseline": {
+                "freight": 4980000,
+                "inland": 120000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 714000,
+                "total": 5814000,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 5355990,
+                "inland": 0,
+                "handling": 0,
+                "collection": 525000,
+                "storage": 27000,
+                "loss_risk": 448200,
+                "total": 6356190,
+                "collection_estimate": 525000,
+                "collection_route": 525000
+              },
+              "operational_baseline": {
+                "freight": 5355990,
+                "inland": 0,
+                "handling": 0,
+                "collection": 525000,
+                "storage": 27000,
+                "loss_risk": 448200,
+                "total": 6356190,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-sangju",
+              "pallets": 13,
+              "sea_pallets": 13,
+              "air_pallets": 0,
+              "plan": {
+                "freight": 3293333,
+                "inland": 0,
+                "handling": 3250000,
+                "collection": 830813,
+                "storage": 234000,
+                "loss_risk": 1432114,
+                "total": 9040260,
+                "collection_estimate": 675035,
+                "collection_route": 830813
+              },
+              "baseline": {
+                "freight": 11604645,
+                "inland": 0,
+                "handling": 0,
+                "collection": 1137500,
+                "storage": 58500,
+                "loss_risk": 325480,
+                "total": 13126125,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 3293333,
+                "inland": 0,
+                "handling": 3250000,
+                "collection": 830813,
+                "storage": 234000,
+                "loss_risk": 1432114,
+                "total": 9040260,
+                "collection_estimate": 675035,
+                "collection_route": 830813
+              },
+              "operational_baseline": {
+                "freight": 11604645,
+                "inland": 0,
+                "handling": 0,
+                "collection": 1137500,
+                "storage": 58500,
+                "loss_risk": 325480,
+                "total": 13126125,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-pohang",
+              "pallets": 5,
+              "sea_pallets": 5,
+              "air_pallets": 0,
+              "plan": {
+                "freight": 1266667,
+                "inland": 0,
+                "handling": 1250000,
+                "collection": 594117,
+                "storage": 90000,
+                "loss_risk": 550813,
+                "total": 3751597,
+                "collection_estimate": 185662,
+                "collection_route": 594117
+              },
+              "baseline": {
+                "freight": 4463325,
+                "inland": 0,
+                "handling": 0,
+                "collection": 437500,
+                "storage": 22500,
+                "loss_risk": 125185,
+                "total": 5048510,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 1266667,
+                "inland": 0,
+                "handling": 1250000,
+                "collection": 594117,
+                "storage": 90000,
+                "loss_risk": 550813,
+                "total": 3751597,
+                "collection_estimate": 185662,
+                "collection_route": 594117
+              },
+              "operational_baseline": {
+                "freight": 4463325,
+                "inland": 0,
+                "handling": 0,
+                "collection": 437500,
+                "storage": 22500,
+                "loss_risk": 125185,
+                "total": 5048510,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            }
+          ],
+          "settlements": [
+            {
+              "shipper_id": "sh-jinju",
+              "baseline_cost": 7752000,
+              "shared_cost": 7752000,
+              "savings": 0,
+              "fee": 0,
+              "shipper_gain": 0,
+              "sea_pallets": 0,
+              "air_pallets": 8,
+              "basis": "tariff",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-sancheong",
+              "baseline_cost": 4845000,
+              "shared_cost": 4845000,
+              "savings": 0,
+              "fee": 0,
+              "shipper_gain": 0,
+              "sea_pallets": 0,
+              "air_pallets": 5,
+              "basis": "tariff",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-miryang",
+              "baseline_cost": 5814000,
+              "shared_cost": 5814000,
+              "savings": 0,
+              "fee": 0,
+              "shipper_gain": 0,
+              "sea_pallets": 0,
+              "air_pallets": 6,
+              "basis": "tariff",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-sangju",
+              "baseline_cost": 13126125,
+              "shared_cost": 9040260,
+              "savings": 4085865,
+              "fee": 1021466,
+              "shipper_gain": 3064399,
+              "sea_pallets": 13,
+              "air_pallets": 0,
+              "basis": "operational",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-pohang",
+              "baseline_cost": 5048510,
+              "shared_cost": 3751597,
+              "savings": 1296913,
+              "fee": 324228,
+              "shipper_gain": 972685,
+              "sea_pallets": 5,
+              "air_pallets": 0,
+              "basis": "operational",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            }
+          ],
+          "total_baseline_cost": 36585635,
+          "total_shared_cost": 31202857,
+          "total_savings": 5382778,
+          "total_fee": 1345694,
+          "total_operational_baseline_cost": 38302570,
+          "total_operational_cost": 32919792,
+          "total_operational_savings": 5382778,
+          "container_settlements": [
+            {
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "pallets": 18,
+              "capacity_pallets": 20,
+              "shippers": [
+                {
+                  "shipper_id": "sh-sangju",
+                  "pallets": 13,
+                  "baseline_cost": 13126125,
+                  "shared_cost": 9040260,
+                  "savings": 4085865,
+                  "fee": 1021466,
+                  "shipper_gain": 3064399,
+                  "basis": "operational",
+                  "billing_rule": "performance",
+                  "performance_fee": 0,
+                  "usage_fee": 0,
+                  "baseline_kind": "air_solo",
+                  "baseline_label": "단독 항공 대비",
+                  "pilot": false
+                },
+                {
+                  "shipper_id": "sh-pohang",
+                  "pallets": 5,
+                  "baseline_cost": 5048510,
+                  "shared_cost": 3751597,
+                  "savings": 1296913,
+                  "fee": 324228,
+                  "shipper_gain": 972685,
+                  "basis": "operational",
+                  "billing_rule": "performance",
+                  "performance_fee": 0,
+                  "usage_fee": 0,
+                  "baseline_kind": "air_solo",
+                  "baseline_label": "단독 항공 대비",
+                  "pilot": false
+                }
+              ],
+              "total_savings": 5382778,
+              "total_fee": 1345694,
+              "total_shipper_gain": 4037084
+            }
+          ],
+          "settlement_tariffs": [
+            {
+              "product_id": "strawberry",
+              "unit": "원/파렛트",
+              "lines": [
+                {
+                  "key": "freight",
+                  "label": "운임",
+                  "air": 830000,
+                  "sea": 166000,
+                  "air_assumed": false,
+                  "sea_assumed": false,
+                  "air_source": "제안서 정산표(팀 확정값): 딸기 1파렛트 홍콩 항공 운임 83.0만 원",
+                  "sea_source": "제안서 정산표(팀 확정값): 해상 운임 16.6만 원"
+                },
+                {
+                  "key": "inland",
+                  "label": "내륙·장비·보관",
+                  "air": 20000,
+                  "sea": 435000,
+                  "air_assumed": false,
+                  "sea_assumed": true,
+                  "air_source": "제안서 정산표(팀 확정값): 항공 내륙·장비·보관 2.0만 원",
+                  "sea_source": "가정: 제안서 정산표 시연값. 해상 내륙·장비·보관(집하·CA 장비·리퍼 전원·보관) 43.5만 원"
+                },
+                {
+                  "key": "loss_risk",
+                  "label": "품질손실 위험",
+                  "air": 119000,
+                  "sea": 119000,
+                  "air_assumed": true,
+                  "sea_assumed": true,
+                  "air_source": "가정: 제안서 정산표 시연값. 항공 품질손실 위험 11.9만 원",
+                  "sea_source": "가정: 제안서 정산표 시연값. 해상 품질손실 위험 11.9만 원"
+                }
+              ],
+              "air_total": 969000,
+              "sea_total": 720000,
+              "savings_per_pallet": 249000,
+              "fee_rate": 0.25,
+              "fee_per_pallet": 62250,
+              "shipper_share_per_pallet": 186750,
+              "sea_loss_risk_short_window": 1191000,
+              "sea_total_short_window": 1792000,
+              "short_window_rule": "판매 기간이 짧은 로트(sell_window=short)는 해상 품질손실 위험을 1,191,000원/파렛트로 잡는다. 해상 1,792,000원 > 항공 969,000원이면 해상을 막고 항공으로 보낸다",
+              "assumed_items": [
+                "air.loss_risk",
+                "sea.inland",
+                "sea.loss_risk",
+                "sea.loss_risk_short_window"
+              ]
+            }
+          ],
+          "collection_basis": "route",
+          "total_collection_estimate": 2523197,
+          "total_collection_route": 3087430,
+          "lot_collections": [
+            {
+              "lot_id": "lot-sangju-gr-1",
+              "shipper_id": "sh-sangju",
+              "voyage_id": "V-2611B",
+              "truck_id": "RT-01",
+              "stop_id": "stop-ph-sangju",
+              "pallets": 13,
+              "estimate": 675035,
+              "route": 830813,
+              "trip": 1
+            },
+            {
+              "lot_id": "lot-pohang-gr-1",
+              "shipper_id": "sh-pohang",
+              "voyage_id": "V-2611B",
+              "truck_id": "RT-02",
+              "stop_id": "stop-ph-pohang",
+              "pallets": 5,
+              "estimate": 185662,
+              "route": 594117,
+              "trip": 1
+            }
+          ],
+          "collection_reassigned": []
+        },
+        "routes": [
+          {
+            "voyage_id": "V-2611B",
+            "lot_ids": ["lot-sangju-gr-1", "lot-pohang-gr-1"],
+            "pickup": {
+              "status": "OK",
+              "deadline": "2026-11-20T18:00:00+09:00",
+              "routes": [
+                {
+                  "truck_id": "RT-01",
+                  "trip": 1,
+                  "cargo_group": "grape_so2",
+                  "capacity_pallets": 16,
+                  "load_pallets": 13,
+                  "stops": [
+                    {
+                      "stop_id": "stop-ph-sangju",
+                      "packhouse_id": "ph-sangju",
+                      "lot_ids": ["lot-sangju-gr-1"],
+                      "sequence": 1,
+                      "pallets": 13,
+                      "load_after": 13,
+                      "km_from_prev": 207.7,
+                      "ready_at": "2026-11-15T08:00:00+09:00",
+                      "eta": "2026-11-15T08:00:00+09:00",
+                      "latest_arrival": "2026-11-20T14:02:00+09:00",
+                      "cargo_group": "grape_so2"
+                    }
+                  ],
+                  "km": 415.4,
+                  "cost": 830813.0,
+                  "earliest_departure": "2026-11-15T04:32:00+09:00",
+                  "latest_departure": "2026-11-20T10:34:00+09:00",
+                  "port_eta": "2026-11-15T11:58:00+09:00",
+                  "slack_minutes": 7562,
+                  "gate_status": "off_peak",
+                  "gate_window": null,
+                  "gate_delay_minutes": 0,
+                  "gate_slot_start": "2026-11-15T10:00:00+09:00",
+                  "gate_slot_end": "2026-11-15T15:00:00+09:00"
+                },
+                {
+                  "truck_id": "RT-02",
+                  "trip": 1,
+                  "cargo_group": "grape_so2",
+                  "capacity_pallets": 16,
+                  "load_pallets": 5,
+                  "stops": [
+                    {
+                      "stop_id": "stop-ph-pohang",
+                      "packhouse_id": "ph-pohang",
+                      "lot_ids": ["lot-pohang-gr-1"],
+                      "sequence": 1,
+                      "pallets": 5,
+                      "load_after": 5,
+                      "km_from_prev": 148.5,
+                      "ready_at": "2026-11-15T08:00:00+09:00",
+                      "eta": "2026-11-15T08:00:00+09:00",
+                      "latest_arrival": "2026-11-20T15:01:00+09:00",
+                      "cargo_group": "grape_so2"
+                    }
+                  ],
+                  "km": 297.1,
+                  "cost": 594117.0,
+                  "earliest_departure": "2026-11-15T05:31:00+09:00",
+                  "latest_departure": "2026-11-20T12:32:00+09:00",
+                  "port_eta": "2026-11-15T10:59:00+09:00",
+                  "slack_minutes": 7621,
+                  "gate_status": "off_peak",
+                  "gate_window": null,
+                  "gate_delay_minutes": 0,
+                  "gate_slot_start": "2026-11-15T10:00:00+09:00",
+                  "gate_slot_end": "2026-11-15T15:00:00+09:00"
+                }
+              ],
+              "total_km": 712.5,
+              "total_cost": 1424930.0,
+              "dropped_stop_ids": [],
+              "solve_ms": 2,
+              "assumptions": [
+                "가정: 도로거리 = 직선(haversine) 거리 × 1.3",
+                "가정: 평균 주행속도 60 km/h",
+                "가정: 산지 상차 작업 30분/정차",
+                "가정: km당 운행비 2,000원",
+                "가정: 트럭은 항만에서 출발해 산지를 돌고 CY cut-off 전에 항만으로 돌아온다",
+                "가정: 트럭 한 대가 cut-off 전까지 최대 2회 왕복한다 (항만 하역 30분 뒤 재출발)",
+                "가정: 한 정차지 물량은 트럭 한 대에 싣는다 (분할 집하 없음)",
+                "가정: 항만 게이트 혼잡 시간(07:00~10:00 오전 반입 집중, 15:00~18:00 CY 마감 직전 반입 집중)에는 도착하지 않도록 출발을 늦춘다. 피하면 cut-off 전 집하를 못 하는 정차지가 생길 때만 혼잡 시간 도착을 허용한다"
+              ],
+              "gate_mode": "avoid",
+              "gate_windows": [
+                {
+                  "start": "07:00:00",
+                  "end": "10:00:00",
+                  "label": "오전 반입 집중",
+                  "source": "가정: 부산신항 게이트 시간대별 반입량 공개 자료 미확인. 출근 직후 반입 차량 집중"
+                },
+                {
+                  "start": "15:00:00",
+                  "end": "18:00:00",
+                  "label": "CY 마감 직전 반입 집중",
+                  "source": "가정: 부산신항 게이트 시간대별 반입량 공개 자료 미확인. 18시 CY 마감 직전 반입 차량 집중"
+                }
+              ]
+            },
+            "dropped_lot_ids": [],
+            "dropped_stops": {}
+          }
+        ],
+        "diff": {
+          "moved_lots": [
+            {
+              "lot_id": "lot-jinju-sb-1",
+              "shipper_id": "sh-jinju",
+              "pallets": 8,
+              "from_location": "CA-01",
+              "to_location": "AIR",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sancheong-sb-1",
+              "shipper_id": "sh-sancheong",
+              "pallets": 5,
+              "from_location": "CA-01",
+              "to_location": "AIR",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-miryang-sb-1",
+              "shipper_id": "sh-miryang",
+              "pallets": 4,
+              "from_location": "CA-01",
+              "to_location": "AIR",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sangju-gr-1",
+              "shipper_id": "sh-sangju",
+              "pallets": 13,
+              "from_location": "CA-02",
+              "to_location": "CA-03",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-pohang-gr-1",
+              "shipper_id": "sh-pohang",
+              "pallets": 5,
+              "from_location": "CA-02",
+              "to_location": "CA-03",
+              "pull_forward_days": 0
+            }
+          ],
+          "shippers": [
+            {
+              "shipper_id": "sh-jinju",
+              "cost_before": 5760000,
+              "cost_after": 7752000,
+              "cost_delta": 1992000,
+              "container_share_before": 4263529,
+              "container_share_after": 0,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-sancheong",
+              "cost_before": 3600000,
+              "cost_after": 4845000,
+              "cost_delta": 1245000,
+              "container_share_before": 2664706,
+              "container_share_after": 0,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-miryang",
+              "cost_before": 4818000,
+              "cost_after": 5814000,
+              "cost_delta": 996000,
+              "container_share_before": 2131765,
+              "container_share_after": 0,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-sangju",
+              "cost_before": 8532683,
+              "cost_after": 9040260,
+              "cost_delta": 507577,
+              "container_share_before": 6543333,
+              "container_share_after": 6543333,
+              "share_per_pallet_before": 503333,
+              "share_per_pallet_after": 503333,
+              "share_per_pallet_delta_pct": 0.0,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-pohang",
+              "cost_before": 3556375,
+              "cost_after": 3751597,
+              "cost_delta": 195222,
+              "container_share_before": 2516667,
+              "container_share_after": 2516667,
+              "share_per_pallet_before": 503333,
+              "share_per_pallet_after": 503333,
+              "share_per_pallet_delta_pct": 0.0,
+              "cancellation_adjustment": 0
+            }
+          ],
+          "containers": [
+            {
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "capacity_pallets": 20,
+              "pallets_before": 17,
+              "pallets_after": 0,
+              "utilization_before": 0.85,
+              "utilization_after": 0.0
+            },
+            {
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "capacity_pallets": 20,
+              "pallets_before": 18,
+              "pallets_after": 0,
+              "utilization_before": 0.9,
+              "utilization_after": 0.0
+            },
+            {
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "capacity_pallets": 20,
+              "pallets_before": 0,
+              "pallets_after": 18,
+              "utilization_before": 0.0,
+              "utilization_after": 0.9
+            }
+          ],
+          "cancellation": null
+        },
+        "solve_ms": 4
+      },
+      {
+        "id": "next_voyage",
+        "label": "다음 배 이월",
+        "summary": "이동: lot-jinju-sb-1 8파렛트 CA-01→미배정, lot-sancheong-sb-1 5파렛트 CA-01→미배정, lot-miryang-sb-1 4파렛트 CA-01→미배정, lot-sangju-gr-1 13파렛트 CA-02→미배정, lot-pohang-gr-1 5파렛트 CA-02→미배정",
+        "feasible": false,
+        "infeasible_reasons": [
+          "lot-jinju-sb-1: 이후 항차 없음",
+          "lot-sancheong-sb-1: 이후 항차 없음",
+          "lot-miryang-sb-1: 이후 항차 없음",
+          "lot-sangju-gr-1: 이후 항차 없음",
+          "lot-pohang-gr-1: 이후 항차 없음"
+        ],
+        "total_cost": 2118730,
+        "cost_delta": -26196781,
+        "plan": {
+          "scenario_id": "default",
+          "status": "OPTIMAL",
+          "objective": 352118730,
+          "solve_ms": 1,
+          "assignments": [
+            {
+              "lot_id": "lot-miryang-sb-2",
+              "shipper_id": "sh-miryang",
+              "product_id": "strawberry",
+              "pallets": 2,
+              "mode": "air",
+              "container_id": null,
+              "voyage_id": null,
+              "pull_forward_days": 0
+            }
+          ],
+          "unassigned": [
+            {
+              "lot_id": "lot-jinju-sb-1",
+              "shipper_id": "sh-jinju",
+              "pallets": 8,
+              "reason": "CA-01: 배정 금지; CA-02: 배정 금지; CA-03: 배정 금지; 항공: 항공 배정 금지"
+            },
+            {
+              "lot_id": "lot-sancheong-sb-1",
+              "shipper_id": "sh-sancheong",
+              "pallets": 5,
+              "reason": "CA-01: 배정 금지; CA-02: 배정 금지; CA-03: 배정 금지; 항공: 항공 배정 금지"
+            },
+            {
+              "lot_id": "lot-miryang-sb-1",
+              "shipper_id": "sh-miryang",
+              "pallets": 4,
+              "reason": "CA-01: 배정 금지; CA-02: 배정 금지; CA-03: 배정 금지; 항공: 항공 배정 금지"
+            },
+            {
+              "lot_id": "lot-sangju-gr-1",
+              "shipper_id": "sh-sangju",
+              "pallets": 13,
+              "reason": "CA-01: 배정 금지; CA-02: 배정 금지; CA-03: 배정 금지; 항공: 항공 배정 금지"
+            },
+            {
+              "lot_id": "lot-pohang-gr-1",
+              "shipper_id": "sh-pohang",
+              "pallets": 5,
+              "reason": "CA-01: 배정 금지; CA-02: 배정 금지; CA-03: 배정 금지; 항공: 항공 배정 금지"
+            }
+          ],
+          "containers": [
+            {
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "used": false,
+              "pallets": 0,
+              "capacity_pallets": 20,
+              "utilization": 0.0,
+              "lot_ids": [],
+              "product_ids": [],
+              "shipper_ids": [],
+              "container_cost": 0,
+              "terminal_extra_days": 3.88,
+              "terminal_plug_cost": 0
+            },
+            {
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "used": false,
+              "pallets": 0,
+              "capacity_pallets": 20,
+              "utilization": 0.0,
+              "lot_ids": [],
+              "product_ids": [],
+              "shipper_ids": [],
+              "container_cost": 0,
+              "terminal_extra_days": 3.88,
+              "terminal_plug_cost": 0
+            },
+            {
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "used": false,
+              "pallets": 0,
+              "capacity_pallets": 20,
+              "utilization": 0.0,
+              "lot_ids": [],
+              "product_ids": [],
+              "shipper_ids": [],
+              "container_cost": 0,
+              "terminal_extra_days": 0.0,
+              "terminal_plug_cost": 0
+            }
+          ],
+          "shipper_costs": [
+            {
+              "shipper_id": "sh-miryang",
+              "pallets": 2,
+              "sea_pallets": 0,
+              "air_pallets": 2,
+              "plan": {
+                "freight": 1660000,
+                "inland": 40000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 238000,
+                "total": 1938000,
+                "collection_estimate": 175000,
+                "collection_route": 175000
+              },
+              "baseline": {
+                "freight": 1660000,
+                "inland": 40000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 238000,
+                "total": 1938000,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 1785330,
+                "inland": 0,
+                "handling": 0,
+                "collection": 175000,
+                "storage": 9000,
+                "loss_risk": 149400,
+                "total": 2118730,
+                "collection_estimate": 175000,
+                "collection_route": 175000
+              },
+              "operational_baseline": {
+                "freight": 1785330,
+                "inland": 0,
+                "handling": 0,
+                "collection": 175000,
+                "storage": 9000,
+                "loss_risk": 149400,
+                "total": 2118730,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            }
+          ],
+          "settlements": [
+            {
+              "shipper_id": "sh-miryang",
+              "baseline_cost": 1938000,
+              "shared_cost": 1938000,
+              "savings": 0,
+              "fee": 0,
+              "shipper_gain": 0,
+              "sea_pallets": 0,
+              "air_pallets": 2,
+              "basis": "tariff",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            }
+          ],
+          "total_baseline_cost": 1938000,
+          "total_shared_cost": 1938000,
+          "total_savings": 0,
+          "total_fee": 0,
+          "total_operational_baseline_cost": 2118730,
+          "total_operational_cost": 2118730,
+          "total_operational_savings": 0,
+          "container_settlements": [],
+          "settlement_tariffs": [
+            {
+              "product_id": "strawberry",
+              "unit": "원/파렛트",
+              "lines": [
+                {
+                  "key": "freight",
+                  "label": "운임",
+                  "air": 830000,
+                  "sea": 166000,
+                  "air_assumed": false,
+                  "sea_assumed": false,
+                  "air_source": "제안서 정산표(팀 확정값): 딸기 1파렛트 홍콩 항공 운임 83.0만 원",
+                  "sea_source": "제안서 정산표(팀 확정값): 해상 운임 16.6만 원"
+                },
+                {
+                  "key": "inland",
+                  "label": "내륙·장비·보관",
+                  "air": 20000,
+                  "sea": 435000,
+                  "air_assumed": false,
+                  "sea_assumed": true,
+                  "air_source": "제안서 정산표(팀 확정값): 항공 내륙·장비·보관 2.0만 원",
+                  "sea_source": "가정: 제안서 정산표 시연값. 해상 내륙·장비·보관(집하·CA 장비·리퍼 전원·보관) 43.5만 원"
+                },
+                {
+                  "key": "loss_risk",
+                  "label": "품질손실 위험",
+                  "air": 119000,
+                  "sea": 119000,
+                  "air_assumed": true,
+                  "sea_assumed": true,
+                  "air_source": "가정: 제안서 정산표 시연값. 항공 품질손실 위험 11.9만 원",
+                  "sea_source": "가정: 제안서 정산표 시연값. 해상 품질손실 위험 11.9만 원"
+                }
+              ],
+              "air_total": 969000,
+              "sea_total": 720000,
+              "savings_per_pallet": 249000,
+              "fee_rate": 0.25,
+              "fee_per_pallet": 62250,
+              "shipper_share_per_pallet": 186750,
+              "sea_loss_risk_short_window": 1191000,
+              "sea_total_short_window": 1792000,
+              "short_window_rule": "판매 기간이 짧은 로트(sell_window=short)는 해상 품질손실 위험을 1,191,000원/파렛트로 잡는다. 해상 1,792,000원 > 항공 969,000원이면 해상을 막고 항공으로 보낸다",
+              "assumed_items": [
+                "air.loss_risk",
+                "sea.inland",
+                "sea.loss_risk",
+                "sea.loss_risk_short_window"
+              ]
+            }
+          ],
+          "collection_basis": "route",
+          "total_collection_estimate": 175000,
+          "total_collection_route": 175000,
+          "lot_collections": [],
+          "collection_reassigned": []
+        },
+        "routes": [],
+        "diff": {
+          "moved_lots": [
+            {
+              "lot_id": "lot-jinju-sb-1",
+              "shipper_id": "sh-jinju",
+              "pallets": 8,
+              "from_location": "CA-01",
+              "to_location": "UNASSIGNED",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sancheong-sb-1",
+              "shipper_id": "sh-sancheong",
+              "pallets": 5,
+              "from_location": "CA-01",
+              "to_location": "UNASSIGNED",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-miryang-sb-1",
+              "shipper_id": "sh-miryang",
+              "pallets": 4,
+              "from_location": "CA-01",
+              "to_location": "UNASSIGNED",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sangju-gr-1",
+              "shipper_id": "sh-sangju",
+              "pallets": 13,
+              "from_location": "CA-02",
+              "to_location": "UNASSIGNED",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-pohang-gr-1",
+              "shipper_id": "sh-pohang",
+              "pallets": 5,
+              "from_location": "CA-02",
+              "to_location": "UNASSIGNED",
+              "pull_forward_days": 0
+            }
+          ],
+          "shippers": [
+            {
+              "shipper_id": "sh-jinju",
+              "cost_before": 5760000,
+              "cost_after": 0,
+              "cost_delta": -5760000,
+              "container_share_before": 4263529,
+              "container_share_after": 0,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-sancheong",
+              "cost_before": 3600000,
+              "cost_after": 0,
+              "cost_delta": -3600000,
+              "container_share_before": 2664706,
+              "container_share_after": 0,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-miryang",
+              "cost_before": 4818000,
+              "cost_after": 1938000,
+              "cost_delta": -2880000,
+              "container_share_before": 2131765,
+              "container_share_after": 0,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-sangju",
+              "cost_before": 8532683,
+              "cost_after": 0,
+              "cost_delta": -8532683,
+              "container_share_before": 6543333,
+              "container_share_after": 0,
+              "share_per_pallet_before": 503333,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-pohang",
+              "cost_before": 3556375,
+              "cost_after": 0,
+              "cost_delta": -3556375,
+              "container_share_before": 2516667,
+              "container_share_after": 0,
+              "share_per_pallet_before": 503333,
+              "share_per_pallet_after": 0,
+              "share_per_pallet_delta_pct": null,
+              "cancellation_adjustment": 0
+            }
+          ],
+          "containers": [
+            {
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "capacity_pallets": 20,
+              "pallets_before": 17,
+              "pallets_after": 0,
+              "utilization_before": 0.85,
+              "utilization_after": 0.0
+            },
+            {
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "capacity_pallets": 20,
+              "pallets_before": 18,
+              "pallets_after": 0,
+              "utilization_before": 0.9,
+              "utilization_after": 0.0
+            },
+            {
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "capacity_pallets": 20,
+              "pallets_before": 0,
+              "pallets_after": 0,
+              "utilization_before": 0.0,
+              "utilization_after": 0.0
+            }
+          ],
+          "cancellation": null
+        },
+        "solve_ms": 1
+      },
+      {
+        "id": "sail_as_is",
+        "label": "그대로 출항",
+        "summary": "적재: CA-01 17/20, CA-02 18/20",
+        "feasible": false,
+        "infeasible_reasons": [
+          "lot-jinju-sb-1: 도착일이 판매기한 초과",
+          "lot-miryang-sb-1: 도착일이 판매기한 초과",
+          "lot-sancheong-sb-1: 도착일이 판매기한 초과"
+        ],
+        "total_cost": 34415715,
+        "cost_delta": 6100204,
+        "plan": {
+          "scenario_id": "default",
+          "status": "OPTIMAL",
+          "objective": 33484954,
+          "solve_ms": 1,
+          "assignments": [
+            {
+              "lot_id": "lot-jinju-sb-1",
+              "shipper_id": "sh-jinju",
+              "product_id": "strawberry",
+              "pallets": 8,
+              "mode": "sea",
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sancheong-sb-1",
+              "shipper_id": "sh-sancheong",
+              "product_id": "strawberry",
+              "pallets": 5,
+              "mode": "sea",
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-miryang-sb-1",
+              "shipper_id": "sh-miryang",
+              "product_id": "strawberry",
+              "pallets": 4,
+              "mode": "sea",
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-miryang-sb-2",
+              "shipper_id": "sh-miryang",
+              "product_id": "strawberry",
+              "pallets": 2,
+              "mode": "air",
+              "container_id": null,
+              "voyage_id": null,
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-sangju-gr-1",
+              "shipper_id": "sh-sangju",
+              "product_id": "grape_so2",
+              "pallets": 13,
+              "mode": "sea",
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "pull_forward_days": 0
+            },
+            {
+              "lot_id": "lot-pohang-gr-1",
+              "shipper_id": "sh-pohang",
+              "product_id": "grape_so2",
+              "pallets": 5,
+              "mode": "sea",
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "pull_forward_days": 0
+            }
+          ],
+          "unassigned": [],
+          "containers": [
+            {
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "used": true,
+              "pallets": 17,
+              "capacity_pallets": 20,
+              "utilization": 0.85,
+              "lot_ids": ["lot-jinju-sb-1", "lot-sancheong-sb-1", "lot-miryang-sb-1"],
+              "product_ids": ["strawberry"],
+              "shipper_ids": ["sh-jinju", "sh-miryang", "sh-sancheong"],
+              "container_cost": 9060000,
+              "terminal_extra_days": 3.88,
+              "terminal_plug_cost": 193750
+            },
+            {
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "used": true,
+              "pallets": 18,
+              "capacity_pallets": 20,
+              "utilization": 0.9,
+              "lot_ids": ["lot-sangju-gr-1", "lot-pohang-gr-1"],
+              "product_ids": ["grape_so2"],
+              "shipper_ids": ["sh-pohang", "sh-sangju"],
+              "container_cost": 9060000,
+              "terminal_extra_days": 3.88,
+              "terminal_plug_cost": 193750
+            },
+            {
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "used": false,
+              "pallets": 0,
+              "capacity_pallets": 20,
+              "utilization": 0.0,
+              "lot_ids": [],
+              "product_ids": [],
+              "shipper_ids": [],
+              "container_cost": 0,
+              "terminal_extra_days": 0.0,
+              "terminal_plug_cost": 0
+            }
+          ],
+          "shipper_costs": [
+            {
+              "shipper_id": "sh-jinju",
+              "pallets": 8,
+              "sea_pallets": 8,
+              "air_pallets": 0,
+              "plan": {
+                "freight": 1328000,
+                "inland": 3667176,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 3103360,
+                "total": 8098536,
+                "collection_estimate": 172678,
+                "collection_route": 268869
+              },
+              "baseline": {
+                "freight": 6640000,
+                "inland": 160000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 952000,
+                "total": 7752000,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 2145882,
+                "inland": 0,
+                "handling": 2117647,
+                "collection": 268869,
+                "storage": 235176,
+                "loss_risk": 4123440,
+                "total": 8891014,
+                "collection_estimate": 172678,
+                "collection_route": 268869
+              },
+              "operational_baseline": {
+                "freight": 7141320,
+                "inland": 0,
+                "handling": 0,
+                "collection": 700000,
+                "storage": 36000,
+                "loss_risk": 597600,
+                "total": 8474920,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-sancheong",
+              "pallets": 5,
+              "sea_pallets": 5,
+              "air_pallets": 0,
+              "plan": {
+                "freight": 830000,
+                "inland": 2291985,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 1939600,
+                "total": 5061585,
+                "collection_estimate": 154405,
+                "collection_route": 240418
+              },
+              "baseline": {
+                "freight": 4150000,
+                "inland": 100000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 595000,
+                "total": 4845000,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 1341176,
+                "inland": 0,
+                "handling": 1323529,
+                "collection": 240418,
+                "storage": 146985,
+                "loss_risk": 2577150,
+                "total": 5629258,
+                "collection_estimate": 154405,
+                "collection_route": 240418
+              },
+              "operational_baseline": {
+                "freight": 4463325,
+                "inland": 0,
+                "handling": 0,
+                "collection": 437500,
+                "storage": 22500,
+                "loss_risk": 373500,
+                "total": 5296825,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-miryang",
+              "pallets": 6,
+              "sea_pallets": 4,
+              "air_pallets": 2,
+              "plan": {
+                "freight": 2324000,
+                "inland": 1873588,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 1789680,
+                "total": 5987268,
+                "collection_estimate": 236442,
+                "collection_route": 420767
+              },
+              "baseline": {
+                "freight": 4980000,
+                "inland": 120000,
+                "handling": 0,
+                "collection": 0,
+                "storage": 0,
+                "loss_risk": 714000,
+                "total": 5814000,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 2858271,
+                "inland": 0,
+                "handling": 1058824,
+                "collection": 420767,
+                "storage": 126588,
+                "loss_risk": 2211120,
+                "total": 6675570,
+                "collection_estimate": 236442,
+                "collection_route": 420767
+              },
+              "operational_baseline": {
+                "freight": 5355990,
+                "inland": 0,
+                "handling": 0,
+                "collection": 525000,
+                "storage": 27000,
+                "loss_risk": 448200,
+                "total": 6356190,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-sangju",
+              "pallets": 13,
+              "sea_pallets": 13,
+              "air_pallets": 0,
+              "plan": {
+                "freight": 3293333,
+                "inland": 0,
+                "handling": 3250000,
+                "collection": 830813,
+                "storage": 412931,
+                "loss_risk": 1562306,
+                "total": 9349383,
+                "collection_estimate": 675035,
+                "collection_route": 830813
+              },
+              "baseline": {
+                "freight": 11604645,
+                "inland": 0,
+                "handling": 0,
+                "collection": 1137500,
+                "storage": 58500,
+                "loss_risk": 325480,
+                "total": 13126125,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 3293333,
+                "inland": 0,
+                "handling": 3250000,
+                "collection": 830813,
+                "storage": 412931,
+                "loss_risk": 1562306,
+                "total": 9349383,
+                "collection_estimate": 675035,
+                "collection_route": 830813
+              },
+              "operational_baseline": {
+                "freight": 11604645,
+                "inland": 0,
+                "handling": 0,
+                "collection": 1137500,
+                "storage": 58500,
+                "loss_risk": 325480,
+                "total": 13126125,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            },
+            {
+              "shipper_id": "sh-pohang",
+              "pallets": 5,
+              "sea_pallets": 5,
+              "air_pallets": 0,
+              "plan": {
+                "freight": 1266667,
+                "inland": 0,
+                "handling": 1250000,
+                "collection": 594117,
+                "storage": 158819,
+                "loss_risk": 600887,
+                "total": 3870490,
+                "collection_estimate": 185662,
+                "collection_route": 594117
+              },
+              "baseline": {
+                "freight": 4463325,
+                "inland": 0,
+                "handling": 0,
+                "collection": 437500,
+                "storage": 22500,
+                "loss_risk": 125185,
+                "total": 5048510,
+                "collection_estimate": null,
+                "collection_route": null
+              },
+              "operational": {
+                "freight": 1266667,
+                "inland": 0,
+                "handling": 1250000,
+                "collection": 594117,
+                "storage": 158819,
+                "loss_risk": 600887,
+                "total": 3870490,
+                "collection_estimate": 185662,
+                "collection_route": 594117
+              },
+              "operational_baseline": {
+                "freight": 4463325,
+                "inland": 0,
+                "handling": 0,
+                "collection": 437500,
+                "storage": 22500,
+                "loss_risk": 125185,
+                "total": 5048510,
+                "collection_estimate": null,
+                "collection_route": null
+              }
+            }
+          ],
+          "settlements": [
+            {
+              "shipper_id": "sh-jinju",
+              "baseline_cost": 7752000,
+              "shared_cost": 8098536,
+              "savings": -346536,
+              "fee": 0,
+              "shipper_gain": -346536,
+              "sea_pallets": 8,
+              "air_pallets": 0,
+              "basis": "tariff",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-sancheong",
+              "baseline_cost": 4845000,
+              "shared_cost": 5061585,
+              "savings": -216585,
+              "fee": 0,
+              "shipper_gain": -216585,
+              "sea_pallets": 5,
+              "air_pallets": 0,
+              "basis": "tariff",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-miryang",
+              "baseline_cost": 5814000,
+              "shared_cost": 5987268,
+              "savings": -173268,
+              "fee": 0,
+              "shipper_gain": -173268,
+              "sea_pallets": 4,
+              "air_pallets": 2,
+              "basis": "tariff",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-sangju",
+              "baseline_cost": 13126125,
+              "shared_cost": 9349383,
+              "savings": 3776742,
+              "fee": 944186,
+              "shipper_gain": 2832556,
+              "sea_pallets": 13,
+              "air_pallets": 0,
+              "basis": "operational",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            },
+            {
+              "shipper_id": "sh-pohang",
+              "baseline_cost": 5048510,
+              "shared_cost": 3870490,
+              "savings": 1178020,
+              "fee": 294505,
+              "shipper_gain": 883515,
+              "sea_pallets": 5,
+              "air_pallets": 0,
+              "basis": "operational",
+              "billing_rule": "performance",
+              "performance_fee": 0,
+              "usage_fee": 0,
+              "baseline_kind": "air_solo",
+              "baseline_label": "단독 항공 대비",
+              "pilot": false
+            }
+          ],
+          "total_baseline_cost": 36585635,
+          "total_shared_cost": 32367262,
+          "total_savings": 4218373,
+          "total_fee": 1238691,
+          "total_operational_baseline_cost": 38302570,
+          "total_operational_cost": 34415715,
+          "total_operational_savings": 3886855,
+          "container_settlements": [
+            {
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "pallets": 17,
+              "capacity_pallets": 20,
+              "shippers": [
+                {
+                  "shipper_id": "sh-jinju",
+                  "pallets": 8,
+                  "baseline_cost": 7752000,
+                  "shared_cost": 8098536,
+                  "savings": -346536,
+                  "fee": 0,
+                  "shipper_gain": -346536,
+                  "basis": "tariff",
+                  "billing_rule": "performance",
+                  "performance_fee": 0,
+                  "usage_fee": 0,
+                  "baseline_kind": "air_solo",
+                  "baseline_label": "단독 항공 대비",
+                  "pilot": false
+                },
+                {
+                  "shipper_id": "sh-sancheong",
+                  "pallets": 5,
+                  "baseline_cost": 4845000,
+                  "shared_cost": 5061585,
+                  "savings": -216585,
+                  "fee": 0,
+                  "shipper_gain": -216585,
+                  "basis": "tariff",
+                  "billing_rule": "performance",
+                  "performance_fee": 0,
+                  "usage_fee": 0,
+                  "baseline_kind": "air_solo",
+                  "baseline_label": "단독 항공 대비",
+                  "pilot": false
+                },
+                {
+                  "shipper_id": "sh-miryang",
+                  "pallets": 4,
+                  "baseline_cost": 3876000,
+                  "shared_cost": 4049268,
+                  "savings": -173268,
+                  "fee": 0,
+                  "shipper_gain": -173268,
+                  "basis": "tariff",
+                  "billing_rule": "performance",
+                  "performance_fee": 0,
+                  "usage_fee": 0,
+                  "baseline_kind": "air_solo",
+                  "baseline_label": "단독 항공 대비",
+                  "pilot": false
+                }
+              ],
+              "total_savings": -736389,
+              "total_fee": 0,
+              "total_shipper_gain": -736389
+            },
+            {
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "pallets": 18,
+              "capacity_pallets": 20,
+              "shippers": [
+                {
+                  "shipper_id": "sh-sangju",
+                  "pallets": 13,
+                  "baseline_cost": 13126125,
+                  "shared_cost": 9349383,
+                  "savings": 3776742,
+                  "fee": 944186,
+                  "shipper_gain": 2832556,
+                  "basis": "operational",
+                  "billing_rule": "performance",
+                  "performance_fee": 0,
+                  "usage_fee": 0,
+                  "baseline_kind": "air_solo",
+                  "baseline_label": "단독 항공 대비",
+                  "pilot": false
+                },
+                {
+                  "shipper_id": "sh-pohang",
+                  "pallets": 5,
+                  "baseline_cost": 5048510,
+                  "shared_cost": 3870490,
+                  "savings": 1178020,
+                  "fee": 294505,
+                  "shipper_gain": 883515,
+                  "basis": "operational",
+                  "billing_rule": "performance",
+                  "performance_fee": 0,
+                  "usage_fee": 0,
+                  "baseline_kind": "air_solo",
+                  "baseline_label": "단독 항공 대비",
+                  "pilot": false
+                }
+              ],
+              "total_savings": 4954762,
+              "total_fee": 1238691,
+              "total_shipper_gain": 3716071
+            }
+          ],
+          "settlement_tariffs": [
+            {
+              "product_id": "strawberry",
+              "unit": "원/파렛트",
+              "lines": [
+                {
+                  "key": "freight",
+                  "label": "운임",
+                  "air": 830000,
+                  "sea": 166000,
+                  "air_assumed": false,
+                  "sea_assumed": false,
+                  "air_source": "제안서 정산표(팀 확정값): 딸기 1파렛트 홍콩 항공 운임 83.0만 원",
+                  "sea_source": "제안서 정산표(팀 확정값): 해상 운임 16.6만 원"
+                },
+                {
+                  "key": "inland",
+                  "label": "내륙·장비·보관",
+                  "air": 20000,
+                  "sea": 435000,
+                  "air_assumed": false,
+                  "sea_assumed": true,
+                  "air_source": "제안서 정산표(팀 확정값): 항공 내륙·장비·보관 2.0만 원",
+                  "sea_source": "가정: 제안서 정산표 시연값. 해상 내륙·장비·보관(집하·CA 장비·리퍼 전원·보관) 43.5만 원"
+                },
+                {
+                  "key": "loss_risk",
+                  "label": "품질손실 위험",
+                  "air": 119000,
+                  "sea": 119000,
+                  "air_assumed": true,
+                  "sea_assumed": true,
+                  "air_source": "가정: 제안서 정산표 시연값. 항공 품질손실 위험 11.9만 원",
+                  "sea_source": "가정: 제안서 정산표 시연값. 해상 품질손실 위험 11.9만 원"
+                }
+              ],
+              "air_total": 969000,
+              "sea_total": 720000,
+              "savings_per_pallet": 249000,
+              "fee_rate": 0.25,
+              "fee_per_pallet": 62250,
+              "shipper_share_per_pallet": 186750,
+              "sea_loss_risk_short_window": 1191000,
+              "sea_total_short_window": 1792000,
+              "short_window_rule": "판매 기간이 짧은 로트(sell_window=short)는 해상 품질손실 위험을 1,191,000원/파렛트로 잡는다. 해상 1,792,000원 > 항공 969,000원이면 해상을 막고 항공으로 보낸다",
+              "assumed_items": [
+                "air.loss_risk",
+                "sea.inland",
+                "sea.loss_risk",
+                "sea.loss_risk_short_window"
+              ]
+            }
+          ],
+          "collection_basis": "route",
+          "total_collection_estimate": 1424222,
+          "total_collection_route": 2354984,
+          "lot_collections": [
+            {
+              "lot_id": "lot-sangju-gr-1",
+              "shipper_id": "sh-sangju",
+              "voyage_id": "V-2611A",
+              "truck_id": "RT-01",
+              "stop_id": "stop-ph-sangju",
+              "pallets": 13,
+              "estimate": 675035,
+              "route": 830813,
+              "trip": 1
+            },
+            {
+              "lot_id": "lot-pohang-gr-1",
+              "shipper_id": "sh-pohang",
+              "voyage_id": "V-2611A",
+              "truck_id": "RT-01",
+              "stop_id": "stop-ph-pohang",
+              "pallets": 5,
+              "estimate": 185662,
+              "route": 594117,
+              "trip": 2
+            },
+            {
+              "lot_id": "lot-sancheong-sb-1",
+              "shipper_id": "sh-sancheong",
+              "voyage_id": "V-2611A",
+              "truck_id": "RT-02",
+              "stop_id": "stop-ph-sancheong",
+              "pallets": 5,
+              "estimate": 154405,
+              "route": 240418,
+              "trip": 1
+            },
+            {
+              "lot_id": "lot-jinju-sb-1",
+              "shipper_id": "sh-jinju",
+              "voyage_id": "V-2611A",
+              "truck_id": "RT-02",
+              "stop_id": "stop-ph-jinju",
+              "pallets": 8,
+              "estimate": 172678,
+              "route": 268869,
+              "trip": 1
+            },
+            {
+              "lot_id": "lot-miryang-sb-1",
+              "shipper_id": "sh-miryang",
+              "voyage_id": "V-2611A",
+              "truck_id": "RT-03",
+              "stop_id": "stop-ph-miryang",
+              "pallets": 4,
+              "estimate": 61442,
+              "route": 245767,
+              "trip": 1
+            }
+          ],
+          "collection_reassigned": []
+        },
+        "routes": [
+          {
+            "voyage_id": "V-2611A",
+            "lot_ids": [
+              "lot-jinju-sb-1",
+              "lot-sancheong-sb-1",
+              "lot-miryang-sb-1",
+              "lot-sangju-gr-1",
+              "lot-pohang-gr-1"
+            ],
+            "pickup": {
+              "status": "OK",
+              "deadline": "2026-11-17T18:00:00+09:00",
+              "routes": [
+                {
+                  "truck_id": "RT-01",
+                  "trip": 1,
+                  "cargo_group": "grape_so2",
+                  "capacity_pallets": 16,
+                  "load_pallets": 13,
+                  "stops": [
+                    {
+                      "stop_id": "stop-ph-sangju",
+                      "packhouse_id": "ph-sangju",
+                      "lot_ids": ["lot-sangju-gr-1"],
+                      "sequence": 1,
+                      "pallets": 13,
+                      "load_after": 13,
+                      "km_from_prev": 207.7,
+                      "ready_at": "2026-11-15T08:00:00+09:00",
+                      "eta": "2026-11-15T08:00:00+09:00",
+                      "latest_arrival": "2026-11-17T08:04:00+09:00",
+                      "cargo_group": "grape_so2"
+                    }
+                  ],
+                  "km": 415.4,
+                  "cost": 830813.0,
+                  "earliest_departure": "2026-11-15T04:32:00+09:00",
+                  "latest_departure": "2026-11-17T04:36:00+09:00",
+                  "port_eta": "2026-11-15T11:58:00+09:00",
+                  "slack_minutes": 2884,
+                  "gate_status": "off_peak",
+                  "gate_window": null,
+                  "gate_delay_minutes": 0,
+                  "gate_slot_start": "2026-11-15T10:00:00+09:00",
+                  "gate_slot_end": "2026-11-15T15:00:00+09:00"
+                },
+                {
+                  "truck_id": "RT-01",
+                  "trip": 2,
+                  "cargo_group": "grape_so2",
+                  "capacity_pallets": 16,
+                  "load_pallets": 5,
+                  "stops": [
+                    {
+                      "stop_id": "stop-ph-pohang",
+                      "packhouse_id": "ph-pohang",
+                      "lot_ids": ["lot-pohang-gr-1"],
+                      "sequence": 1,
+                      "pallets": 5,
+                      "load_after": 5,
+                      "km_from_prev": 148.5,
+                      "ready_at": "2026-11-15T08:00:00+09:00",
+                      "eta": "2026-11-15T15:01:00+09:00",
+                      "latest_arrival": "2026-11-17T15:01:00+09:00",
+                      "cargo_group": "grape_so2"
+                    }
+                  ],
+                  "km": 297.1,
+                  "cost": 594117.0,
+                  "earliest_departure": "2026-11-15T12:32:00+09:00",
+                  "latest_departure": "2026-11-17T12:32:00+09:00",
+                  "port_eta": "2026-11-15T18:00:00+09:00",
+                  "slack_minutes": 2880,
+                  "gate_status": "avoided",
+                  "gate_window": "15:00~18:00 CY 마감 직전 반입 집중",
+                  "gate_delay_minutes": 4,
+                  "gate_slot_start": "2026-11-15T18:00:00+09:00",
+                  "gate_slot_end": "2026-11-16T07:00:00+09:00"
+                },
+                {
+                  "truck_id": "RT-02",
+                  "trip": 1,
+                  "cargo_group": "strawberry",
+                  "capacity_pallets": 16,
+                  "load_pallets": 13,
+                  "stops": [
+                    {
+                      "stop_id": "stop-ph-sancheong",
+                      "packhouse_id": "ph-sancheong",
+                      "lot_ids": ["lot-sancheong-sb-1"],
+                      "sequence": 1,
+                      "pallets": 5,
+                      "load_after": 5,
+                      "km_from_prev": 123.5,
+                      "ready_at": "2026-11-16T08:00:00+09:00",
+                      "eta": "2026-11-16T08:00:00+09:00",
+                      "latest_arrival": "2026-11-17T14:48:00+09:00",
+                      "cargo_group": "strawberry"
+                    },
+                    {
+                      "stop_id": "stop-ph-jinju",
+                      "packhouse_id": "ph-jinju",
+                      "lot_ids": ["lot-jinju-sb-1"],
+                      "sequence": 2,
+                      "pallets": 8,
+                      "load_after": 13,
+                      "km_from_prev": 44.8,
+                      "ready_at": "2026-11-16T08:00:00+09:00",
+                      "eta": "2026-11-16T09:15:00+09:00",
+                      "latest_arrival": "2026-11-17T16:03:00+09:00",
+                      "cargo_group": "strawberry"
+                    }
+                  ],
+                  "km": 254.6,
+                  "cost": 509287.0,
+                  "earliest_departure": "2026-11-16T05:56:00+09:00",
+                  "latest_departure": "2026-11-17T12:44:00+09:00",
+                  "port_eta": "2026-11-16T11:12:00+09:00",
+                  "slack_minutes": 1848,
+                  "gate_status": "off_peak",
+                  "gate_window": null,
+                  "gate_delay_minutes": 0,
+                  "gate_slot_start": "2026-11-16T10:00:00+09:00",
+                  "gate_slot_end": "2026-11-16T15:00:00+09:00"
+                },
+                {
+                  "truck_id": "RT-03",
+                  "trip": 1,
+                  "cargo_group": "strawberry",
+                  "capacity_pallets": 10,
+                  "load_pallets": 4,
+                  "stops": [
+                    {
+                      "stop_id": "stop-ph-miryang",
+                      "packhouse_id": "ph-miryang",
+                      "lot_ids": ["lot-miryang-sb-1"],
+                      "sequence": 1,
+                      "pallets": 4,
+                      "load_after": 4,
+                      "km_from_prev": 61.4,
+                      "ready_at": "2026-11-16T08:00:00+09:00",
+                      "eta": "2026-11-16T08:28:00+09:00",
+                      "latest_arrival": "2026-11-17T16:28:00+09:00",
+                      "cargo_group": "strawberry"
+                    }
+                  ],
+                  "km": 122.9,
+                  "cost": 245767.0,
+                  "earliest_departure": "2026-11-16T07:26:00+09:00",
+                  "latest_departure": "2026-11-17T15:26:00+09:00",
+                  "port_eta": "2026-11-16T10:00:00+09:00",
+                  "slack_minutes": 1920,
+                  "gate_status": "avoided",
+                  "gate_window": "07:00~10:00 오전 반입 집중",
+                  "gate_delay_minutes": 28,
+                  "gate_slot_start": "2026-11-16T10:00:00+09:00",
+                  "gate_slot_end": "2026-11-16T15:00:00+09:00"
+                }
+              ],
+              "total_km": 1090.0,
+              "total_cost": 2179984.0,
+              "dropped_stop_ids": [],
+              "solve_ms": 3,
+              "assumptions": [
+                "가정: 도로거리 = 직선(haversine) 거리 × 1.3",
+                "가정: 평균 주행속도 60 km/h",
+                "가정: 산지 상차 작업 30분/정차",
+                "가정: km당 운행비 2,000원",
+                "가정: 트럭은 항만에서 출발해 산지를 돌고 CY cut-off 전에 항만으로 돌아온다",
+                "가정: 트럭 한 대가 cut-off 전까지 최대 2회 왕복한다 (항만 하역 30분 뒤 재출발)",
+                "가정: 한 정차지 물량은 트럭 한 대에 싣는다 (분할 집하 없음)",
+                "가정: 항만 게이트 혼잡 시간(07:00~10:00 오전 반입 집중, 15:00~18:00 CY 마감 직전 반입 집중)에는 도착하지 않도록 출발을 늦춘다. 피하면 cut-off 전 집하를 못 하는 정차지가 생길 때만 혼잡 시간 도착을 허용한다",
+                "규칙: 컨테이너 혼적 규칙(SO2 처리 여부·온도·CA 조건)이 맞지 않는 품목은 같은 트럭 운행에 싣지 않는다"
+              ],
+              "gate_mode": "avoid",
+              "gate_windows": [
+                {
+                  "start": "07:00:00",
+                  "end": "10:00:00",
+                  "label": "오전 반입 집중",
+                  "source": "가정: 부산신항 게이트 시간대별 반입량 공개 자료 미확인. 출근 직후 반입 차량 집중"
+                },
+                {
+                  "start": "15:00:00",
+                  "end": "18:00:00",
+                  "label": "CY 마감 직전 반입 집중",
+                  "source": "가정: 부산신항 게이트 시간대별 반입량 공개 자료 미확인. 18시 CY 마감 직전 반입 차량 집중"
+                }
+              ]
+            },
+            "dropped_lot_ids": [],
+            "dropped_stops": {}
+          }
+        ],
+        "diff": {
+          "moved_lots": [],
+          "shippers": [
+            {
+              "shipper_id": "sh-jinju",
+              "cost_before": 5760000,
+              "cost_after": 8098536,
+              "cost_delta": 2338536,
+              "container_share_before": 4263529,
+              "container_share_after": 4263529,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 532941,
+              "share_per_pallet_delta_pct": 0.0,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-sancheong",
+              "cost_before": 3600000,
+              "cost_after": 5061585,
+              "cost_delta": 1461585,
+              "container_share_before": 2664706,
+              "container_share_after": 2664706,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 532941,
+              "share_per_pallet_delta_pct": 0.0,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-miryang",
+              "cost_before": 4818000,
+              "cost_after": 5987268,
+              "cost_delta": 1169268,
+              "container_share_before": 2131765,
+              "container_share_after": 2131765,
+              "share_per_pallet_before": 532941,
+              "share_per_pallet_after": 532941,
+              "share_per_pallet_delta_pct": 0.0,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-sangju",
+              "cost_before": 8532683,
+              "cost_after": 9349383,
+              "cost_delta": 816700,
+              "container_share_before": 6543333,
+              "container_share_after": 6543333,
+              "share_per_pallet_before": 503333,
+              "share_per_pallet_after": 503333,
+              "share_per_pallet_delta_pct": 0.0,
+              "cancellation_adjustment": 0
+            },
+            {
+              "shipper_id": "sh-pohang",
+              "cost_before": 3556375,
+              "cost_after": 3870490,
+              "cost_delta": 314115,
+              "container_share_before": 2516667,
+              "container_share_after": 2516667,
+              "share_per_pallet_before": 503333,
+              "share_per_pallet_after": 503333,
+              "share_per_pallet_delta_pct": 0.0,
+              "cancellation_adjustment": 0
+            }
+          ],
+          "containers": [
+            {
+              "container_id": "CA-01",
+              "voyage_id": "V-2611A",
+              "capacity_pallets": 20,
+              "pallets_before": 17,
+              "pallets_after": 17,
+              "utilization_before": 0.85,
+              "utilization_after": 0.85
+            },
+            {
+              "container_id": "CA-02",
+              "voyage_id": "V-2611A",
+              "capacity_pallets": 20,
+              "pallets_before": 18,
+              "pallets_after": 18,
+              "utilization_before": 0.9,
+              "utilization_after": 0.9
+            },
+            {
+              "container_id": "CA-03",
+              "voyage_id": "V-2611B",
+              "capacity_pallets": 20,
+              "pallets_before": 0,
+              "pallets_after": 0,
+              "utilization_before": 0.0,
+              "utilization_after": 0.0
+            }
+          ],
+          "cancellation": null
+        },
+        "solve_ms": 4
+      }
+    ],
+    "recommended_id": "pull_forward",
+    "diff": {
+      "moved_lots": [
+        {
+          "lot_id": "lot-jinju-sb-1",
+          "shipper_id": "sh-jinju",
+          "pallets": 8,
+          "from_location": "CA-01",
+          "to_location": "AIR",
+          "pull_forward_days": 0
+        },
+        {
+          "lot_id": "lot-sancheong-sb-1",
+          "shipper_id": "sh-sancheong",
+          "pallets": 5,
+          "from_location": "CA-01",
+          "to_location": "AIR",
+          "pull_forward_days": 0
+        },
+        {
+          "lot_id": "lot-miryang-sb-1",
+          "shipper_id": "sh-miryang",
+          "pallets": 4,
+          "from_location": "CA-01",
+          "to_location": "AIR",
+          "pull_forward_days": 0
+        },
+        {
+          "lot_id": "lot-sangju-gr-1",
+          "shipper_id": "sh-sangju",
+          "pallets": 13,
+          "from_location": "CA-02",
+          "to_location": "CA-03",
+          "pull_forward_days": 0
+        },
+        {
+          "lot_id": "lot-pohang-gr-1",
+          "shipper_id": "sh-pohang",
+          "pallets": 5,
+          "from_location": "CA-02",
+          "to_location": "CA-03",
+          "pull_forward_days": 0
+        }
+      ],
+      "shippers": [
+        {
+          "shipper_id": "sh-jinju",
+          "cost_before": 5760000,
+          "cost_after": 7752000,
+          "cost_delta": 1992000,
+          "container_share_before": 4263529,
+          "container_share_after": 0,
+          "share_per_pallet_before": 532941,
+          "share_per_pallet_after": 0,
+          "share_per_pallet_delta_pct": null,
+          "cancellation_adjustment": 0
+        },
+        {
+          "shipper_id": "sh-sancheong",
+          "cost_before": 3600000,
+          "cost_after": 4845000,
+          "cost_delta": 1245000,
+          "container_share_before": 2664706,
+          "container_share_after": 0,
+          "share_per_pallet_before": 532941,
+          "share_per_pallet_after": 0,
+          "share_per_pallet_delta_pct": null,
+          "cancellation_adjustment": 0
+        },
+        {
+          "shipper_id": "sh-miryang",
+          "cost_before": 4818000,
+          "cost_after": 5814000,
+          "cost_delta": 996000,
+          "container_share_before": 2131765,
+          "container_share_after": 0,
+          "share_per_pallet_before": 532941,
+          "share_per_pallet_after": 0,
+          "share_per_pallet_delta_pct": null,
+          "cancellation_adjustment": 0
+        },
+        {
+          "shipper_id": "sh-sangju",
+          "cost_before": 8532683,
+          "cost_after": 9040260,
+          "cost_delta": 507577,
+          "container_share_before": 6543333,
+          "container_share_after": 6543333,
+          "share_per_pallet_before": 503333,
+          "share_per_pallet_after": 503333,
+          "share_per_pallet_delta_pct": 0.0,
+          "cancellation_adjustment": 0
+        },
+        {
+          "shipper_id": "sh-pohang",
+          "cost_before": 3556375,
+          "cost_after": 3751597,
+          "cost_delta": 195222,
+          "container_share_before": 2516667,
+          "container_share_after": 2516667,
+          "share_per_pallet_before": 503333,
+          "share_per_pallet_after": 503333,
+          "share_per_pallet_delta_pct": 0.0,
+          "cancellation_adjustment": 0
+        }
+      ],
+      "containers": [
+        {
+          "container_id": "CA-01",
+          "voyage_id": "V-2611A",
+          "capacity_pallets": 20,
+          "pallets_before": 17,
+          "pallets_after": 0,
+          "utilization_before": 0.85,
+          "utilization_after": 0.0
+        },
+        {
+          "container_id": "CA-02",
+          "voyage_id": "V-2611A",
+          "capacity_pallets": 20,
+          "pallets_before": 18,
+          "pallets_after": 0,
+          "utilization_before": 0.9,
+          "utilization_after": 0.0
+        },
+        {
+          "container_id": "CA-03",
+          "voyage_id": "V-2611B",
+          "capacity_pallets": 20,
+          "pallets_before": 0,
+          "pallets_after": 18,
+          "utilization_before": 0.0,
+          "utilization_after": 0.9
+        }
+      ],
+      "cancellation": null
+    },
+    "solve_ms": 9,
+    "explanation": {
+      "operator_summary": "MV FRESH HARMONY 출항 11/18 18:00→11/22 15:00 변경(CY 마감 11/17 18:00 유지). 추천안은 '재배정'이며 총 비용은 460.4만 원 늘어납니다. 적재: CA-01 17→0/20파렛트, CA-02 18→0/20파렛트, CA-03 0→18/20파렛트. '다음 배 이월' 불가: 이후 항차 없음. '그대로 출항' 불가: 도착일이 판매기한 초과. 영향 화주: 진주 딸기 수출농가 A, 산청 딸기 수출농가 B, 밀양 딸기 수출농가 C, 상주 포도 수출농가 D, 포항 포도 수출농가 E.",
+      "shipper_messages": [
+        {
+          "shipper_id": "sh-jinju",
+          "message": "진주 딸기 수출농가 A님, MV FRESH HARMONY 출항 11/18 18:00→11/22 15:00 변경(CY 마감 11/17 18:00 유지) 건으로 적재 계획이 조정되었습니다. 부담 비용이 5,760,000원에서 7,752,000원으로 199.2만 원 늘어납니다. 화물은 항공(으)로 옮겨집니다."
+        },
+        {
+          "shipper_id": "sh-sancheong",
+          "message": "산청 딸기 수출농가 B님, MV FRESH HARMONY 출항 11/18 18:00→11/22 15:00 변경(CY 마감 11/17 18:00 유지) 건으로 적재 계획이 조정되었습니다. 부담 비용이 3,600,000원에서 4,845,000원으로 124.5만 원 늘어납니다. 화물은 항공(으)로 옮겨집니다."
+        },
+        {
+          "shipper_id": "sh-miryang",
+          "message": "밀양 딸기 수출농가 C님, MV FRESH HARMONY 출항 11/18 18:00→11/22 15:00 변경(CY 마감 11/17 18:00 유지) 건으로 적재 계획이 조정되었습니다. 부담 비용이 4,818,000원에서 5,814,000원으로 99.6만 원 늘어납니다. 화물은 항공(으)로 옮겨집니다."
+        },
+        {
+          "shipper_id": "sh-sangju",
+          "message": "상주 포도 수출농가 D님, MV FRESH HARMONY 출항 11/18 18:00→11/22 15:00 변경(CY 마감 11/17 18:00 유지) 건으로 적재 계획이 조정되었습니다. 부담 비용이 8,532,683원에서 9,040,260원으로 50.8만 원 늘어납니다. 화물은 CA-03(으)로 옮겨집니다."
+        },
+        {
+          "shipper_id": "sh-pohang",
+          "message": "포항 포도 수출농가 E님, MV FRESH HARMONY 출항 11/18 18:00→11/22 15:00 변경(CY 마감 11/17 18:00 유지) 건으로 적재 계획이 조정되었습니다. 부담 비용이 3,556,375원에서 3,751,597원으로 19.5만 원 늘어납니다. 화물은 CA-03(으)로 옮겨집니다."
+        }
+      ],
+      "generated_by": "template",
+      "model": null,
+      "fallback_reason": null
+    },
+    "plan_id": "mock-plan",
+    "replan_id": "bcb286ae-ec51-4db1-bd7b-35f1bb45a15f",
+    "base_version": 1
+  },
+  "summary": "MV FRESH HARMONY(V-2611A) p90 지연 93시간. 위험 로트 lot-jinju-sb-1, lot-sancheong-sb-1, lot-miryang-sb-1 → 재계획 추천안에서 항공 전환: lot-jinju-sb-1, lot-miryang-sb-1, lot-sancheong-sb-1"
+}

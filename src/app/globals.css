@@ -13,8 +13,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-noto-sans-kr);
-  --font-heading: var(--font-noto-sans-kr);
+  --font-sans: var(--font-pretendard);
+  --font-heading: var(--font-pretendard);
 
   --color-navy: var(--navy);
   --color-brand: var(--brand);
@@ -75,7 +75,38 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@theme {
+  --color-m2-ink: #0f1b33;
+  --color-m2-ink-2: #3a4658;
+  --color-m2-muted: #5b6577;
+  --color-m2-faint: #7d8696;
+  --color-m2-navy: #0d2a5e;
+  --color-m2-navy-hover: #13366f;
+  --color-m2-brand: #1a7bff;
+  --color-m2-brand-ink: #0a5ad1;
+  --color-m2-brand-soft: #eaf2ff;
+  --color-m2-berry: #d93a40;
+  --color-m2-berry-ink: #a8262b;
+  --color-m2-berry-soft: #fdecec;
+  --color-m2-grape: #6047d1;
+  --color-m2-grape-ink: #4a33b5;
+  --color-m2-grape-soft: #efecfc;
+  --color-m2-ok: #0f8a66;
+  --color-m2-ok-ink: #0b6b4f;
+  --color-m2-ok-soft: #e2f4ec;
+  --color-m2-warn: #a85d00;
+  --color-m2-warn-ink: #8a4b00;
+  --color-m2-warn-soft: #fdf1df;
+  --color-m2-crit: #b42318;
+  --color-m2-anon: #a9b0ba;
+  --color-m2-line: rgba(15, 27, 51, 0.08);
+  --color-m2-line-2: rgba(15, 27, 51, 0.12);
+  --ease-m2: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 :root {
+  --font-pretendard:
+    'Pretendard Variable', Arial, Helvetica, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   /* 발표 자료 팔레트 */
   --ink: #0f1b33;
   --navy: #0d2a5e;

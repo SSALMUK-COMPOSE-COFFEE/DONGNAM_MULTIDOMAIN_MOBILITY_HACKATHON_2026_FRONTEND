@@ -39,7 +39,7 @@
 - 커밋 전에 `pnpm lint`, `pnpm check-types`, `pnpm format:check` 를 통과시킨다
 - `src/components/ui/` 는 shadcn CLI 생성물이다. 가능하면 수정하지 말고 감싸서 쓴다
 - 스타일은 발표 자료를 따른다: 흰 카드 + 연한 파랑 테두리, 위→아래 흰색→연파랑 배경, 남색 알약 배지(단계 번호), 큰 굵은 제목에 파란 강조, 결론은 남색 배너
-- 폰트는 Noto Sans KR 하나만 쓴다. 제목은 `font-black`, 강조 숫자는 `font-bold`
+- 폰트는 Pretendard Variable(dynamic subset, `src/app/fonts/pretendard/`) 하나만 쓴다. 제목은 `font-black`, 강조 숫자는 `font-bold`
 - 색은 `globals.css` 토큰을 쓴다
   - 팔레트: `navy`(주 색·배지·배너), `brand`(파랑 강조), `cyan`, `grape`·`grape-soft`(포도), `slate`(비교에서 진 쪽), `line`(테두리)
   - 의미: `sea`(해상·주 경로), `air`(항공·대안), `berry`(문제·위험), `gov`(정책·데이터), `ok`(정상·절감)

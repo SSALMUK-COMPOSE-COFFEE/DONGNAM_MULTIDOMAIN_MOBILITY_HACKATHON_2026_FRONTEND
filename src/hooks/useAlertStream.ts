@@ -11,7 +11,11 @@ import type { AlertT } from '@/types/api';
  * 연결하면 지난 알림부터 다시 보내고, 서버가 5분마다 끊으면 EventSource 가 알아서 다시 붙는다.
  * 그때 같은 알림이 또 오므로 seq 로 중복을 거른다.
  */
-export const useAlertStream = (containerId: string, onAlert?: (alert: AlertT) => void) => {
+export const useAlertStream = (
+  containerId: string,
+  planId: string,
+  onAlert?: (alert: AlertT) => void
+) => {
   const [alerts, setAlerts] = useState<AlertT[]>([]);
   const onAlertRef = useRef(onAlert);
 
@@ -21,7 +25,8 @@ export const useAlertStream = (containerId: string, onAlert?: (alert: AlertT) =>
 
   useEffect(() => {
     const seen = new Set<number>();
-    const params = new URLSearchParams({ container_id: containerId });
+    // 같은 컨테이너에 계획이 여럿이면 다른 계획의 알림이 섞이지 않게 계획으로 거른다
+    const params = new URLSearchParams({ container_id: containerId, plan_id: planId });
     let source: EventSource | null = null;
     let isClosed = false;
 
@@ -44,7 +49,7 @@ export const useAlertStream = (containerId: string, onAlert?: (alert: AlertT) =>
       isClosed = true;
       source?.close();
     };
-  }, [containerId]);
+  }, [containerId, planId]);
 
   return alerts;
 };

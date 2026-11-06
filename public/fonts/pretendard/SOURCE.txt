@@ -1,0 +1,5 @@
+Pretendard Variable v1.3.9 (dynamic subset)
+Official release: https://github.com/orioncactus/pretendard/releases/tag/v1.3.9
+Unmodified files: npm pretendard@1.3.9 dist/web/variable/pretendardvariable-dynamic-subset.css and woff2-dynamic-subset/ (92 files)
+Location in this repo: src/app/fonts/pretendard/
+License: SIL Open Font License 1.1; original text retained in LICENSE.txt

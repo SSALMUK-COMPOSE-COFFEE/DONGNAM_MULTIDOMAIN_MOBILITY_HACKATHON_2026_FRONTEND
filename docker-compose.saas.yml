@@ -1,0 +1,28 @@
+name: freshswitch-saas-web
+
+services:
+  web:
+    image: freshswitch-saas-web:${WEB_TAG:-latest}
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_MOCKING: disabled
+        NEXT_PUBLIC_BASE_PATH: ''
+        NEXT_PUBLIC_ASSET_PREFIX: /saas-assets
+        NEXT_PUBLIC_SAAS_API_BASE: /test/api
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:18105:3000'
+
+  web-mock:
+    image: freshswitch-saas-web-mock:${WEB_TAG:-latest}
+    profiles: [mock]
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_MOCKING: enabled
+        NEXT_PUBLIC_BASE_PATH: /test
+        NEXT_PUBLIC_SAAS_API_BASE: /test/api
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${MOCK_HOST_PORT:-18107}:3000'

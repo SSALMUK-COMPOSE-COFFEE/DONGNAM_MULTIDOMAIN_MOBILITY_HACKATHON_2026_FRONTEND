@@ -1,0 +1,236 @@
+{
+  "scenario_id": "default",
+  "method": "칸(품목·목적항·운송수단)마다 사후 손실률 = (사전 가중 w × 사전 손실률 + Σ 파렛트 × 보정 실측) ÷ (w + Σ 파렛트). 보정 실측 = 실측 손실률 − 대기·당김 효과(같은 조건의 사전 모델 손실률 − 사전 기본 손실률). 범위는 사후값 ± z × 표준오차, 표준오차는 사전(상대 표준편차 가정)과 관측의 파렛트 가중 분산을 (건수 + 1)로 나눈 근사. 단전 구간·혼적 구분은 분포로만 보여주고 추천에는 칸 전체 평균을 쓴다",
+  "seed_label": "가정/시드: 실제 도착 검수 기록이 아니다. JLST 6권 2호(2025.6) 부산→홍콩 딸기 실증 수치와 제안서·시나리오 가정값을 관측 형태로 옮긴 출발점이다",
+  "prior_weight_pallets": 20.0,
+  "range_z": 1.645,
+  "outage_thresholds_minutes": {
+    "short": 30.0,
+    "long": 180.0
+  },
+  "total_observations": 12,
+  "cells": [
+    {
+      "product_id": "strawberry",
+      "product_name": "딸기",
+      "destination": "HKHKG",
+      "mode": "sea",
+      "prior_rate": 0.015,
+      "prior_source": "JLST 6권 2호(2025.6) 부산→홍콩 딸기 실증: 단전 없음 1~2%(모의) 중앙값",
+      "prior_weight_pallets": 20.0,
+      "observations": 6,
+      "pallets": 27,
+      "origins": {
+        "seed": 3,
+        "arrival": 3
+      },
+      "mean_actual_rate": 0.066296,
+      "mean_adjusted_rate": 0.054963,
+      "posterior_rate": 0.037957,
+      "delta": 0.022957,
+      "range_low": 0.023009,
+      "range_high": 0.052906,
+      "outage_breakdown": [
+        {
+          "key": "none",
+          "label": "단전 없음",
+          "observations": 2,
+          "pallets": 8,
+          "pallet_share": 0.2963,
+          "mean_outage_minutes": 0.0,
+          "mean_actual_rate": 0.015,
+          "mean_adjusted_rate": 0.015
+        },
+        {
+          "key": "long",
+          "label": "긴 단전",
+          "observations": 4,
+          "pallets": 19,
+          "pallet_share": 0.7037,
+          "mean_outage_minutes": 252.2,
+          "mean_actual_rate": 0.087895,
+          "mean_adjusted_rate": 0.071789
+        }
+      ],
+      "mix_breakdown": [
+        {
+          "key": "solo",
+          "label": "단독 적재",
+          "observations": 3,
+          "pallets": 10,
+          "pallet_share": 0.3704,
+          "mean_outage_minutes": 71.2,
+          "mean_actual_rate": 0.026,
+          "mean_adjusted_rate": 0.026
+        },
+        {
+          "key": "shared_same_product",
+          "label": "같은 품목 공동적재",
+          "observations": 3,
+          "pallets": 17,
+          "pallet_share": 0.6296,
+          "mean_outage_minutes": 240.0,
+          "mean_actual_rate": 0.09,
+          "mean_adjusted_rate": 0.072
+        }
+      ],
+      "basis": "사전 1.50%(가중 20파렛트) + 관측 6건·27파렛트 보정 평균 5.50% → 3.80% (+2.30%p)"
+    },
+    {
+      "product_id": "strawberry",
+      "product_name": "딸기",
+      "destination": "HKHKG",
+      "mode": "air",
+      "prior_rate": 0.01,
+      "prior_source": "가정: 항공 운송 손실(공개 실측 없음)",
+      "prior_weight_pallets": 20.0,
+      "observations": 2,
+      "pallets": 4,
+      "origins": {
+        "seed": 1,
+        "arrival": 1
+      },
+      "mean_actual_rate": 0.05,
+      "mean_adjusted_rate": 0.05,
+      "posterior_rate": 0.016667,
+      "delta": 0.006667,
+      "range_low": 0.0,
+      "range_high": 0.037315,
+      "outage_breakdown": [
+        {
+          "key": "unknown",
+          "label": "센서 없음",
+          "observations": 2,
+          "pallets": 4,
+          "pallet_share": 1.0,
+          "mean_outage_minutes": null,
+          "mean_actual_rate": 0.05,
+          "mean_adjusted_rate": 0.05
+        }
+      ],
+      "mix_breakdown": [
+        {
+          "key": "solo",
+          "label": "단독 적재",
+          "observations": 2,
+          "pallets": 4,
+          "pallet_share": 1.0,
+          "mean_outage_minutes": null,
+          "mean_actual_rate": 0.05,
+          "mean_adjusted_rate": 0.05
+        }
+      ],
+      "basis": "사전 1.00%(가중 20파렛트) + 관측 2건·4파렛트 보정 평균 5.00% → 1.67% (+0.67%p)"
+    },
+    {
+      "product_id": "grape_so2",
+      "product_name": "샤인머스캣 (SO2 처리)",
+      "destination": "HKHKG",
+      "mode": "sea",
+      "prior_rate": 0.01,
+      "prior_source": "가정: 포도는 CA 보관성 약 3주(이데일리 2024.5)로 딸기보다 낮게 둠",
+      "prior_weight_pallets": 20.0,
+      "observations": 4,
+      "pallets": 28,
+      "origins": {
+        "seed": 2,
+        "arrival": 2
+      },
+      "mean_actual_rate": 0.061429,
+      "mean_adjusted_rate": 0.057571,
+      "posterior_rate": 0.03775,
+      "delta": 0.02775,
+      "range_low": 0.014793,
+      "range_high": 0.060707,
+      "outage_breakdown": [
+        {
+          "key": "none",
+          "label": "단전 없음",
+          "observations": 2,
+          "pallets": 10,
+          "pallet_share": 0.3571,
+          "mean_outage_minutes": 0.0,
+          "mean_actual_rate": 0.01,
+          "mean_adjusted_rate": 0.01
+        },
+        {
+          "key": "unknown",
+          "label": "센서 없음",
+          "observations": 2,
+          "pallets": 18,
+          "pallet_share": 0.6429,
+          "mean_outage_minutes": null,
+          "mean_actual_rate": 0.09,
+          "mean_adjusted_rate": 0.084
+        }
+      ],
+      "mix_breakdown": [
+        {
+          "key": "solo",
+          "label": "단독 적재",
+          "observations": 2,
+          "pallets": 10,
+          "pallet_share": 0.3571,
+          "mean_outage_minutes": 0.0,
+          "mean_actual_rate": 0.01,
+          "mean_adjusted_rate": 0.01
+        },
+        {
+          "key": "shared_same_product",
+          "label": "같은 품목 공동적재",
+          "observations": 2,
+          "pallets": 18,
+          "pallet_share": 0.6429,
+          "mean_outage_minutes": null,
+          "mean_actual_rate": 0.09,
+          "mean_adjusted_rate": 0.084
+        }
+      ],
+      "basis": "사전 1.00%(가중 20파렛트) + 관측 4건·28파렛트 보정 평균 5.76% → 3.77% (+2.77%p)"
+    },
+    {
+      "product_id": "grape_so2",
+      "product_name": "샤인머스캣 (SO2 처리)",
+      "destination": "HKHKG",
+      "mode": "air",
+      "prior_rate": 0.005,
+      "prior_source": "가정",
+      "prior_weight_pallets": 20.0,
+      "observations": 0,
+      "pallets": 0,
+      "origins": {},
+      "mean_actual_rate": null,
+      "mean_adjusted_rate": null,
+      "posterior_rate": 0.005,
+      "delta": 0.0,
+      "range_low": 0.000888,
+      "range_high": 0.009112,
+      "outage_breakdown": [],
+      "mix_breakdown": [],
+      "basis": "관측 없음. 사전 0.50% 그대로"
+    }
+  ],
+  "adjustments": [
+    {
+      "product_id": "strawberry",
+      "destination": "HKHKG",
+      "mode": "sea",
+      "delta": 0.022957,
+      "source": "도착 검수 학습: 사전 1.50%(가중 20파렛트) + 관측 6건·27파렛트 보정 평균 5.50% → 3.80% (+2.30%p)"
+    },
+    {
+      "product_id": "strawberry",
+      "destination": "HKHKG",
+      "mode": "air",
+      "delta": 0.006667,
+      "source": "도착 검수 학습: 사전 1.00%(가중 20파렛트) + 관측 2건·4파렛트 보정 평균 5.00% → 1.67% (+0.67%p)"
+    },
+    {
+      "product_id": "grape_so2",
+      "destination": "HKHKG",
+      "mode": "sea",
+      "delta": 0.02775,
+      "source": "도착 검수 학습: 사전 1.00%(가중 20파렛트) + 관측 4건·28파렛트 보정 평균 5.76% → 3.77% (+2.77%p)"
+    }
+  ]
+}

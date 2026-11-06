@@ -8,6 +8,8 @@ services:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://freshswitch.ssalhub.xyz}
         NEXT_PUBLIC_API_MOCKING: ${NEXT_PUBLIC_API_MOCKING:-disabled}
         NEXT_PUBLIC_KAKAO_MAP_KEY: ${NEXT_PUBLIC_KAKAO_MAP_KEY:-}
+        # 시연(/api)과 SaaS(/test/api) 백엔드가 나뉘어 있다. SaaS 화면이 시연 백엔드를 부르지 않게 한다
+        NEXT_PUBLIC_SAAS_API_BASE: ${NEXT_PUBLIC_SAAS_API_BASE:-/test/api}
     restart: unless-stopped
     ports:
       - '127.0.0.1:${HOST_PORT:-18104}:3000'

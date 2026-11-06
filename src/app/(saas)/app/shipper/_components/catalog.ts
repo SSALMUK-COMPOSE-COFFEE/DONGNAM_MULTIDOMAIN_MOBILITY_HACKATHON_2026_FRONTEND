@@ -1,0 +1,39 @@
+import type { IntakeFormOptionsT } from '@/components/intake-form/types';
+import type { PlanSessionT } from '@/types/api';
+import type { ShipperCatalogT } from '@/types/saas-shipper';
+
+export const toIntakeOptions = (catalog: ShipperCatalogT): IntakeFormOptionsT => {
+  const destinationIds = new Set(catalog.voyages.map(({ destination }) => destination));
+
+  return {
+    products: catalog.products.map(({ id, name }) => ({ id, label: name })),
+    shippers: catalog.shippers.map(({ id, name, packhouse_id }) => {
+      const packhouse = catalog.packhouses.find(
+        ({ id: packhouseId }) => packhouseId === packhouse_id
+      );
+
+      return { id, label: packhouse ? `${name} · ${packhouse.name}` : name };
+    }),
+    destinations: catalog.ports
+      .filter(({ id }) => destinationIds.has(id))
+      .map(({ id, name }) => ({ id, label: name })),
+  };
+};
+
+export const viewerShipperIdOf = (catalog: ShipperCatalogT | null | undefined) =>
+  catalog?.shippers[0]?.id ?? '';
+
+const hasCoordinates = ({ lat, lon }: { lat: number | null; lon: number | null }) =>
+  typeof lat === 'number' && typeof lon === 'number';
+
+export const withLocatedPackhouses = <T extends Pick<PlanSessionT, 'scenario'>>(session: T): T => ({
+  ...session,
+  scenario: {
+    ...session.scenario,
+    packhouses: session.scenario.packhouses.filter(hasCoordinates),
+  },
+});
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+export const todayIso = () => new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 10);

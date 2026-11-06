@@ -13,7 +13,13 @@ export const useCreatePlan = () => {
   const setPlanId = usePlanStore(state => state.setPlanId);
 
   return useMutation({
-    mutationFn: () => postPlan({ scenario_id: DEMO_SCENARIO_ID, use_learned_loss: false }),
+    // 등록된 출하는 넣지 않고 기본 시나리오 출하 6건으로만 짠다 (시연 숫자 고정)
+    mutationFn: () =>
+      postPlan({
+        scenario_id: DEMO_SCENARIO_ID,
+        use_learned_loss: false,
+        include_registered: false,
+      }),
     onSuccess: session => {
       queryClient.setQueryData(planQueryOptions(session.plan_id).queryKey, session);
       setPlanId(session.plan_id);

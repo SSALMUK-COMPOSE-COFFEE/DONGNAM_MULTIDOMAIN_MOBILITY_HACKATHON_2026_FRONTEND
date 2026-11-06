@@ -10,4 +10,7 @@ src/components/ui
 public/mockServiceWorker.js
 # 생성 파일
 src/types/openapi.d.ts
+src/types/openapi-saas.d.ts
 src/mocks/fixtures
+# 외부 글꼴 파일은 원본 그대로 둔다
+src/app/fonts

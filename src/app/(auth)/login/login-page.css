@@ -1,0 +1,132 @@
+.fs-login-form-section h1 {
+  margin: 0;
+  color: #0d2a5e;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.25;
+}
+.fs-login-description {
+  margin: 8px 0 20px;
+  color: #536074;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.fs-login .m2-field {
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.fs-login .m2-field > label {
+  color: #26354d;
+  font-size: 13px;
+  font-weight: 600;
+}
+.fs-login .m2-inp {
+  height: 42px;
+  border: 1px solid #cbd3df;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px 12px;
+  box-shadow: none;
+  font-size: 14px;
+}
+.fs-login .m2-btn {
+  min-height: 44px;
+  border-radius: 6px;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+.fs-login form .m2-btn {
+  min-height: 42px;
+  margin-top: 4px;
+}
+.fs-login .m2-btn-pri {
+  background: #0d2a5e;
+  color: #fff;
+}
+.fs-login .m2-btn-pri:hover {
+  background: #173b78;
+}
+.fs-login-signup {
+  margin: 14px 0 0;
+  color: #5b6577;
+  font-size: 12px;
+}
+.fs-login-signup a {
+  margin-left: 8px;
+  color: #0d2a5e;
+  font-weight: 600;
+}
+.fs-login-form-section {
+  background: transparent;
+  padding: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+@media (max-width: 760px) {
+  .fs-login .m2-inp {
+    font-size: 16px;
+  }
+}
+.fs-login-account-section {
+  margin-top: 18px;
+  border-top: 1px solid #dfe3e9;
+  padding-top: 16px;
+}
+.fs-login-accounts {
+  display: grid;
+  gap: 6px;
+}
+.fs-login .fs-login-account {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #d7dde6;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.fs-login-account:hover {
+  border-color: #8a9bb5;
+}
+.fs-login-account[aria-pressed='true'] {
+  border-color: #0d2a5e;
+  background: #edf2fa;
+}
+.fs-login-account:focus-visible {
+  outline: 2px solid #1a7bff;
+  outline-offset: 2px;
+}
+.fs-login-account-role {
+  color: #0f1b33;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.fs-login-account-email {
+  color: #536074;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.fs-login-shared-password {
+  margin: 10px 0 0;
+  color: #536074;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.fs-login-shared-password code {
+  margin-left: 6px;
+  color: #26354d;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.fs-login-signup a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

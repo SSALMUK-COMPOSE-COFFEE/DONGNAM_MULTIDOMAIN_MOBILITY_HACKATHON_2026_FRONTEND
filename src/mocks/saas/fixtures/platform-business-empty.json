@@ -1,0 +1,74 @@
+{
+  "month": "2026-10",
+  "plan_count": 0,
+  "assumptions": [
+    {
+      "key": "ops_cost_per_voyage",
+      "value": 2884615.0,
+      "unit": "원/항차",
+      "source": "가정: 기획서 ㅍ3 8-1 고정비 연 150,000,000원 ÷ 연 52항차(주 1회)"
+    },
+    {
+      "key": "variable_cost_per_pallet",
+      "value": 0.0,
+      "unit": "원/파렛트",
+      "source": "가정: 항차마다 드는 플랫폼 변동비. 기본 0원"
+    },
+    {
+      "key": "voyages_per_year",
+      "value": 52.0,
+      "unit": "항차/년",
+      "source": "가정: 주 1회 출항. 연 환산 = 항차당 공헌이익 평균 × 연 항차"
+    }
+  ],
+  "empty_slot_cost": 0,
+  "empty_slot_definition": "쓴 컨테이너의 빈 칸 비용 = 컨테이너 비용 × 빈 파렛트 ÷ 용량. 정산 단가(파렛트당)로 받지 못하는 몫. 정산 차이(settlement_gap)에 이미 들어 있어 따로 빼지 않는 참고 항목",
+  "tariff_operational_gap": 0,
+  "tariff_operational_definition": "화주 정산액(total_shared_cost) − 운영비(total_operational_cost). 음수면 정산 단가가 실제 운영비를 못 덮어 플랫폼(혼적 주선자)이 진다. 각 line 의 settlement_gap 으로 들어가 platform_net_with_settlement·annual_net_with_settlement 에 더한다. platform_net·annual_net 은 이 차이를 반영하지 않은 값",
+  "lines": [
+    {
+      "forwarder_share": 0.0,
+      "label": "기준선(최종 기획서: 포워더는 실행 파트너, 자기 운임·수수료를 화주에게 별도 청구. 성과보수 배분 없음)",
+      "plans": [],
+      "voyage_count": 0,
+      "pallets": 0,
+      "fee_revenue": 0,
+      "forwarder_cost": 0,
+      "variable_cost": 0,
+      "contribution_margin": 0,
+      "fixed_cost_allocation": 0,
+      "platform_net": 0,
+      "settlement_gap": 0,
+      "platform_net_with_settlement": 0,
+      "annual_contribution": null,
+      "annual_fixed_cost": 149999980,
+      "annual_net": null,
+      "annual_settlement_gap": null,
+      "annual_net_with_settlement": null,
+      "breakeven_pallets_per_voyage": null,
+      "remaining_pallets_per_voyage": null
+    },
+    {
+      "forwarder_share": 0.4,
+      "label": "민감도(가정(포워더 배분형))",
+      "plans": [],
+      "voyage_count": 0,
+      "pallets": 0,
+      "fee_revenue": 0,
+      "forwarder_cost": 0,
+      "variable_cost": 0,
+      "contribution_margin": 0,
+      "fixed_cost_allocation": 0,
+      "platform_net": 0,
+      "settlement_gap": 0,
+      "platform_net_with_settlement": 0,
+      "annual_contribution": null,
+      "annual_fixed_cost": 149999980,
+      "annual_net": null,
+      "annual_settlement_gap": null,
+      "annual_net_with_settlement": null,
+      "breakeven_pallets_per_voyage": null,
+      "remaining_pallets_per_voyage": null
+    }
+  ]
+}
