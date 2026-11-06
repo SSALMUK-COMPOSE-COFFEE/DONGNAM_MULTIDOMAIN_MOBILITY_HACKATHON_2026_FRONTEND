@@ -573,7 +573,9 @@ export function ShipperLotForm({
         </div>
 
         {previewData?.hints.air.feasible && (
-          <p className="m2-sub -mt-1 text-xs">실제 항공편 좌석과 예약은 포워더에게 별도로 확인하세요.</p>
+          <p className="m2-sub -mt-1 text-xs">
+            실제 항공편 좌석과 예약은 포워더에게 별도로 확인하세요.
+          </p>
         )}
 
         <div
