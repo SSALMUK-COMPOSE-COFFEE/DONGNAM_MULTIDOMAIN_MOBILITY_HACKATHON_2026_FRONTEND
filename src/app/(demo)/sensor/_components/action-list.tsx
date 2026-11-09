@@ -1,42 +1,56 @@
 import { cn } from 'cn';
 
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TwinStateT } from '@/types/api';
 import { formatMonthDayTime } from '@/utils/format';
 
 type ActionListPropsT = { actions: TwinStateT['actions'] };
 
-/** 단전 시간이 기준을 넘을 때마다 포워더가 보낼 요청이 하나씩 생긴다 */
 export function ActionList({ actions }: ActionListPropsT) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>자동 조치</CardTitle>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <span>자동 조치</span>
+            <Badge variant="secondary" className="num">
+              {actions.length}건
+            </Badge>
+          </CardTitle>
+          <span className="text-xs text-muted-foreground">초과 단전 발생 시 즉시 요청</span>
+        </div>
       </CardHeader>
       <CardContent>
         {actions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">아직 조치가 없습니다.</p>
+          <p className="text-sm text-muted-foreground">
+            허용 단전 시간(가정) 이내이거나 아직 실행된 자동 조치가 없습니다.
+          </p>
         ) : (
-          <ol className="flex flex-col">
+          <ol className="flex flex-col gap-2">
             {actions.map(({ key, severity, title, description, triggered_at, request }) => (
-              <li key={key} className="grid grid-cols-[3.5rem_1rem_1fr] gap-x-3">
-                <span className="pt-0.5 text-sm font-bold num text-muted-foreground">
-                  {formatMonthDayTime(triggered_at).slice(-5)}
-                </span>
-                <span className="flex flex-col items-center">
-                  <span
-                    className={cn(
-                      'mt-1.5 size-3 shrink-0 rounded-full',
-                      severity === 'critical' ? 'bg-berry' : 'bg-air'
-                    )}
-                  />
-                  <span className="w-px flex-1 bg-line" />
-                </span>
-                <div className="pb-5">
-                  <p className="font-bold">{title.replace(/^CA-\d+\s*/, '')}</p>
+              <li
+                key={key}
+                className="flex items-start gap-3 rounded-2xl border border-line bg-panel px-4 py-3"
+              >
+                <span
+                  className={cn(
+                    'mt-1.5 size-2.5 shrink-0 rounded-full',
+                    severity === 'critical' ? 'bg-berry' : 'bg-air'
+                  )}
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold text-navy">{title.replace(/^CA-\d+\s*/, '')}</p>
+                    <span className="text-xs font-bold num text-muted-foreground">
+                      {formatMonthDayTime(triggered_at).slice(-5)}
+                    </span>
+                  </div>
                   <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
                   {request && (
-                    <p className="mt-1 text-sm text-navy">{request.counterparty}에 요청</p>
+                    <Badge variant="outline" className="mt-2 border-line bg-white text-navy">
+                      {request.counterparty}에 요청
+                    </Badge>
                   )}
                 </div>
               </li>

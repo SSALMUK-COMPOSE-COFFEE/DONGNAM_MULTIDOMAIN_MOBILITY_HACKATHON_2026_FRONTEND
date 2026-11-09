@@ -19,61 +19,72 @@ type SensorStatusCardPropsT = {
   twin: TwinStateT | null;
 };
 
-/** 지금 품온·전원과 누적 단전, 측정 타임라인 */
 export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) {
   const current = twin?.current;
   const status = STATUS_BADGE[twin?.status ?? 'no_data'];
   const powerBadge = getPowerBadge(twin);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {containerId} 품온 · 전원
-          <Badge className={status.className}>{status.label}</Badge>
-          {current && <Badge className={powerBadge.className}>{powerBadge.label}</Badge>}
-        </CardTitle>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-4">
+          <CardTitle className="flex items-center gap-2.5">
+            <span>{containerId} 품온 · 전원 추이</span>
+            <Badge className={status.className}>{status.label}</Badge>
+            {current && <Badge className={powerBadge.className}>{powerBadge.label}</Badge>}
+          </CardTitle>
+          {twin && (
+            <span className="text-sm num text-muted-foreground">
+              적정 온도 {twin.excursion.band_min_c}~{twin.excursion.band_max_c}℃
+            </span>
+          )}
+        </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-6">
+
+      <CardContent className="flex flex-col gap-5">
         {twin && current ? (
-          <div className="grid grid-cols-[260px_1fr] gap-8">
-            <div className="flex flex-col gap-6">
-              <div>
-                <p className="text-muted-foreground">지금 품온</p>
+          <>
+            <div className="grid grid-cols-4 gap-3">
+              <div className="rounded-2xl border border-line bg-panel px-4 py-3">
+                <p className="text-xs font-medium text-muted-foreground">지금 품온</p>
                 <p
                   className={cn(
-                    'text-6xl font-black num tracking-tight',
+                    'mt-0.5 text-4xl font-black num tracking-tight',
                     current.excursion_c > 0 ? 'text-berry' : 'text-navy'
                   )}
                 >
                   {current.temp_c}
-                  <span className="text-3xl font-bold">℃</span>
+                  <span className="ml-0.5 text-xl font-bold">℃</span>
                 </p>
-                <p className="mt-1 text-sm num text-muted-foreground">
+                <p className="mt-1 text-xs num text-muted-foreground">
                   적정 {twin.excursion.band_min_c}~{twin.excursion.band_max_c}℃
                 </p>
               </div>
 
-              <dl className="flex flex-col gap-4 border-t border-line pt-5">
-                <Fact
-                  label="누적 단전"
-                  value={`${twin.outage.cumulative_minutes}분`}
-                  isAlert={twin.outage.cumulative_minutes > 0}
-                  note={`실증 노선 ${twin.outage.reference_minutes}분, 보험 기준 ${twin.outage.insurance_threshold_minutes}분`}
-                />
-                <Fact
-                  label="최고 품온"
-                  value={`${twin.excursion.max_temp_c}℃`}
-                  isAlert={twin.excursion.minutes_above_band > 0}
-                  note={`적정 범위를 ${twin.excursion.minutes_above_band}분 넘김`}
-                />
-                <Fact
-                  label="센서 기준 손실률"
-                  value={formatPercent(twin.loss.sensor_loss_rate)}
-                  isAlert={twin.loss.sensor_loss_rate > twin.loss.no_outage_loss_rate}
-                  note={`단전이 없으면 ${formatPercent(twin.loss.no_outage_loss_rate)}`}
-                />
-              </dl>
+              <Fact
+                label="최고 품온"
+                value={`${twin.excursion.max_temp_c}℃`}
+                isAlert={twin.excursion.minutes_above_band > 0}
+                note={`적정 범위를 ${twin.excursion.minutes_above_band}분 넘김`}
+              />
+
+              <Fact
+                label="누적 단전 · 초과"
+                value={
+                  twin.handover
+                    ? `${twin.outage.cumulative_minutes}분 (초과 ${twin.handover.excess_minutes}분)`
+                    : `${twin.outage.cumulative_minutes}분`
+                }
+                isAlert={(twin.handover?.excess_minutes ?? 0) > 0}
+                note={`실증 노선 ${twin.outage.reference_minutes}분 · 보험 ${twin.outage.insurance_threshold_minutes}분`}
+              />
+
+              <Fact
+                label="센서 기준 손실률"
+                value={formatPercent(twin.loss.sensor_loss_rate)}
+                isAlert={twin.loss.sensor_loss_rate > twin.loss.no_outage_loss_rate}
+                note={`단전이 없으면 ${formatPercent(twin.loss.no_outage_loss_rate)}`}
+              />
             </div>
 
             <TemperatureChart
@@ -81,7 +92,7 @@ export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) 
               bandMin={twin.excursion.band_min_c}
               bandMax={twin.excursion.band_max_c}
             />
-          </div>
+          </>
         ) : (
           <p className="text-muted-foreground">
             시뮬레이션을 시작하면 품온과 전원, 손실이 1초마다 바뀝니다.
@@ -111,12 +122,14 @@ type FactPropsT = {
 
 function Fact({ label, value, note, isAlert }: FactPropsT) {
   return (
-    <div>
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className={cn('text-2xl font-bold num', isAlert ? 'text-berry' : 'text-navy')}>
-        {value}
-      </dd>
-      <dd className="text-xs num text-muted-foreground">{note}</dd>
+    <div className="flex flex-col justify-between rounded-2xl border border-line bg-panel px-4 py-3">
+      <div>
+        <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+        <dd className={cn('mt-1 text-2xl font-bold num', isAlert ? 'text-berry' : 'text-navy')}>
+          {value}
+        </dd>
+      </div>
+      <dd className="mt-1 text-xs num text-muted-foreground">{note}</dd>
     </div>
   );
 }
