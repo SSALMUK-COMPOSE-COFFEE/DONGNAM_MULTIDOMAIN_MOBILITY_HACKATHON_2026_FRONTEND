@@ -61,7 +61,7 @@ export function SettlementTable({
   scenario,
   viewerShipperId,
   airSettlements = [],
-  feeLabel = '수수료 25%',
+  feeLabel = '수수료 20%',
 }: SettlementTablePropsT) {
   const airRows = toAirRows(airSettlements, containerSettlements);
 

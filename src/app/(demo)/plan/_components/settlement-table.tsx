@@ -40,7 +40,7 @@ export function SettlementTable({ containerSettlements, scenario }: SettlementTa
               <TableHead className="text-right">혼자 항공</TableHead>
               <TableHead className="text-right">공동적재</TableHead>
               <TableHead className="text-right">절감</TableHead>
-              <TableHead className="text-right">수수료 25%</TableHead>
+              <TableHead className="text-right">수수료 20%</TableHead>
               <TableHead className="text-right">화주 몫</TableHead>
             </TableRow>
           </TableHeader>
