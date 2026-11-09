@@ -13,7 +13,7 @@ export const TEAM_SITE_URL = 'https://freshswitch.ssalhub.xyz';
 
 export const TEAM_NAME = 'Team ACK';
 
-export const PERFORMANCE_FEE_RATE = 0.25;
+export const PERFORMANCE_FEE_RATE = 0.2;
 
 export const PALLET_FEE_WON = 20000;
 
