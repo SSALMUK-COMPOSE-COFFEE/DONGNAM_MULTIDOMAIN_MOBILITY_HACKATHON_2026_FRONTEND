@@ -17,6 +17,14 @@ export function SensorSummary({ twin, onStart, isStarting }: SensorSummaryPropsT
       {twin ? (
         <p className="text-3xl font-bold">
           누적 단전 <span className="num">{twin.outage.cumulative_minutes}분</span>
+          {twin.handover && (
+            <span className="text-2xl">
+              <span className="mx-3">·</span>
+              허용 <span className="num">{twin.handover.allowance.value}분</span>(가정)
+              <span className="mx-3">·</span>
+              초과 <span className="num text-cyan">{twin.handover.excess_minutes}분</span>
+            </span>
+          )}
           <span className="mx-4">→</span>
           예상 손실률 <span className="num">{formatPercent(twin.loss.planned_loss_rate)}</span>
           <span className="mx-2">→</span>
@@ -37,7 +45,7 @@ export function SensorSummary({ twin, onStart, isStarting }: SensorSummaryPropsT
         disabled={isStarting}
       >
         <PlayIcon />
-        4시간 단전 시뮬레이션
+        해상→육상 전환 시뮬레이션
       </Button>
     </div>
   );

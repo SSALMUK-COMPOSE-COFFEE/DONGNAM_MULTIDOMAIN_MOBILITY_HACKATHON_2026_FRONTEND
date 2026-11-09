@@ -8,6 +8,7 @@ import { coldchainContainerQueryOptions } from '@/apis/getColdchainContainer';
 import { postColdchainBinding, postColdchainSimulation } from '@/apis/postColdchainSimulation';
 import { ActionList } from '@/app/(demo)/sensor/_components/action-list';
 import { AlertFeed } from '@/app/(demo)/sensor/_components/alert-feed';
+import { HandoverSteps } from '@/app/(demo)/sensor/_components/handover-steps';
 import { LossLotTable } from '@/app/(demo)/sensor/_components/loss-lot-table';
 import { SensorStatusCard } from '@/app/(demo)/sensor/_components/sensor-status-card';
 import { SensorSummary } from '@/app/(demo)/sensor/_components/sensor-summary';
@@ -112,6 +113,8 @@ function SensorDashboard({ session }: { session: PlanSessionT }) {
           isRetrying={twinQuery.isFetching}
         />
       )}
+
+      {twin?.handover && <HandoverSteps handover={twin.handover} />}
 
       <div className="grid grid-cols-[1fr_440px] gap-6">
         <div className="flex flex-col gap-6">

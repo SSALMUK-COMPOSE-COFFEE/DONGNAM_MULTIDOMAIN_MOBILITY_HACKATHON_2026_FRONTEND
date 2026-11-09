@@ -23,6 +23,7 @@ type SensorStatusCardPropsT = {
 export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) {
   const current = twin?.current;
   const status = STATUS_BADGE[twin?.status ?? 'no_data'];
+  const powerBadge = getPowerBadge(twin);
 
   return (
     <Card>
@@ -30,11 +31,7 @@ export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) 
         <CardTitle className="flex items-center gap-2">
           {containerId} 품온 · 전원
           <Badge className={status.className}>{status.label}</Badge>
-          {current && (
-            <Badge className={current.power_on ? 'bg-ok' : 'bg-berry'}>
-              {current.power_on ? '전원 켜짐' : '전원 꺼짐'}
-            </Badge>
-          )}
+          {current && <Badge className={powerBadge.className}>{powerBadge.label}</Badge>}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
@@ -93,6 +90,16 @@ export function SensorStatusCard({ containerId, twin }: SensorStatusCardPropsT) 
       </CardContent>
     </Card>
   );
+}
+
+function getPowerBadge(twin: TwinStateT | null) {
+  const kind = twin?.handover?.outage_kind;
+  if (kind === 'planned') return { label: '계획 단전', className: 'bg-air' };
+  if (kind === 'planned_warning') return { label: '계획 단전 주의', className: 'bg-air' };
+  if (kind === 'abnormal') return { label: '이상 단전', className: 'bg-berry' };
+  return twin?.current?.power_on
+    ? { label: '전원 켜짐', className: 'bg-ok' }
+    : { label: '전원 꺼짐', className: 'bg-berry' };
 }
 
 type FactPropsT = {

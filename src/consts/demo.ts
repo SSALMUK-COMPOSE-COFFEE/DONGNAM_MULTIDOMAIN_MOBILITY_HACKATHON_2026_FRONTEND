@@ -5,9 +5,8 @@ export const DEMO_SCENARIO_ID = 'default';
 export const DEMO_CONTAINER_ID = 'CA-01';
 export const DEMO_DEVICE_ID = 'arduino-01';
 
-export const SIMULATION_PRESET = 'power_cut_restore';
-/** 측정값 85건을 0.5초 간격으로 재생 → 약 40초 */
-export const SIMULATION_INTERVAL_SECONDS = 0.5;
+export const SIMULATION_PRESET = 'sea_to_land';
+export const SIMULATION_INTERVAL_SECONDS = 1;
 
 /** 시연 ② 취소 재최적화: 산청 딸기 5 → 3파렛트 (2파렛트 취소) */
 export const DEMO_REDUCE_LOT_ID = 'lot-sancheong-sb-1';

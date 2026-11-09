@@ -6387,6 +6387,39 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** HandoverStep */
+        HandoverStep: {
+            /** Step */
+            step: number;
+            /** Title */
+            title: string;
+            /** Power */
+            power: string;
+            /** System */
+            system: string;
+        };
+        /** HandoverState */
+        HandoverState: {
+            /** Current Step */
+            current_step: number;
+            /**
+             * Outage Kind
+             * @enum {string}
+             */
+            outage_kind: "none" | "planned" | "planned_warning" | "abnormal";
+            /** Continuous Off Minutes */
+            continuous_off_minutes: number;
+            /** Cumulative Off Minutes */
+            cumulative_off_minutes: number;
+            /** Excess Minutes */
+            excess_minutes: number;
+            warning: components["schemas"]["Quantity"];
+            allowance: components["schemas"]["Quantity"];
+            /** Steps */
+            steps: components["schemas"]["HandoverStep"][];
+            /** Rule */
+            rule: string;
+        };
         /** OutageSummary */
         OutageSummary: {
             /** Cumulative Minutes */
@@ -7475,7 +7508,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "power_cut_restore" | "short_outage" | "normal";
+            id: "power_cut_restore" | "short_outage" | "normal" | "sea_to_land";
             /** Title */
             title: string;
             /** Description */
@@ -9926,7 +9959,7 @@ export interface components {
              * @default power_cut_restore
              * @enum {string}
              */
-            preset: "power_cut_restore" | "short_outage" | "normal";
+            preset: "power_cut_restore" | "short_outage" | "normal" | "sea_to_land";
             /**
              * Container Id
              * @default CA-01
@@ -9966,7 +9999,7 @@ export interface components {
              * Preset
              * @enum {string}
              */
-            preset: "power_cut_restore" | "short_outage" | "normal";
+            preset: "power_cut_restore" | "short_outage" | "normal" | "sea_to_land";
             /** Container Id */
             container_id: string;
             /** Plan Id */
@@ -10232,6 +10265,12 @@ export interface components {
         };
         /** TimelinePoint */
         TimelinePoint: {
+            /** Handover Step */
+            handover_step?: number | null;
+            /** Handover Kind */
+            handover_kind?: "none" | "planned" | "planned_warning" | "abnormal" | null;
+            /** Handover Excess Minutes */
+            handover_excess_minutes?: number | null;
             /**
              * Ts
              * Format: date-time
@@ -10395,6 +10434,7 @@ export interface components {
             has_data: boolean;
             /** Residual Risks */
             residual_risks?: components["schemas"]["ResidualRisk"][];
+            handover?: components["schemas"]["HandoverState"] | null;
         };
         /** TwinSummary */
         TwinSummary: {
