@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { DemoResetButton } from '@/components/demo-reset-button';
 import { Badge } from '@/components/ui/badge';
 import { IS_API_MOCKING } from '@/consts/api';
-import { DEMO_NAV } from '@/consts/route';
+import { DEMO_APPENDIX_NAV, DEMO_NAV } from '@/consts/route';
 
 export function DemoNav() {
   const pathname = usePathname();
@@ -42,6 +42,25 @@ export function DemoNav() {
               {label}
             </Link>
           ))}
+
+          <div className="flex items-center gap-1 rounded-full border border-line py-1 pr-1 pl-1.5">
+            <span className="rounded-full bg-line px-2 py-0.5 text-xs font-bold text-navy">
+              부록
+            </span>
+            {DEMO_APPENDIX_NAV.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                aria-current={pathname === href ? 'page' : false}
+                className={cn(
+                  'rounded-full px-3 py-1 text-sm font-bold text-muted-foreground',
+                  pathname === href && 'bg-brand-soft text-navy'
+                )}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         </nav>
 
         <div className="ml-auto flex items-center gap-3">

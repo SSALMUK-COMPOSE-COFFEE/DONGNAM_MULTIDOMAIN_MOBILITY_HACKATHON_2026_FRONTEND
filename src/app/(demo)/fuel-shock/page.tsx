@@ -5,7 +5,7 @@ export default function FuelShockPage() {
   return (
     <>
       <PageHeader
-        step="05"
+        step="부록"
         title="운임 쇼크"
         headline="항공 운임이 뛰면"
         highlight="계획이 바뀐다"
