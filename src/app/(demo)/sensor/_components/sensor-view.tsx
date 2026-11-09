@@ -8,7 +8,6 @@ import { coldchainContainerQueryOptions } from '@/apis/getColdchainContainer';
 import { postColdchainBinding, postColdchainSimulation } from '@/apis/postColdchainSimulation';
 import { ActionList } from '@/app/(demo)/sensor/_components/action-list';
 import { AlertFeed } from '@/app/(demo)/sensor/_components/alert-feed';
-import { HandoverSteps } from '@/app/(demo)/sensor/_components/handover-steps';
 import { LossLotTable } from '@/app/(demo)/sensor/_components/loss-lot-table';
 import { SensorStatusCard } from '@/app/(demo)/sensor/_components/sensor-status-card';
 import { SensorSummary } from '@/app/(demo)/sensor/_components/sensor-summary';
@@ -31,16 +30,26 @@ export function SensorView() {
   );
 }
 
+/** 측정값이 바뀌는 동안은 1초, 멈춰 있으면 10초마다 확인한다 (아두이노가 새로 보내기 시작해도 10초 안에 잡힌다) */
 const LIVE_POLLING_MS = 1_000;
 const IDLE_POLLING_MS = 10_000;
+/** 마지막으로 측정값이 늘어난 뒤 이 시간 동안은 빠르게 확인한다 */
 const LIVE_GRACE_MS = 15_000;
+/** 시뮬레이션을 시작하면 첫 측정값이 들어올 때까지 빠르게 확인한다 */
 const SIMULATION_START_GRACE_MS = 60_000;
+
+/** 서버와 브라우저 시계가 조금 어긋나도 새 알림을 놓치지 않도록 둔 여유 */
 const CLOCK_SKEW_MS = 2_000;
 const nowWithSkew = () => new Date(Date.now() - CLOCK_SKEW_MS).toISOString();
 
 function SensorDashboard({ session }: { session: PlanSessionT }) {
   const { plan_id: planId, scenario } = session;
 
+  /**
+   * SSE 는 연결할 때 서버의 지난 알림을 모두 다시 보낸다.
+   * 이전 시연의 알림이 섞이지 않도록 이 시각 이후에 생긴 알림만 보여준다.
+   * 화면을 연 시각에서 시작하고, 시뮬레이션을 시작할 때마다 갱신한다.
+   */
   const [since, setSince] = useState(nowWithSkew);
   const isRecent = (alert: AlertT) => !!alert.created_at && alert.created_at >= since;
 
@@ -86,14 +95,16 @@ function SensorDashboard({ session }: { session: PlanSessionT }) {
         reset: true,
       });
     },
+    // 10초 간격으로 예약된 다음 확인을 기다리지 않고 바로 불러와 1초 간격으로 돌린다
     onSuccess: () => twinQuery.refetch(),
     onError: () => toast.error('시뮬레이션을 시작하지 못했습니다.'),
   });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <SensorSummary twin={twin} onStart={() => startSimulation()} isStarting={isPending} />
 
+      {/* 1초 폴링이라 한 번 실패해도 다음 폴링에서 회복될 수 있다. 계속 실패할 때만 알린다 */}
       {twinQuery.isError && !twin && (
         <PlanLoadError
           message="센서 측정값을 불러오지 못했습니다. 서버 연결을 확인하세요."
@@ -102,20 +113,17 @@ function SensorDashboard({ session }: { session: PlanSessionT }) {
         />
       )}
 
-      {twin?.handover && <HandoverSteps handover={twin.handover} />}
-
-      <div className="grid grid-cols-12 items-stretch gap-5">
-        <div className="col-span-7 flex flex-col">
+      <div className="grid grid-cols-[1fr_440px] gap-6">
+        <div className="flex flex-col gap-6">
           <SensorStatusCard containerId={DEMO_CONTAINER_ID} twin={twin} />
+          {!!twin?.loss.lots?.length && <LossLotTable lots={twin.loss.lots} scenario={scenario} />}
         </div>
 
-        <div className="col-span-5 grid grid-rows-[auto_1fr] gap-5">
+        <div className="flex flex-col gap-6">
           <ActionList actions={twin?.actions ?? []} />
           <AlertFeed alerts={alerts} />
         </div>
       </div>
-
-      {!!twin?.loss.lots?.length && <LossLotTable lots={twin.loss.lots} scenario={scenario} />}
     </div>
   );
 }
