@@ -196,6 +196,14 @@ export const handlers = [
       },
       // 재생 중인 시각까지 발생한 조치만 보여준다
       actions: twin.actions.filter(action => action.triggered_at <= last.ts),
+      handover: twin.handover && {
+        ...twin.handover,
+        current_step: last.handover_step ?? twin.handover.current_step,
+        outage_kind: last.handover_kind ?? 'none',
+        continuous_off_minutes: last.power_on ? 0 : last.cumulative_outage_minutes,
+        cumulative_off_minutes: last.cumulative_outage_minutes,
+        excess_minutes: last.handover_excess_minutes ?? 0,
+      },
     } satisfies TwinStateT);
   }),
 

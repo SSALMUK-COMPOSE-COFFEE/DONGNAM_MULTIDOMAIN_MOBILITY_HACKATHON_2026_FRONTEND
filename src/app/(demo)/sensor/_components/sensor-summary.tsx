@@ -37,7 +37,7 @@ export function SensorSummary({ twin, onStart, isStarting }: SensorSummaryPropsT
         disabled={isStarting}
       >
         <PlayIcon />
-        4시간 단전 시뮬레이션
+        해상→육상 전환 시뮬레이션
       </Button>
     </div>
   );
