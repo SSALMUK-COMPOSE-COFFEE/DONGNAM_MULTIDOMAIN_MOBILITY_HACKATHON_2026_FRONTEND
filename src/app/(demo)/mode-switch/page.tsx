@@ -5,7 +5,7 @@ export default function ModeSwitchPage() {
   return (
     <>
       <PageHeader
-        step="04"
+        step="부록"
         title="항공 전환"
         headline="팔 시간이 모자라면"
         highlight="항공으로 바꾼다"
